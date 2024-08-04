@@ -30,11 +30,6 @@ class MyLog:
         return embed
 
 
-def addLog(text):
-    log = MyLog("info", "system", text)
-    delayedLogs.append(log)
-
-
 def logInfo(text, author):
     log = MyLog("info", author, text)
     delayedLogs.append(log)
