@@ -25,7 +25,7 @@ def getMusicPlayer(guild_id, channel_id):
 
 
 def findMusicPlayerByGuildId(guild_id):
-    return players[guild_id]
+    return players[guild_id] if guild_id in players.keys() else None
 
 
 def addTrack(name, guild_id, author, channel_id):

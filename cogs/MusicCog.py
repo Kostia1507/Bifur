@@ -4,7 +4,7 @@ from discord.ext import commands, tasks
 from cogs import LogCog
 
 from models.Song import Song
-from service import musicService
+from service import musicService, pagedMessagesService
 from service.localeService import getLocale
 
 ffmpeg_options = {
@@ -102,4 +102,7 @@ class MusicCog(commands.Cog):
         mp = musicService.findMusicPlayerByGuildId(ctx.guild.id)
         if mp is not None:
             ret = mp.formatList(ctx.author.id)
-            await ctx.send(ret[0] + "\n\n" + ret[1])
+            pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
+            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+            await ctx.send(embed=embed, view=pagedMsg.view)
