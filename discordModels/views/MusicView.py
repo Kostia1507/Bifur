@@ -19,7 +19,7 @@ async def is_in_vcInteraction(interaction):
 
 class MusicView(discord.ui.View):
 
-    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="⏪")
+    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="⏪", row=0)
     async def previousCallback(self, interaction, button):
         if await is_in_vcInteraction(interaction):
             guild = interaction.guild
@@ -28,7 +28,7 @@ class MusicView(discord.ui.View):
                 guild.voice_client.stop()
                 await interaction.response.send_message("Return to previous song", ephemeral=True, delete_after=15)
 
-    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="⏩")
+    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="⏩", row=0)
     async def skipCallback(self, interaction, button):
         if await is_in_vcInteraction(interaction):
             guild = interaction.guild
@@ -37,7 +37,7 @@ class MusicView(discord.ui.View):
                 guild.voice_client.stop()
                 await interaction.response.send_message("The song is skipped", ephemeral=True, delete_after=15)
 
-    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="⏯")
+    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="⏯", row=0)
     async def pauseCallback(self, interaction, button):
         if await is_in_vcInteraction(interaction):
             if interaction.guild.voice_client.is_paused():
@@ -47,13 +47,13 @@ class MusicView(discord.ui.View):
                 interaction.guild.voice_client.pause()
                 await interaction.response.send_message("Now on pause", ephemeral=True, delete_after=15)
 
-    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🔀")
+    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🔀", row=1)
     async def shuffleCallback(self, interaction, button):
         if await is_in_vcInteraction(interaction):
             musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id).shuffle()
             await interaction.response.send_message("Shuffled!", ephemeral=True, delete_after=15)
 
-    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🔁")
+    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🔁", row=1)
     async def repeatCallback(self, interaction, button):
         if await is_in_vcInteraction(interaction):
             mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)
@@ -64,14 +64,14 @@ class MusicView(discord.ui.View):
             if mp.repeating == RepeatType.NOT_REPEATING:
                 await interaction.response.send_message(
                     getLocale('repeat-off', interaction.user.id), ephemeral=True, delete_after=15)
-            elif mp.repeating ==  RepeatType.REPEAT_ONE:
+            elif mp.repeating == RepeatType.REPEAT_ONE:
                 await interaction.response.send_message(
                     getLocale('repeat-one', interaction.user.id), ephemeral=True, delete_after=15)
             else:
                 await interaction.response.send_message(
                     getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
 
-    @discord.ui.button(label="", style=discord.ButtonStyle.danger, emoji="⬜")
+    @discord.ui.button(label="", style=discord.ButtonStyle.danger, emoji="⬜", row=1)
     async def stopCallback(self, interaction, button):
         if await is_in_vcInteraction(interaction):
             mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)

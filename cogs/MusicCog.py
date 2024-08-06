@@ -136,6 +136,24 @@ class MusicCog(commands.Cog):
                         song = mp.getNext()
                         if song is not None:
                             vc.play(discord.FFmpegPCMAudio(source=song.stream_url, **ffmpeg_options))
+                            if mp.musicPlayerMessageId is not None:
+                                # format message
+                                t = mp.playing
+                                if t is not None:
+                                    embed = discord.Embed(
+                                        title=f'{getLocale("playing", mp.musicPlayerAuthorId)} {t.name}',
+                                        description=f'{getLocale("ordered", mp.musicPlayerAuthorId)} {t.author}\n'
+                                                    f'{getLocale("duration", mp.musicPlayerAuthorId)} {t.getDurationToStr()}')
+                                    embed.set_thumbnail(url=t.icon_link)
+                                    embed.set_footer(text=t.original_url)
+                                else:
+                                    embed = discord.Embed(
+                                        title=f'{getLocale("playing", mp.musicPlayerAuthorId)} {getLocale("nothing", mp.musicPlayerAuthorId)}'
+                                    )
+
+                                message = await self.bot.get_channel(mp.musicPlayerChannelId) \
+                                    .fetch_message(mp.musicPlayerMessageId)
+                                await message.edit(embed=embed, view=MusicView(timeout=None))
                 else:
                     LogCog.logDebug('delete player cause vc is None')
                     musicService.delete(guild.id)
