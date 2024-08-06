@@ -51,7 +51,7 @@ class MusicPlayer:
                 self.songs.append(self.playing)
             if self.playing is not None:
                 self.history.append(self.playing)
-                self.history = self.history[len(self.history)-3:]
+                self.history = self.history[len(self.history) - 3:]
             self.playing = t
             self.songs.remove(t)
         # looks like one more validation
@@ -60,8 +60,20 @@ class MusicPlayer:
                 self.songs.remove(self.songs[0])
         return t
 
-    def getPrevious(self):
-        pass
+    # send 1 song from history to the start of query
+    def toPrevious(self):
+        if len(self.history) == 0:
+            if self.playing is not None:
+                self.songs = [self.playing] + self.songs
+                self.playing = None
+            else:
+                return
+        query = [self.history.pop(), self.playing] if self.playing is not None else [self.history.pop()]
+        self.songs = query + self.songs
+        self.playing = None
+        if self.repeating == RepeatType.REPEAT_ALL:
+            if self.songs[0].original_url == self.songs[len(self.songs) - 1].original_url:
+                self.songs.pop()
 
     def remove(self, n):
         if str(n).isnumeric():
@@ -80,10 +92,10 @@ class MusicPlayer:
                     t.delete()
 
     def skip(self):
-        if self.repeating:
+        if self.repeating != RepeatType.NOT_REPEATING:
             self.songs.append(self.playing)
         self.history.append(self.playing)
-        self.history = self.history[len(self.history) - 3:]
+        self.history = self.history[len(self.history) - HISTORY_SIZE:]
         self.playing = None
 
     def skipLine(self, n):

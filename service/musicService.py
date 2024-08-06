@@ -40,6 +40,12 @@ def addTrack(name, guild_id, author, channel_id):
         return False
 
 
+def addSong(song, guild_id, author, channel_id):
+    song.author = author
+    mp = getMusicPlayer(guild_id, channel_id)
+    mp.addSong(song)
+
+
 def searchByLink(name):
     new_settings = settings.copy()
     new_settings["forceurl"] = True

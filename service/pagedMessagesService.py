@@ -2,6 +2,17 @@ from datetime import datetime
 
 from discordModels.views.PagedMessageView import PagedMessageView
 
+'''
+Example of creating PagedMessage
+
+pagedMsg = pagedMessagesService.initPagedMessage(self.bot, title, description)
+            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+            await ctx.send(embed=embed, view=pagedMsg.view)
+            
+Description will be split to pages by \n
+'''
+
 
 def initPagedMessage(bot, title, description):
     pagedMessage = PagedMessage(bot)
