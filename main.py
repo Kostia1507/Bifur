@@ -2,6 +2,7 @@ import config
 from cogs import LogCog
 from cogs.CalcCog import CalcCog
 from cogs.ChatCog import ChatCog
+from cogs.MusicCog import MusicCog
 from cogs.TranslatorCog import TranslatorCog
 from utils import commandUtils
 
@@ -43,6 +44,7 @@ async def on_ready():
     await bot.add_cog(ChatCog(bot))
     await bot.add_cog(LogCog.LogCog(bot))
     await bot.add_cog(TranslatorCog(bot))
+    await bot.add_cog(MusicCog(bot))
     print("Bot started")
 
 
