@@ -198,3 +198,33 @@ def euler_phi(n):
         result *= (1.0 - (1.0 / n))
 
     return int(result)
+
+
+def calcd(a, b, c):
+    if a.find('/') == -1:
+        a += "/1"
+    if c.find('/') == -1:
+        c += "/1"
+    top1, down1 = int(a[0:a.find('/')]), int(a[a.find('/') + 1:len(a)])
+    top2, down2 = int(c[0:c.find('/')]), int(c[c.find('/') + 1:len(c)])
+    if b == '+':
+        down = lcd(down1, down2)
+        top = int(top1 * (down / down1) + top2 * (down / down2))
+        return str(top) + "/" + str(down)
+    if b == '-':
+        down = lcd(down1, down2)
+        top = int(top1 * (down / down1) - top2 * (down / down2))
+        return str(top) + "/" + str(down)
+    if b == '*':
+        down = down1 * down2
+        top = top1 * top2
+        g = gcd(top, down)
+        return str(int(top / g)) + "/" + str(int(down / g))
+    if b == '/':
+        down2, top2 = top2, down2
+        down = down1 * down2
+        top = top1 * top2
+        g = gcd(top, down)
+        if down < 0:
+            down, top = -1 * down, -1 * top
+        return str(int(top / g)) + "/" + str(int(down / g))

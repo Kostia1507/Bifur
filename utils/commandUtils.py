@@ -14,3 +14,7 @@ async def run_blocking(blocking_func: typing.Callable, *args, **kwargs) -> typin
     """Runs a blocking function in a non-blocking way"""
     func = functools.partial(blocking_func, *args, **kwargs)
     return await bot.loop.run_in_executor(None, func)
+
+
+async def is_owner(ctx):
+    return ctx.author.id in config.owners
