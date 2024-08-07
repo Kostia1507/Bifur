@@ -1,6 +1,7 @@
 import config
 from cogs import LogCog
 from cogs.CalcCog import CalcCog
+from cogs.ChatCog import ChatCog
 from cogs.TranslatorCog import TranslatorCog
 from utils import commandUtils
 
@@ -39,6 +40,7 @@ async def on_ready():
     bot.remove_command("help")
     LogCog.logSystem("Bot started")
     await bot.add_cog(CalcCog(bot))
+    await bot.add_cog(ChatCog(bot))
     await bot.add_cog(LogCog.LogCog(bot))
     await bot.add_cog(TranslatorCog(bot))
     print("Bot started")
