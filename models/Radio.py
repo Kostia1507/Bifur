@@ -34,16 +34,18 @@ class Radio:
                 song = Song(entry[2], False)
                 song.name = entry[1]
                 song.duration = entry[4]
+                song.trackId = entry[0]
+                song.radioId = entry[3]
                 songs.append(song)
             return songs
 
     def getInfo(self, user_id):
         if self.is_shared or user_id == self.owner or user_id in self.getEditors():
             tracks = self.getTracks(user_id)
-            tracks.sort()
+            tracks.sort(key=lambda radioEntry: radioEntry.trackId)
             result = ""
-            for i in tracks:
-                result += f'{i[0]} - {i[1]}\n'
+            for t in tracks:
+                result += f'{t.trackId} - {t.name}\n'
             return f'ID: {self.radio_id} Name: {self.name}', result
         else:
             return getLocale("list-not-found", user_id)

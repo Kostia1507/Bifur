@@ -25,6 +25,9 @@ class Song:
         self.icon_link = None
         self.duration = None
         self.stream_url = None
+        # trackId is presented if song was loaded from radio
+        self.trackId = None
+        self.radioId = None
         if initFromWeb:
             with YoutubeDL(options) as ydl:
                 try:
@@ -55,3 +58,21 @@ class Song:
                 self.stream_url = info['url']
             except Exception as e:
                 LogCog.logError(f'Помилка при спробі отримати інформацію {self.original_url}: {e}')
+
+    def download(self, filename):
+        if self.is_live:
+            return "I will not play a live video"
+        optionsDwnl = {
+            'format': 'bestaudio/best',
+            'keepvideo': False,
+            'outtmpl': filename,
+            'noplaylist': True,
+            'source_address': '0.0.0.0',
+            'nocheckcertificate': True
+        }
+        with YoutubeDL(optionsDwnl) as ydl:
+            try:
+                ydl.download([self.original_url])
+            except Exception as e:
+                LogCog.logError(f'Помилка при загрузці {filename}: {e}')
+                return e

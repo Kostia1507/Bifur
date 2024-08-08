@@ -1,7 +1,9 @@
 import random
 
+import psycopg2
 from yt_dlp import utils, YoutubeDL
 
+import config
 from cogs import LogCog
 from models.MusicPlayer import MusicPlayer
 from models.Song import Song
@@ -127,3 +129,11 @@ def searchFive(name):
 def delete(guild_id):
     if guild_id in players.keys():
         del players[guild_id]
+
+
+def downloadVideo(url):
+    t = searchByLink(url)[0]
+    t.updateFromWeb()
+    filename = f'music/{t.name}.mp3'
+    t.download(filename)
+    return filename

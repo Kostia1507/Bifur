@@ -4,6 +4,7 @@ from yt_dlp import YoutubeDL, utils
 import config
 from cogs import LogCog
 from models.Radio import Radio
+from models.Song import Song
 
 
 def getRadioById(radio_id):
@@ -182,3 +183,99 @@ def importYouTubePlayList(user_id, link, radio_id):
         cur.close()
         conn.close()
         return radio_id
+
+
+def createTrack(name, playlist_id, link, user_id, duration):
+    radio = getRadioById(playlist_id)
+    if user_id == radio.owner or user_id in radio.getEditors():
+        conn = psycopg2.connect(
+            host=config.host,
+            database=config.database,
+            user=config.user,
+            password=config.password,
+            port=config.port
+        )
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM radios where id = %s", (playlist_id,))
+        radioId = cur.fetchone()
+        if radioId is None:
+            return False
+        cur.execute("SELECT * from tracks where link = %s and list = %s", (link, radioId[0]))
+        check = cur.fetchone()
+        if check is not None:
+            return None
+        cur.execute("INSERT INTO tracks(name, list, link, duration) VALUES (%s, %s, %s, %s);",
+                    (name, playlist_id, link, duration))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+
+
+def forceCreateTrack(name, playlist_id, link, user_id, duration):
+    radio = getRadioById(playlist_id)
+    if user_id == radio.owner or user_id in radio.getEditors():
+        conn = psycopg2.connect(
+            host=config.host,
+            database=config.database,
+            user=config.user,
+            password=config.password,
+            port=config.port
+        )
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM radios where id = %s", (playlist_id,))
+        radioId = cur.fetchone()
+        if radioId is None:
+            return False
+        cur.execute("INSERT INTO tracks(name, list, link, duration) VALUES (%s, %s, %s, %s);",
+                    (name, playlist_id, link, duration))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+
+
+def deleteTrack(track_id, userId):
+    conn = psycopg2.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM tracks where id = %s", (track_id,))
+    track = cur.fetchone()
+    if track is None:
+        return False
+    radioId = track[3]
+    cur.execute("SELECT * FROM radios where id = %s and owner = %s", (radioId, userId))
+    radioId = cur.fetchone()
+    if radioId is None:
+        return False
+    cur.execute("DELETE FROM tracks WHERE id='" + str(track_id) + "'")
+    conn.commit()
+    cur.close()
+    conn.close()
+    return True
+
+
+def getTrackById(track_id):
+    conn = psycopg2.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM tracks where id = %s", (track_id,))
+    track = cur.fetchone()
+    cur.close()
+    conn.close()
+    song = Song(track[2], False)
+    song.name = track[1]
+    song.duration = track[4]
+    song.trackId = track[0]
+    song.radioId = track[3]
+    return song
