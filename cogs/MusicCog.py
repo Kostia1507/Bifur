@@ -2,11 +2,11 @@ import discord
 from discord.ext import commands, tasks
 
 from cogs import LogCog
-from discordModels.views.MusicView import MusicView
 from models.MusicPlayer import RepeatType
 
-from service import musicService, pagedMessagesService
+from service import musicService, pagedMessagesService, musicViewService
 from service.localeService import getLocale
+from utils import commandUtils
 
 ffmpeg_options = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
@@ -14,38 +14,6 @@ ffmpeg_options = {
 }
 
 searchQueue = {}
-
-
-async def createPlayer(ctx):
-    mp = musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id)
-    if mp.musicPlayerMessageId is None:
-        mp.musicPlayerChannelId = ctx.channel.id
-        if isinstance(ctx, discord.Interaction):
-            userId = ctx.user.id
-        else:
-            userId = ctx.author.id
-        mp.musicPlayerAuthorId = userId
-
-        # format message
-        t = mp.playing
-        if t is not None:
-            embed = discord.Embed(
-                title=f'{getLocale("playing", userId)} {t.name}',
-                description=f'{getLocale("ordered", userId)} {t.author}\n'
-                            f'{getLocale("duration", userId)} {t.getDurationToStr()}')
-            embed.set_thumbnail(url=t.icon_link)
-            embed.set_footer(text=t.original_url)
-        else:
-            embed = discord.Embed(
-                title=f'{getLocale("playing", userId)} {getLocale("nothing", userId)}'
-            )
-        if isinstance(ctx, discord.Interaction):
-            await ctx.response.send_message(embed=embed, view=MusicView(timeout=None))
-            msg = await ctx.original_response()
-            mp.musicPlayerMessageId = msg.id
-        else:
-            msg = await ctx.send(embed=embed, view=MusicView(timeout=None))
-            mp.musicPlayerMessageId = msg.id
 
 
 class MusicSelectView(discord.ui.View):
@@ -66,32 +34,9 @@ class DropdownMusic(discord.ui.Select):
             return 0
         musicService.addSong(searchQueue[interaction.user.id][n], interaction.channel.guild.id,
                              interaction.user.name, interaction.channel.id)
-        await createPlayer(interaction)
+        await musicViewService.createPlayer(interaction)
         if not interaction.response.is_done():
             await interaction.response.send_message('✅', ephemeral=True)
-
-
-async def is_in_vc(ctx):
-    vc = ctx.guild.voice_client
-    if vc is not None:
-        members = vc.channel.members
-        for member in members:
-            if member.id == ctx.author.id:
-                return True
-    await ctx.send(getLocale('not-in-voice', ctx.author.id))
-    return False
-
-
-async def is_in_vcInteraction(interaction):
-    vc = interaction.guild.voice_client
-    if vc is not None:
-        members = vc.channel.members
-        for member in members:
-            if member.id == interaction.user.id:
-                return True
-    await interaction.response.send_message(
-        getLocale('not-in-voice', interaction.user.id), ephemeral=True, delete_after=15)
-    return False
 
 
 async def connect_to_user_voice(ctx):
@@ -137,23 +82,7 @@ class MusicCog(commands.Cog):
                         if song is not None:
                             vc.play(discord.FFmpegPCMAudio(source=song.stream_url, **ffmpeg_options))
                             if mp.musicPlayerMessageId is not None:
-                                # format message
-                                t = mp.playing
-                                if t is not None:
-                                    embed = discord.Embed(
-                                        title=f'{getLocale("playing", mp.musicPlayerAuthorId)} {t.name}',
-                                        description=f'{getLocale("ordered", mp.musicPlayerAuthorId)} {t.author}\n'
-                                                    f'{getLocale("duration", mp.musicPlayerAuthorId)} {t.getDurationToStr()}')
-                                    embed.set_thumbnail(url=t.icon_link)
-                                    embed.set_footer(text=t.original_url)
-                                else:
-                                    embed = discord.Embed(
-                                        title=f'{getLocale("playing", mp.musicPlayerAuthorId)} {getLocale("nothing", mp.musicPlayerAuthorId)}'
-                                    )
-
-                                message = await self.bot.get_channel(mp.musicPlayerChannelId) \
-                                    .fetch_message(mp.musicPlayerMessageId)
-                                await message.edit(embed=embed, view=MusicView(timeout=None))
+                                await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
                 else:
                     LogCog.logDebug('delete player cause vc is None')
                     musicService.delete(guild.id)
@@ -171,7 +100,7 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction('✅')
         else:
             await ctx.message.add_reaction('❌')
-        await createPlayer(ctx)
+        await musicViewService.createPlayer(ctx)
 
     @commands.command(aliases=['queue'])
     async def list(self, ctx):
@@ -184,7 +113,7 @@ class MusicCog(commands.Cog):
             await ctx.send(embed=embed, view=pagedMsg.view)
 
     @commands.command()
-    @commands.check(is_in_vc)
+    @commands.check(commandUtils.is_in_vc)
     async def skip(self, ctx, *args):
         guild = ctx.guild
         if guild.voice_client:
@@ -195,7 +124,7 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction('✅')
 
     @commands.command()
-    @commands.check(is_in_vc)
+    @commands.check(commandUtils.is_in_vc)
     async def previous(self, ctx):
         guild = ctx.guild
         if guild.voice_client:
@@ -204,7 +133,7 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction('✅')
 
     @commands.command()
-    @commands.check(is_in_vc)
+    @commands.check(commandUtils.is_in_vc)
     async def stop(self, ctx):
         mp = musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id)
         mp.songs = []
@@ -216,7 +145,7 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction('✅')
 
     @commands.command()
-    @commands.check(is_in_vc)
+    @commands.check(commandUtils.is_in_vc)
     async def remove(self, ctx, *args):
         if len(args) == 1:
             musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).remove(args[0])
@@ -226,7 +155,7 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction('✅')
 
     @commands.command()
-    @commands.check(is_in_vc)
+    @commands.check(commandUtils.is_in_vc)
     async def repeat(self, ctx, *args):
         changed = False
         if len(args) > 0:
@@ -280,7 +209,7 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction('✅')
 
     @commands.command(aliases=['leave'])
-    @commands.check(is_in_vc)
+    @commands.check(commandUtils.is_in_vc)
     async def exit(self, ctx):
         if ctx.message.guild.voice_client:
             await ctx.message.guild.voice_client.disconnect()
@@ -304,7 +233,7 @@ class MusicCog(commands.Cog):
         await ctx.send(embed=embed, view=MusicSelectView(options))
 
     @commands.command()
-    @commands.check(is_in_vc)
+    @commands.check(commandUtils.is_in_vc)
     async def shuffle(self, ctx):
         retStatus = musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).shuffle()
         if retStatus:
@@ -312,8 +241,8 @@ class MusicCog(commands.Cog):
         else:
             await ctx.message.add_reaction('❌')
 
-    @commands.command(aliases=['clean'])
-    @commands.check(is_in_vc)
-    async def clear(self, ctx):
+    @commands.command(aliases=['mclean'])
+    @commands.check(commandUtils.is_in_vc)
+    async def mclear(self, ctx):
         musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).clearTrackList()
         await ctx.message.add_reaction('✅')
