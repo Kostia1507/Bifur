@@ -80,6 +80,8 @@ class MusicCog(commands.Cog):
                     if vc.is_connected() and not vc.is_playing() and not vc.is_paused():
                         song = mp.getNext()
                         if song is not None:
+                            if song.stream_url is None:
+                                song.updateFromWeb()
                             vc.play(discord.FFmpegPCMAudio(source=song.stream_url, **ffmpeg_options))
                             if mp.musicPlayerMessageId is not None:
                                 await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)

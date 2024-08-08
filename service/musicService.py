@@ -1,8 +1,11 @@
+import random
+
 from yt_dlp import utils, YoutubeDL
 
 from cogs import LogCog
 from models.MusicPlayer import MusicPlayer
 from models.Song import Song
+from service import radioService
 
 settings = {
     'match_filter': utils.match_filter_func("!is_live"),
@@ -46,6 +49,30 @@ def addSong(song, guild_id, author, channel_id):
     mp.addSong(song)
 
 
+def startRadio(radioName, guildId, author, channelId, userId, isClearPlaylist):
+    if radioName[0].isdigit():
+        radio = radioService.getRadioById(radioName)
+    else:
+        radio = radioService.getRadioByName(radioName, userId)
+    if radio is None:
+        return False
+    tracks = radio.getTracks(userId)
+    if tracks is None or len(tracks) == 0:
+        return False
+    # clear all songs
+    if isClearPlaylist and guildId in players.keys():
+        players[guildId].songs = []
+        players[guildId].playing = None
+    mp = getMusicPlayer(guildId, channelId)
+    mp.repeating = 2
+    random.shuffle(tracks)
+    for song in tracks:
+        song.author = author
+        mp.addSong(song)
+    players[guildId] = mp
+    return True
+
+
 def searchByLink(name):
     new_settings = settings.copy()
     new_settings["forceurl"] = True
@@ -58,12 +85,12 @@ def searchByLink(name):
                 entries = info['entries']
                 ret = []
                 for entry in entries:
-                    ret.append(Song(entry["webpage_url"]))
+                    ret.append(Song(entry["webpage_url"], True))
                 return ret
             else:
                 if info['is_live']:
                     return None
-                return [Song(info['webpage_url'])]
+                return [Song(info['webpage_url'], True)]
         except Exception as e:
             LogCog.logError(f'Помилка при пошуку за посиланням {name}: {e}')
             return None
@@ -75,7 +102,7 @@ def searchOne(name):
             info = ydl.extract_info("ytsearch:%s" % name, download=False)['entries'][0]
             if info['is_live']:
                 return None
-            return [Song(info['webpage_url'])]
+            return [Song(info['webpage_url'], True)]
         except Exception as e:
             LogCog.logError(f'Помилка при пошуку {name}: {e}')
             return None
@@ -89,7 +116,7 @@ def searchFive(name):
             for e in info:
                 if e['is_live']:
                     continue
-                t = Song(e['webpage_url'])
+                t = Song(e['webpage_url'], True)
                 ret.append(t)
             return ret
         except Exception as e:
