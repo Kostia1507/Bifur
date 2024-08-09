@@ -1,3 +1,5 @@
+import os
+
 import discord
 from discord.ext import commands, tasks
 
@@ -80,6 +82,8 @@ class MusicCog(commands.Cog):
                     if vc.is_connected() and not vc.is_playing() and not vc.is_paused():
                         song = mp.getNext()
                         if song is not None:
+                            if song.stream_url is None:
+                                song.updateFromWeb()
                             vc.play(discord.FFmpegPCMAudio(source=song.stream_url, **ffmpeg_options))
                             if mp.musicPlayerMessageId is not None:
                                 await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
@@ -246,3 +250,34 @@ class MusicCog(commands.Cog):
     async def mclear(self, ctx):
         musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).clearTrackList()
         await ctx.message.add_reaction('✅')
+
+    @commands.command()
+    @commands.check(commandUtils.is_in_vc)
+    async def pause(self, ctx):
+        if ctx.message.guild.voice_client:
+            ctx.message.guild.voice_client.pause()
+            await ctx.message.add_reaction('✅')
+
+    @commands.command()
+    @commands.check(commandUtils.is_in_vc)
+    async def resume(self, ctx):
+        if ctx.message.guild.voice_client:
+            ctx.message.guild.voice_client.resume()
+            await ctx.message.add_reaction('✅')
+
+    @commands.command(aliases=["dwlmp3"])
+    async def downloadmp3(self, ctx, url):
+        filename = musicService.downloadVideo(url)
+        await ctx.send(file=discord.File(filename))
+        os.remove(filename)
+
+    @commands.command()
+    @commands.check(commandUtils.is_in_vc)
+    async def player(self, ctx):
+        mp = musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id)
+        if mp.musicPlayerMessageId is not None:
+            message = await self.bot.get_channel(mp.musicPlayerChannelId) \
+                .fetch_message(mp.musicPlayerMessageId)
+            await message.delete()
+        mp.musicPlayerMessageId = None
+        await musicViewService.createPlayer(ctx)

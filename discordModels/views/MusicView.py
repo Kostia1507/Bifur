@@ -78,7 +78,6 @@ class MusicView(discord.ui.View):
             mp.songs = []
             mp.repeating = RepeatType.NOT_REPEATING
             if interaction.guild.voice_client:
-                print("hui")
                 musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id).skip()
                 interaction.guild.voice_client.stop()
                 await interaction.response.send_message("Stopped playing", ephemeral=True, delete_after=15)

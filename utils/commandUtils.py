@@ -42,3 +42,11 @@ async def is_in_vcInteraction(interaction):
     await interaction.response.send_message(
         getLocale('not-in-voice', interaction.user.id), ephemeral=True, delete_after=15)
     return False
+
+
+def deleteNotNumbers(string):
+    result = ''
+    for char in string:
+        if str(char).isnumeric():
+            result += str(char)
+    return result
