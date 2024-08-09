@@ -70,10 +70,10 @@ class MusicPlayer:
                 return
         query = [self.history.pop(), self.playing] if self.playing is not None else [self.history.pop()]
         self.songs = query + self.songs
-        self.playing = None
-        if self.repeating == RepeatType.REPEAT_ALL:
-            if self.songs[0].original_url == self.songs[len(self.songs) - 1].original_url:
+        if self.repeating != RepeatType.NOT_REPEATING:
+            if query[0].original_url == self.songs[len(self.songs) - 1].original_url:
                 self.songs.pop()
+        self.playing = None
 
     def remove(self, n):
         if str(n).isnumeric():

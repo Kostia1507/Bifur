@@ -1,9 +1,7 @@
 import random
 
-import psycopg2
 from yt_dlp import utils, YoutubeDL
 
-import config
 from cogs import LogCog
 from models.MusicPlayer import MusicPlayer
 from models.Song import Song

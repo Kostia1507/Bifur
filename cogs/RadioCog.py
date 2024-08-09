@@ -44,11 +44,11 @@ class RadioCog(commands.Cog):
         res = await connect_to_user_voice(ctx)
         if res == 0:
             return 0
+        await musicViewService.createPlayer(ctx)
         retStatus = musicService.startRadio(radio_name, ctx.guild.id, ctx.author.name,
                                             ctx.channel.id, ctx.author.id, True)
         if retStatus:
             await ctx.message.add_reaction('✅')
-            await musicViewService.createPlayer(ctx)
         else:
             await ctx.message.add_reaction('❌')
 
@@ -205,7 +205,7 @@ class RadioCog(commands.Cog):
             seconds = 0
             for t in tracks:
                 if t.duration is not None:
-                    seconds += int(t[4])
+                    seconds += int(t.duration)
             durationStr = f'{seconds // 3600}:{seconds % 3600 // 60}:{seconds % 60 // 10}{seconds % 60 % 10}'
             while durationStr.startswith('0') or durationStr.startswith(':'):
                 durationStr = durationStr[1:len(durationStr)]
