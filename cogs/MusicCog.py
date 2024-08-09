@@ -1,7 +1,9 @@
+import asyncio
 import os
 
 import discord
 from discord.ext import commands, tasks
+from discord.utils import get
 
 from cogs import LogCog
 from models.MusicPlayer import RepeatType
@@ -93,6 +95,49 @@ class MusicCog(commands.Cog):
             except Exception as e:
                 LogCog.logError('check mp ' + str(e))
                 mp.skip()
+
+    @tasks.loop(minutes=10)
+    async def checkForEmptyVoices(self):
+        LogCog.logSystem('start checkForEmptyVoices')
+        for vc in self.bot.voice_clients:
+            if len(vc.channel.members) < 2:
+                LogCog.logSystem(f'leave from voice {vc.channel.id} cause members < 2')
+                await vc.disconnect()
+                mp = musicService.findMusicPlayerByGuildId(vc.channel.guild.id)
+                if mp is not None and mp.musicPlayerMessageId is not None:
+                    message = await self.bot.get_channel(mp.musicPlayerChannelId) \
+                        .fetch_message(mp.musicPlayerMessageId)
+                    await message.delete()
+                musicService.delete(vc.channel.guild.id)
+
+    # need to be tested
+    # this function must return bot to voice channel if he was disconnected not by user
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        if before.channel is not None and after.channel is None and member.id == self.bot.user.id:
+            # Wait for reconnecting
+            LogCog.logDebug("wait before thinking")
+            await asyncio.sleep(7)
+            LogCog.logDebug("waited")
+            vc = get(self.bot.voice_clients, guild=before.channel.guild)
+            LogCog.logDebug(f"vc: {vc}")
+            if vc is not None and vc.is_connected():
+                LogCog.logDebug(f"is connected: {vc.is_connected()}")
+                mp = musicService.players[before.channel.guild.id]
+                if mp is not None:
+                    LogCog.logSystem(
+                        f'I was disconnected buy Discord... reconnecting to guild {before.channel.guild.id}')
+                    song = mp.getNext()
+                    if song is not None:
+                        if song.stream_url is None:
+                            song.updateFromWeb()
+                        vc.play(discord.FFmpegPCMAudio(source=song.stream_url, **ffmpeg_options))
+                        if mp.musicPlayerMessageId is not None:
+                            await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+            else:
+                # User kicked me so I will delete all his data
+                musicService.delete(before.channel.guild.id)
+                LogCog.logSystem(f'Delete player for {before.channel.guild.id} cause I was disconnected')
 
     @commands.command(aliases=['p'])
     async def play(self, ctx, *args):
