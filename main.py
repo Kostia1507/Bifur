@@ -13,7 +13,7 @@ from cogs.RadioCog import RadioCog
 from cogs.TranslatorCog import TranslatorCog
 from cogs.chatGPTCog import ChatGPTCog
 from discordModels.views.ReportView import ReportView
-from service import cooldownService, chatGPTService, pagedMessagesService
+from service import cooldownService, chatGPTService, pagedMessagesService, customPrefixService
 from utils import commandUtils, botUtils
 
 import discord
@@ -90,6 +90,16 @@ async def on_message(message):
                 embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
                 await message.channel.send(embed=embed, view=pagedMsg.view)
                 cooldownService.removeCooldown(message.author.id)
+
+        # custom prefixes
+        if message.channel.guild is not None:
+            customPrefix = customPrefixService.getPrefix(message.channel.guild.id)
+            if customPrefix is not None:
+                if text.startswith(customPrefix):
+                    text = f'{config.prefix}{text[len(customPrefix):len(text)]}'
+                    message.content = text
+                elif text.startswith(config.prefix):
+                    return
 
     await bot.process_commands(message)
 
