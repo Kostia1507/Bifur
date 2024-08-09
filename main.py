@@ -1,5 +1,6 @@
 import config
 from cogs import LogCog
+from cogs.AdminCog import AdminCog
 from cogs.CalcCog import CalcCog
 from cogs.ChatCog import ChatCog
 from cogs.HelpCog import HelpCog
@@ -7,7 +8,7 @@ from cogs.MusicCog import MusicCog
 from cogs.RadioCog import RadioCog
 from cogs.TranslatorCog import TranslatorCog
 from discordModels.views.ReportView import ReportView
-from utils import commandUtils
+from utils import commandUtils, botUtils
 
 import discord
 from discord import HTTPException
@@ -42,7 +43,9 @@ async def on_ready():
     await bot.change_presence(activity=discord.CustomActivity(name=">langs || >help"))
     bot.remove_command("help")
     LogCog.logSystem("Bot started")
+    botUtils.prepareAtStart()
     await bot.add_cog(HelpCog(bot))
+    await bot.add_cog(AdminCog(bot))
     await bot.add_cog(CalcCog(bot))
     await bot.add_cog(ChatCog(bot))
     await bot.add_cog(LogCog.LogCog(bot))
