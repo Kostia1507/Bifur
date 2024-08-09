@@ -6,10 +6,13 @@ from cogs.AdminCog import AdminCog
 from cogs.CalcCog import CalcCog
 from cogs.ChatCog import ChatCog
 from cogs.GamesCog import GamesCog
+from cogs.GifCog import GifCog
 from cogs.HelpCog import HelpCog
 from cogs.LangCog import LangCog
 from cogs.MusicCog import MusicCog
+from cogs.PictureCog import PictureCog
 from cogs.RadioCog import RadioCog
+from cogs.ServerRoleManagerCog import ServerRoleManagerCog
 from cogs.TranslatorCog import TranslatorCog
 from cogs.chatGPTCog import ChatGPTCog
 from discordModels.views.ReportView import ReportView
@@ -60,6 +63,9 @@ async def on_ready():
     await bot.add_cog(TranslatorCog(bot))
     await bot.add_cog(MusicCog(bot))
     await bot.add_cog(RadioCog(bot))
+    await bot.add_cog(PictureCog(bot))
+    await bot.add_cog(GifCog(bot))
+    await bot.add_cog(ServerRoleManagerCog(bot))
     await bot.add_cog(LangCog(bot))
     print("Bot started")
 
