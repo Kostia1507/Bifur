@@ -2,9 +2,11 @@ import config
 from cogs import LogCog
 from cogs.CalcCog import CalcCog
 from cogs.ChatCog import ChatCog
+from cogs.HelpCog import HelpCog
 from cogs.MusicCog import MusicCog
 from cogs.RadioCog import RadioCog
 from cogs.TranslatorCog import TranslatorCog
+from discordModels.views.ReportView import ReportView
 from utils import commandUtils
 
 import discord
@@ -27,9 +29,8 @@ class BifurBot(commands.Bot):
                          owner_ids=[418040057019236353])
 
     async def setup_hook(self) -> None:
-        pass
         # Register the persistent view for listening here.
-        # self.add_view()
+        self.add_view(ReportView(self))
 
 
 bot = BifurBot()
@@ -41,6 +42,7 @@ async def on_ready():
     await bot.change_presence(activity=discord.CustomActivity(name=">langs || >help"))
     bot.remove_command("help")
     LogCog.logSystem("Bot started")
+    await bot.add_cog(HelpCog(bot))
     await bot.add_cog(CalcCog(bot))
     await bot.add_cog(ChatCog(bot))
     await bot.add_cog(LogCog.LogCog(bot))
