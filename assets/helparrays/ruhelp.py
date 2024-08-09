@@ -351,27 +351,6 @@ helpRU = {
                                "Приглашенный игрок ходит первым\n" +
                                "Благодаря параметрам высоты и ширины вы можете создавать различные доски"
             },
-            {
-                "name": ">puzzle15",
-                "aliases": ['>15'],
-                "description": "Игрок получает доску 4х4 случайно заполненную цифрами от 1 до 15. Одна ячейка остается пустой\n" +
-                               "Таким образом за ход можно поменять местами пустую ячейку и любую соседнюю\n" +
-                               "Цель игры: Поставить все цифры в порядке от 1 до 15, и в правом нижнем углу оставить пустую\n" +
-                               "Все стрелки указывают направление от пустой клетки к соседу\n" +
-                               "Поэтому для изменения пустой клетки и цифры над ней нажмите стрелку вверх\n"
-            },
-            {
-                "name": ">quiz",
-                "aliases": [],
-                "description": "Start a quiz with random images. Try to guess whats illustrated"
-            },
-            {
-                "name": ">mquiz [points] [mention]",
-                "aliases": [],
-                "description": "Play the quiz together with your friends.\n" +
-                               "Play up to the specified number of points with everyone mentioned in the message\n" +
-                               "For an incorrect answer, the participant receives -2 points and can no longer answer this question"
-            }
         ],
     "Калькулятор":
         [

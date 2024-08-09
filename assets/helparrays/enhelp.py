@@ -351,27 +351,6 @@ helpEN = {
                                "The player who was invited goes first<br>" +
                                "Thanks to the height and width parameters, you can create a variety of boards"
             },
-            {
-                "name": ">puzzle15",
-                "aliases": ['>15'],
-                "description": "The player receives a 4x4 board randomly filled with numbers from 1 to 15. One cell remains empty<br>" +
-                               "During a move, you can switch between an empty cell and any neighboring cell<br>" +
-                               "The goal of the game: Put all the numbers in order from 1 to 15, and leave the bottom right corner empty" +
-                               "All arrows point in the direction from an empty cell to a neighbor<br>" +
-                               "So to swap an empty cell and the number above it, press the up arrow"
-            },
-            {
-                "name": ">quiz",
-                "aliases": [],
-                "description": "Start a quiz with random images. Try to guess whats illustrated"
-            },
-            {
-                "name": ">mquiz [points] [mention]",
-                "aliases": [],
-                "description": "Play the quiz together with your friends.<br>" +
-                               "Play up to the specified number of points with everyone mentioned in the message<br>" +
-                               "For an incorrect answer, the participant receives -2 points and can no longer answer this question<br>"
-            }
         ],
     "Calculator":
         [

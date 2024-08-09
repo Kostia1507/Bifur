@@ -5,6 +5,7 @@ from cogs import LogCog
 from cogs.AdminCog import AdminCog
 from cogs.CalcCog import CalcCog
 from cogs.ChatCog import ChatCog
+from cogs.GamesCog import GamesCog
 from cogs.HelpCog import HelpCog
 from cogs.MusicCog import MusicCog
 from cogs.RadioCog import RadioCog
@@ -53,6 +54,7 @@ async def on_ready():
     await bot.add_cog(CalcCog(bot))
     await bot.add_cog(ChatGPTCog(bot))
     await bot.add_cog(ChatCog(bot))
+    await bot.add_cog(GamesCog(bot))
     await bot.add_cog(LogCog.LogCog(bot))
     await bot.add_cog(TranslatorCog(bot))
     await bot.add_cog(MusicCog(bot))

@@ -22,7 +22,6 @@ async def ask(message, userId):
 
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.post(url='https://api.openai.com/v1/chat/completions', json=body) as response:
-            LogCog.logDebug(f'ChatGPT response: {response.content}')
             if response.status == 200:
                 body = await response.json()
                 answer = body["choices"][0]["message"]
