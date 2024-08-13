@@ -34,4 +34,5 @@ class CurrencyCog(commands.Cog):
 
     @tasks.loop(hours=12)
     async def getCurrency(self):
+        LogCog.logSystem("Update currency rates")
         await currencyService.updateCurrency()
