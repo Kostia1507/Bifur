@@ -5,6 +5,7 @@ from cogs import LogCog
 from cogs.AdminCog import AdminCog
 from cogs.CalcCog import CalcCog
 from cogs.ChatCog import ChatCog
+from cogs.CurrencyCog import CurrencyCog
 from cogs.GamesCog import GamesCog
 from cogs.GifCog import GifCog
 from cogs.HelpCog import HelpCog
@@ -12,11 +13,14 @@ from cogs.LangCog import LangCog
 from cogs.MusicCog import MusicCog
 from cogs.PictureCog import PictureCog
 from cogs.RadioCog import RadioCog
+from cogs.ServerAdministrationCog import ServerAdministrationCog
 from cogs.ServerRoleManagerCog import ServerRoleManagerCog
 from cogs.TranslatorCog import TranslatorCog
+from cogs.WarCog import WarCog
+from cogs.WeatherCog import WeatherCog
 from cogs.chatGPTCog import ChatGPTCog
 from discordModels.views.ReportView import ReportView
-from service import cooldownService, chatGPTService, pagedMessagesService, customPrefixService
+from service import cooldownService, chatGPTService, pagedMessagesService, customPrefixService, autoReactionService
 from utils import commandUtils, botUtils
 
 import discord
@@ -48,6 +52,15 @@ commandUtils.bot = bot
 
 
 @bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, CommandNotFound):
+        await ctx.send(f'Command {ctx.message.content.split()[0]} doesn\'t exist!'
+                       f' Read help at https://bifurhelp.fly.dev/')
+        LogCog.logDebug(f'Commands not exist {ctx.message.content}')
+    raise error
+
+
+@bot.event
 async def on_ready():
     await bot.change_presence(activity=discord.CustomActivity(name=">langs || >help"))
     bot.remove_command("help")
@@ -67,11 +80,23 @@ async def on_ready():
     await bot.add_cog(GifCog(bot))
     await bot.add_cog(ServerRoleManagerCog(bot))
     await bot.add_cog(LangCog(bot))
+    await bot.add_cog(CurrencyCog(bot))
+    await bot.add_cog(WeatherCog(bot))
+    await bot.add_cog(WarCog(bot))
+    await bot.add_cog(ServerAdministrationCog(bot))
     print("Bot started")
 
 
 @bot.event
 async def on_message(message):
+    # check auto-reactions
+    reactions = autoReactionService.checkForReaction(message.channel.id)
+    for r in reactions:
+        try:
+            await message.add_reaction(r)
+        except HTTPException:
+            LogCog.logError(f'Error in auto-reactions. Channel:{message.channel.id}:{message.channel.name}')
+
     if message.author == bot.user:
         return
     text = message.content.strip()
@@ -107,7 +132,23 @@ async def on_message(message):
                 elif text.startswith(config.prefix):
                     return
 
-    await bot.process_commands(message)
+    # check command
+    if text.startswith(bot.command_prefix):
+        # check is user in cooldown
+        if cooldownService.isInCooldown(message.author.id):
+            LogCog.logSystem(f'{str(message.author)} cooldown!')
+            await message.add_reaction('⏰')
+            return
+        else:
+            # run as user command
+            if text.startswith(f'{bot.command_prefix}runas') and message.author.id in config.owners:
+                args = text.split(" ")
+                message.author = await bot.fetch_user(int(args[1]))
+                args = args[2:]
+                message.content = bot.command_prefix + " ".join(args)
+            cooldownService.setCooldown(message.author.id)
+            LogCog.logInfo(f'{str(message.author)}:{text}', message.author.name)
+            await bot.process_commands(message)
 
 
 bot.run(config.token, reconnect=True)
