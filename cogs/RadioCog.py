@@ -1,11 +1,12 @@
 import random
 
 import discord
+from discord import Colour
 from discord.ext import commands
 
 from cogs import LogCog
 from models.Song import Song
-from service import musicService, musicViewService, radioService, pagedMessagesService
+from service import musicService, musicViewService, radioService, pagedMessagesService, cooldownService
 from service.localeService import getLocale
 from utils import commandUtils
 
@@ -284,3 +285,46 @@ class RadioCog(commands.Cog):
         else:
             await ctx.message.add_reaction('❌')
 
+    @commands.command(aliases=['importlist', 'implist'])
+    async def importplaylist(self, ctx, link):
+        await ctx.message.add_reaction('👋')
+        cooldownService.setSpecialCooldown(ctx.author.id)
+        radio_id = await commandUtils.run_blocking(radioService.importYouTubePlayList, ctx.author.id, link, 0)
+        if isinstance(radio_id, Exception):
+            embed = discord.Embed(title="Exception!", description=str(radio_id), colour=Colour.red())
+            await ctx.reply(embed=embed)
+        else:
+            radio = radioService.getRadioById(radio_id)
+            owner = await self.bot.fetch_user(radio.owner)
+            embed = discord.Embed(
+                title=f'ID:{radio.radio_id}:{radio.name}',
+                description=f'{getLocale("owner", ctx.author.id)} {owner.name}\n'
+                            f'{getLocale("count", ctx.author.id)} {len(radio.getTracks(ctx.author.id))}\n'
+                            f'{getLocale("shared", ctx.author.id)} {radio.is_shared}'
+            )
+            await ctx.reply(embed=embed)
+            cooldownService.removeCooldown(ctx.author.id)
+
+    @commands.command(aliases=['addlist'])
+    async def addplaylist(self, ctx, radio_id, link):
+        radio = radioService.getRadioById(radio_id)
+        if radio.owner == ctx.author.id or ctx.author.id in radio.getEditors():
+            await ctx.message.add_reaction('👋')
+            cooldownService.setSpecialCooldown(ctx.author.id)
+            radio_id = await commandUtils.run_blocking(radioService.importYouTubePlayList, ctx.author.id, link, radio_id)
+            if isinstance(radio_id, Exception):
+                embed = discord.Embed(title="Exception!", description=str(radio_id), colour=Colour.red())
+                await ctx.reply(embed=embed)
+            else:
+                radio = radioService.getRadioById(radio_id)
+                owner = await self.bot.fetch_user(radio.owner)
+                embed = discord.Embed(
+                    title=f'ID:{radio.radio_id}:{radio.name}',
+                    description=f'{getLocale("owner", ctx.author.id)} {owner.name}\n'
+                                f'{getLocale("count", ctx.author.id)} {len(radio.getTracks(ctx.author.id))}\n'
+                                f'{getLocale("shared", ctx.author.id)} {radio.is_shared}'
+                )
+                await ctx.reply(embed=embed)
+                cooldownService.removeCooldown(ctx.author.id)
+        else:
+            await ctx.message.add_reaction('❌')

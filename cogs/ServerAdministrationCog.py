@@ -127,6 +127,8 @@ class ServerAdministrationCog(commands.Cog):
             res += f'ID: {cmd[0]}; Interval: {cmd[2]} -- {cmd[3]}:{cmd[4]}\n'
         cur.close()
         conn.close()
+        if len(res) < 0:
+            res = "List is empty. There is no auto-commands."
         await ctx.send(res)
 
     @commands.command()
