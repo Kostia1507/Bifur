@@ -1,12 +1,14 @@
 import random
 
 import discord
+from discord import Colour, app_commands
 from discord.ext import commands
 
 from cogs import LogCog
 from models.Song import Song
-from service import musicService, musicViewService, radioService, pagedMessagesService
+from service import musicService, musicViewService, radioService, pagedMessagesService, cooldownService
 from service.localeService import getLocale
+from service.musicViewService import createPlayer
 from utils import commandUtils
 
 
@@ -284,3 +286,127 @@ class RadioCog(commands.Cog):
         else:
             await ctx.message.add_reaction('❌')
 
+    @commands.command(aliases=['importlist', 'implist'])
+    async def importplaylist(self, ctx, link):
+        await ctx.message.add_reaction('👋')
+        cooldownService.setSpecialCooldown(ctx.author.id)
+        radio_id = await commandUtils.run_blocking(radioService.importYouTubePlayList, ctx.author.id, link, 0)
+        if isinstance(radio_id, Exception):
+            embed = discord.Embed(title="Exception!", description=str(radio_id), colour=Colour.red())
+            await ctx.reply(embed=embed)
+        else:
+            radio = radioService.getRadioById(radio_id)
+            owner = await self.bot.fetch_user(radio.owner)
+            embed = discord.Embed(
+                title=f'ID:{radio.radio_id}:{radio.name}',
+                description=f'{getLocale("owner", ctx.author.id)} {owner.name}\n'
+                            f'{getLocale("count", ctx.author.id)} {len(radio.getTracks(ctx.author.id))}\n'
+                            f'{getLocale("shared", ctx.author.id)} {radio.is_shared}'
+            )
+            await ctx.reply(embed=embed)
+            cooldownService.removeCooldown(ctx.author.id)
+
+    @commands.command(aliases=['addlist'])
+    async def addplaylist(self, ctx, radio_id, link):
+        radio = radioService.getRadioById(radio_id)
+        if radio.owner == ctx.author.id or ctx.author.id in radio.getEditors():
+            await ctx.message.add_reaction('👋')
+            cooldownService.setSpecialCooldown(ctx.author.id)
+            radio_id = await commandUtils.run_blocking(radioService.importYouTubePlayList, ctx.author.id, link, radio_id)
+            if isinstance(radio_id, Exception):
+                embed = discord.Embed(title="Exception!", description=str(radio_id), colour=Colour.red())
+                await ctx.reply(embed=embed)
+            else:
+                radio = radioService.getRadioById(radio_id)
+                owner = await self.bot.fetch_user(radio.owner)
+                embed = discord.Embed(
+                    title=f'ID:{radio.radio_id}:{radio.name}',
+                    description=f'{getLocale("owner", ctx.author.id)} {owner.name}\n'
+                                f'{getLocale("count", ctx.author.id)} {len(radio.getTracks(ctx.author.id))}\n'
+                                f'{getLocale("shared", ctx.author.id)} {radio.is_shared}'
+                )
+                await ctx.reply(embed=embed)
+                cooldownService.removeCooldown(ctx.author.id)
+        else:
+            await ctx.message.add_reaction('❌')
+
+    @app_commands.command(name="radio", description="Start playing playlist")
+    async def radioSlash(self, interaction: discord.Interaction, radio_name: str):
+        res = await connect_to_user_voiceInteraction(interaction)
+        if res == 0:
+            return 0
+        retStatus = musicService.startRadio(radio_name, interaction.guild_id, interaction.user.name,
+                                            interaction.channel_id, interaction.user.id, True)
+        if retStatus:
+            await interaction.response.send_message(getLocale('ready', interaction.user.id),
+                                                    ephemeral=True, delete_after=15)
+            await createPlayer(interaction)
+
+    @app_commands.command(name="addradio", description="Add playlist to queue without clearing it")
+    async def addradioSlash(self, interaction: discord.Interaction, radio_name: str):
+        res = await connect_to_user_voiceInteraction(interaction)
+        if res == 0:
+            return 0
+        retStatus = musicService.startRadio(radio_name, interaction.guild_id, interaction.user.name,
+                                            interaction.channel_id, interaction.user.id, False)
+        if retStatus:
+            await interaction.response.send_message(getLocale('ready', interaction.user.id),
+                                                    ephemeral=True, delete_after=15)
+            await createPlayer(interaction)
+
+    @app_commands.command(name="player", description="Recreate player with buttons")
+    async def playerSlash(self, interaction: discord.Interaction):
+        if await commandUtils.is_in_vcInteraction(interaction):
+            mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)
+            if mp.musicPlayerMessageId is not None:
+                message = await self.bot.get_channel(mp.musicPlayerChannelId) \
+                    .fetch_message(mp.musicPlayerMessageId)
+                await message.delete()
+            mp.musicPlayerMessageId = None
+            await createPlayer(interaction)
+
+    @app_commands.command(name="radios", description="Show playlists")
+    async def radiosSlash(self, interaction: discord.Interaction, user: discord.Member = None):
+        if user is not None:
+            radios = radioService.getSharedPlayLists(user.id)
+            title = getLocale('user-playlists', interaction.user.id).replace("%p", user.name)
+        else:
+            radios = radioService.getPlayLists(interaction.user.id)
+            title = getLocale('playlists-list', interaction.user.id)
+        if len(radios) == 0:
+            await interaction.response.send_message(getLocale('no-playlists', interaction.user.id))
+        else:
+            res = ''
+            radios.sort(key=lambda radioEntry: radioEntry.radio_id)
+            for radio in radios:
+                res += f'\nID: {radio.radio_id} -- {radio.name}'
+            pagedMsg = pagedMessagesService.initPagedMessage(self.bot, title, res)
+            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+            await interaction.response.send_message(embed=embed, view=pagedMsg.view)
+
+    @app_commands.command(name="allradios", description="Show all shared playlists")
+    async def allradiosSlash(self, interaction: discord.Interaction):
+        radios = radioService.getAllSharedRadios()
+        ret = ''
+        for radio in radios:
+            ret += f'ID: {radio[0]} -- {radio[1]}\n'
+        pagedMsg = pagedMessagesService.initPagedMessage(self.bot, getLocale("shared-list", interaction.user.id), ret)
+        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+        await interaction.response.send_message(embed=embed, view=pagedMsg.view)
+
+    @app_commands.command(name="radiolist", description="Show tracks in playlist")
+    async def radiolistSlash(self, interaction: discord.Interaction, radio_name: str):
+        if radio_name[0].isdigit():
+            radio = radioService.getRadioById(radio_name)
+        else:
+            radio = radioService.getRadioByName(radio_name, interaction.user.id)
+        ret = radio.getInfo(interaction.user.id)
+        if isinstance(ret, tuple):
+            pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
+            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+            await interaction.response.send_message(embed=embed, view=pagedMsg.view)
+        else:
+            await interaction.response.send_message(ret)

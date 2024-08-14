@@ -2,6 +2,7 @@ import asyncio
 import os
 
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 from discord.utils import get
 
@@ -326,3 +327,100 @@ class MusicCog(commands.Cog):
             await message.delete()
         mp.musicPlayerMessageId = None
         await musicViewService.createPlayer(ctx)
+
+    @app_commands.command(name="play", description="Play songs")
+    async def playSlash(self, interaction: discord.Interaction, name: str):
+        res = await connect_to_user_voiceInteraction(interaction)
+        if res == 0:
+            return 0
+        await musicService.addTrack(name.strip(), interaction.guild.id, interaction.user.name, interaction.channel.id)
+        await interaction.response.send_message(getLocale('ready', interaction.user.id),
+                                                ephemeral=True, delete_after=15)
+        await musicViewService.createPlayer(interaction)
+
+    @app_commands.command(name="search", description="Let you choose one from 5 songs")
+    async def searchSlash(self, interaction: discord.Interaction, search: str):
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        tList = musicService.searchFive(search)
+        searchQueue[interaction.user.id] = tList
+        options = []
+        text = ''
+        for i in range(0, len(tList)):
+            options.append(discord.SelectOption(label=f"{i + 1}. {tList[i].name[0:80]} ({tList[i].getDurationToStr()})",
+                                                value=str(i)))
+            text += f'{i + 1}. {tList[i].name} ({tList[i].getDurationToStr()})\n'
+        embed = discord.Embed(
+            title=getLocale("result", interaction.user.id),
+            description=text
+        )
+        await interaction.followup.send(embed=embed, view=MusicSelectView(options))
+
+    @app_commands.command(name="list", description="List of songs in queue")
+    async def listSlash(self, interaction: discord.Interaction):
+        mp = musicService.findMusicPlayerByGuildId(interaction.guild.id)
+        if mp is not None:
+            ret = mp.formatList(interaction.user.id)
+            pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
+            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+            await interaction.response.send_message(embed=embed, view=pagedMsg.view)
+
+    @app_commands.command(name="shuffle", description="Shuffle songs in queue")
+    async def shuffleSlash(self, interaction: discord.Interaction):
+        if commandUtils.is_in_vcInteraction(interaction):
+            musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id).shuffle()
+            await interaction.response.send_message(getLocale('ready', interaction.user.id),
+                                                    ephemeral=True, delete_after=15)
+
+    @app_commands.command(name="skip", description="Skip current song")
+    async def skipSlash(self, interaction: discord.Interaction):
+        if commandUtils.is_in_vcInteraction(interaction):
+            guild = interaction.guild
+            if guild.voice_client:
+                vc = guild.voice_client.stop()
+                musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id).skip()
+                await interaction.response.send_message(getLocale('ready', interaction.user.id),
+                                                        ephemeral=True, delete_after=15)
+
+    @app_commands.command(name="previous", description="Return to previous song")
+    async def previousSlash(self, interaction: discord.Interaction):
+        guild = interaction.guild
+        if guild.voice_client:
+            musicService.getMusicPlayer(guild.id, interaction.channel.id).toPrevious()
+            guild.voice_client.stop()
+            await interaction.response.send_message(getLocale('ready', interaction.user.id),
+                                                    ephemeral=True, delete_after=15)
+
+    @app_commands.command(name="stop", description="Stop all songs in queue")
+    async def stopSlash(self, interaction: discord.Interaction):
+        if commandUtils.is_in_vcInteraction(interaction):
+            mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)
+            mp.clearTrackList()
+            mp.repeating = 0
+            if interaction.guild.voice_client:
+                vc = interaction.guild.voice_client
+                t = musicService.getMusicPlayer(interaction.guild.id, interaction.channel.id).playing
+                if t is not None:
+                    t.delete()
+                musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id).skip()
+                vc.stop()
+                await interaction.response.send_message(getLocale('ready', interaction.user.id),
+                                                        ephemeral=True, delete_after=15)
+
+    @app_commands.command(name="repeat", description="Switch repeat mode")
+    async def repeatSlash(self, interaction: discord.Interaction):
+        if await commandUtils.is_in_vcInteraction(interaction):
+            mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)
+            repeatN = mp.repeating.value - 1
+            if repeatN == -1:
+                repeatN = 2
+            mp.repeating = RepeatType(repeatN)
+            if mp.repeating == RepeatType.NOT_REPEATING:
+                await interaction.response.send_message(
+                    getLocale('repeat-off', interaction.user.id), ephemeral=True, delete_after=15)
+            elif mp.repeating == RepeatType.REPEAT_ONE:
+                await interaction.response.send_message(
+                    getLocale('repeat-one', interaction.user.id), ephemeral=True, delete_after=15)
+            else:
+                await interaction.response.send_message(
+                    getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
