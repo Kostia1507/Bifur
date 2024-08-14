@@ -1,5 +1,6 @@
 from discord.ext import commands, tasks
 
+import config
 from cogs import LogCog
 from service.localeService import getLocale
 
@@ -10,7 +11,9 @@ class CurrencyCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.getCurrency.start()
+        # Requests to update currency rates are limited!
+        if config.release:
+            self.getCurrency.start()
         LogCog.logSystem("CurrencyCog started")
 
     @commands.command()
