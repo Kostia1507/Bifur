@@ -167,3 +167,7 @@ class HelpCog(commands.Cog):
     async def helpSlash(self, interaction: discord.Interaction):
         lang = localeService.getLocale("lang", interaction.user.id)
         await interaction.response.send_message(helpLocales['docs'][lang], view=HelpView(lang, self.bot))
+
+    @commands.command()
+    async def github(self, ctx):
+        await ctx.send("https://github.com/Kostia1507/Bifur")

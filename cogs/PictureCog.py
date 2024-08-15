@@ -15,10 +15,18 @@ class PictureCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def black(self, ctx, url):
-        file = await pictureService.black(url, ctx.message.id)
-        await ctx.send("Paint it Black", file=discord.File(file))
-        os.remove(file)
+    async def black(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.black(url, ctx.message.id)
+            await ctx.send("Paint it Black", file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
     async def imgsearch(self, ctx, *args):
@@ -34,62 +42,142 @@ class PictureCog(commands.Cog):
             await ctx.send(getLocale('nothing-found', ctx.author.id))
 
     @commands.command()
-    async def totext(self, ctx, url):
-        text = await pictureService.totext(url, ctx.message.id, 'n')
-        await ctx.send(text)
+    async def totext(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            text = await pictureService.totext(url, ctx.message.id, 'n')
+            await ctx.send(text)
 
     @commands.command()
-    async def rtotext(self, ctx, url):
-        text = await pictureService.totext(url, ctx.message.id, 'r')
-        await ctx.send(text)
+    async def rtotext(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            text = await pictureService.totext(url, ctx.message.id, 'r')
+            await ctx.send(text)
 
     @commands.command()
-    async def red(self, ctx, url):
-        file = await pictureService.get_channel(url, 'r', ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def red(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.get_channel(url, 'r', ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
-    async def green(self, ctx, url):
-        file = await pictureService.get_channel(url, 'g', ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def green(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.get_channel(url, 'g', ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
-    async def blue(self, ctx, url):
-        file = await pictureService.get_channel(url, 'b', ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def blue(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.get_channel(url, 'b', ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
-    async def alpha(self, ctx, url):
-        file = await pictureService.get_channel(url, 'a', ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def alpha(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.get_channel(url, 'a', ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
-    async def cyan(self, ctx, url):
-        file = await pictureService.get_CMYKchannel(url, 'c', ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def cyan(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.get_CMYKchannel(url, 'c', ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
-    async def magenta(self, ctx, url):
-        file = await pictureService.get_CMYKchannel(url, 'm', ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def magenta(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.get_CMYKchannel(url, 'm', ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
-    async def yellow(self, ctx, url):
-        file = await pictureService.get_CMYKchannel(url, 'y', ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def yellow(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.get_CMYKchannel(url, 'y', ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
-    async def key(self, ctx, url):
-        file = await pictureService.get_CMYKchannel(url, 'k', ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def key(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.get_CMYKchannel(url, 'k', ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
     async def swap(self, ctx, url, mode):
@@ -122,10 +210,18 @@ class PictureCog(commands.Cog):
         os.remove(file)
 
     @commands.command()
-    async def invers(self, ctx, url):
-        file = await pictureService.inversion(url, ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def invers(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.inversion(url, ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
     async def crop(self, ctx, left: int, top: int, right: int, bottom: int, url):
@@ -134,29 +230,62 @@ class PictureCog(commands.Cog):
         os.remove(file)
 
     @commands.command()
-    async def vietnam(self, ctx, url):
-        file = await pictureService.vietnam(url, ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
-
-    @commands.command()
-    async def rip(self, ctx, url):
-        file = await pictureService.rip(url, ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
-
-    @commands.command()
-    async def yae(self, ctx, url):
-        file = await pictureService.yae(url, ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
-
-    @commands.command()
-    async def hans(self, ctx, url):
-        if ctx.message.author.id == 593738881804009472 or ctx.message.author.id == 418040057019236353:
-            file = await pictureService.hans(url, ctx.message.id)
+    async def vietnam(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.vietnam(url, ctx.message.id)
             await ctx.send(file=discord.File(file))
             os.remove(file)
+
+    @commands.command()
+    async def rip(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.rip(url, ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
+
+    @commands.command()
+    async def yae(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.yae(url, ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
+
+    # Wow this command still exist. I recommend to delete it
+    @commands.command()
+    async def hans(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            if ctx.message.author.id == 593738881804009472 or ctx.message.author.id == 418040057019236353:
+                file = await pictureService.hans(url, ctx.message.id)
+                await ctx.send(file=discord.File(file))
+                os.remove(file)
 
     @commands.command()
     async def penguin(self, ctx):
@@ -169,22 +298,46 @@ class PictureCog(commands.Cog):
             await ctx.send(file=discord.File('assets/background/penguin.png'))
 
     @commands.command()
-    async def frameh(self, ctx, url):
-        file = await pictureService.frame(url, 'h', ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def frameh(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.frame(url, 'h', ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
-    async def framev(self, ctx, url):
-        file = await pictureService.frame(url, 'v', ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def framev(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.frame(url, 'v', ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
-    async def triggered(self, ctx, url):
-        file = await pictureService.triggered(url, ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def triggered(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            file = await pictureService.triggered(url, ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
     async def color(self, ctx, red: int, green: int, blue: int, url):
@@ -217,22 +370,49 @@ class PictureCog(commands.Cog):
         os.remove(file)
 
     @commands.command()
-    async def sign(self, ctx, url, *args):
-        file = await pictureService.sign(" ".join(args), url, "bottom", ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def sign(self, ctx, *args):
+        text = " ".join(args)
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+            text = text.replace(args[0] + " ", "", 1)
+        elif len(args) > 0 and str(args[0]).startswith("http"):
+            url = args[0]
+            text = text.replace(url + " ", "", 1)
+        if url is not None:
+            file = await pictureService.sign(text, url, "bottom", ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
-    async def signtop(self, ctx, url, *args):
-        file = await pictureService.sign(" ".join(args), url, "top", ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def signtop(self, ctx, *args):
+        text = " ".join(args)
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+            text = text.replace(args[0] + " ", "", 1)
+        elif len(args) > 0 and str(args[0]).startswith("http"):
+            url = args[0]
+            text = text.replace(url + " ", "", 1)
+        if url is not None:
+            file = await pictureService.sign(text, url, "top", ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
     async def card(self, ctx, *args):
-        if len(args):
-            file = await pictureService.card(args[0], ctx.message.id)
-        else:
-            file = await pictureService.card("https://miro.medium.com/max/1400/1*9WeJrBj6pp-qnGjRGg2NUw.webp", ctx.message.id)
+        url = "https://miro.medium.com/max/1400/1*9WeJrBj6pp-qnGjRGg2NUw.webp"
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+
+        file = await pictureService.card(url, ctx.message.id)
         await ctx.send(file=discord.File(file))
         os.remove(file)
