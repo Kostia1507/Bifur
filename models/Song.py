@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from yt_dlp import YoutubeDL, utils
 
 from cogs import LogCog
@@ -20,6 +22,7 @@ class Song:
     def __init__(self, original_url, initFromWeb):
         self.original_url = original_url
         self.name = ""
+        self.updated = datetime.now()
         self.is_live = False
         self.author = None
         self.icon_link = None
@@ -56,6 +59,7 @@ class Song:
                 self.duration = info['duration']
                 self.icon_link = info['thumbnail']
                 self.stream_url = info['url']
+                self.updated = datetime.now()
             except Exception as e:
                 LogCog.logError(f'Помилка при спробі отримати інформацію {self.original_url}: {e}')
 
