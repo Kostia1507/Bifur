@@ -1,5 +1,6 @@
 import asyncio
 import os
+from datetime import datetime, timedelta
 
 import discord
 from discord import app_commands
@@ -71,7 +72,9 @@ class MusicCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.emptyVoices = []
         self.checkMusicPlayers.start()
+        self.checkForEmptyVoices.start()
         LogCog.logSystem("MusicCog started")
 
     @tasks.loop(seconds=2)
@@ -85,31 +88,40 @@ class MusicCog(commands.Cog):
                     if vc.is_connected() and not vc.is_playing() and not vc.is_paused():
                         song = mp.getNext()
                         if song is not None:
-                            if song.stream_url is None:
+                            if song.stream_url is None or datetime.now() - song.updated >= timedelta(hours=1):
+                                LogCog.logDebug("update song")
                                 song.updateFromWeb()
-                            vc.play(discord.FFmpegPCMAudio(source=song.stream_url, **ffmpeg_options))
-                            if mp.musicPlayerMessageId is not None:
-                                await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+                            if song.stream_url is None:
+                                mp.skip()
+                            else:
+                                vc.play(discord.FFmpegPCMAudio(source=song.stream_url, **ffmpeg_options))
+                                if mp.musicPlayerMessageId is not None:
+                                    await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
                 else:
-                    LogCog.logDebug('delete player cause vc is None')
                     musicService.delete(guild.id)
             except Exception as e:
                 LogCog.logError('check mp ' + str(e))
                 mp.skip()
 
-    @tasks.loop(minutes=10)
+    @tasks.loop(minutes=5)
     async def checkForEmptyVoices(self):
-        LogCog.logSystem('start checkForEmptyVoices')
         for vc in self.bot.voice_clients:
             if len(vc.channel.members) < 2:
-                LogCog.logSystem(f'leave from voice {vc.channel.id} cause members < 2')
-                await vc.disconnect()
-                mp = musicService.findMusicPlayerByGuildId(vc.channel.guild.id)
-                if mp is not None and mp.musicPlayerMessageId is not None:
-                    message = await self.bot.get_channel(mp.musicPlayerChannelId) \
-                        .fetch_message(mp.musicPlayerMessageId)
-                    await message.delete()
-                musicService.delete(vc.channel.guild.id)
+                if vc.channel.id in self.emptyVoices:
+                    self.emptyVoices.remove(vc.channel.id)
+                    LogCog.logSystem(f'leave from voice {vc.channel.id} cause members < 2')
+                    await vc.disconnect()
+                    mp = musicService.findMusicPlayerByGuildId(vc.channel.guild.id)
+                    if mp is not None and mp.musicPlayerMessageId is not None:
+                        message = await self.bot.get_channel(mp.musicPlayerChannelId) \
+                            .fetch_message(mp.musicPlayerMessageId)
+                        await message.delete()
+                    musicService.delete(vc.channel.guild.id)
+                else:
+                    # Add to query for leaving
+                    self.emptyVoices.append(vc.channel.id)
+            elif vc.channel.id in self.emptyVoices:
+                self.emptyVoices.remove(vc.channel.id)
 
     # need to be tested
     # this function must return bot to voice channel if he was disconnected not by user
@@ -117,13 +129,9 @@ class MusicCog(commands.Cog):
     async def on_voice_state_update(self, member, before, after):
         if before.channel is not None and after.channel is None and member.id == self.bot.user.id:
             # Wait for reconnecting
-            LogCog.logDebug("wait before thinking")
             await asyncio.sleep(7)
-            LogCog.logDebug("waited")
             vc = get(self.bot.voice_clients, guild=before.channel.guild)
-            LogCog.logDebug(f"vc: {vc}")
             if vc is not None and vc.is_connected():
-                LogCog.logDebug(f"is connected: {vc.is_connected()}")
                 mp = musicService.players[before.channel.guild.id]
                 if mp is not None:
                     LogCog.logSystem(
