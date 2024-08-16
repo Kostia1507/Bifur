@@ -479,5 +479,11 @@ locales = {
             'ua': "Готово!",
             'ru': "Готово!",
         },
+    'something-wrong':
+        {
+            'en': "Something wrong!",
+            'ua': "Щось пішло не так!",
+            'ru': "Ошибка!",
+        },
 
 }

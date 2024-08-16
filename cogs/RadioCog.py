@@ -46,7 +46,7 @@ class RadioCog(commands.Cog):
         res = await connect_to_user_voice(ctx)
         if res == 0:
             return 0
-        await musicViewService.createPlayer(ctx)
+        await musicViewService.createPlayer(ctx, self.bot)
         retStatus = musicService.startRadio(radio_name, ctx.guild.id, ctx.author.name,
                                             ctx.channel.id, ctx.author.id, True)
         if retStatus:
@@ -342,7 +342,7 @@ class RadioCog(commands.Cog):
         if retStatus:
             await interaction.followup.send(getLocale('ready', interaction.user.id),
                                             ephemeral=True)
-            await createPlayer(interaction)
+            await createPlayer(interaction, self.bot)
 
     @app_commands.command(name="addradio", description="Add playlist to queue without clearing it")
     async def addradioSlash(self, interaction: discord.Interaction, radio_name: str):
@@ -354,7 +354,7 @@ class RadioCog(commands.Cog):
         if retStatus:
             await interaction.response.send_message(getLocale('ready', interaction.user.id),
                                                     ephemeral=True, delete_after=15)
-            await createPlayer(interaction)
+            await createPlayer(interaction, self.bot)
 
     @app_commands.command(name="player", description="Recreate player with buttons")
     async def playerSlash(self, interaction: discord.Interaction):
@@ -365,7 +365,7 @@ class RadioCog(commands.Cog):
                     .fetch_message(mp.musicPlayerMessageId)
                 await message.delete()
             mp.musicPlayerMessageId = None
-            await createPlayer(interaction)
+            await createPlayer(interaction, self.bot)
 
     @app_commands.command(name="radios", description="Show playlists")
     async def radiosSlash(self, interaction: discord.Interaction, user: discord.Member = None):
