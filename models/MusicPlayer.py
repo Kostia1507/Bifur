@@ -19,7 +19,7 @@ class MusicPlayer:
         self.songs = []
         self.history = []
         self.playing = None
-        # 0 don't repeat, 1 - repeat one, 2 - repeat all
+        self.volume = 100
         self.repeating = RepeatType.NOT_REPEATING
         self.channelId = channel_id
         # musicPlayers means view-message in discord

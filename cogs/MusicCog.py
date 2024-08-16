@@ -23,15 +23,16 @@ searchQueue = {}
 
 
 class MusicSelectView(discord.ui.View):
-    def __init__(self, options):
+    def __init__(self, options, bot):
         super().__init__(timeout=None)
-        self.add_item(DropdownMusic(options))
+        self.add_item(DropdownMusic(options, bot))
 
 
 class DropdownMusic(discord.ui.Select):
-    def __init__(self, options):
+    def __init__(self, options, bot):
         super().__init__(placeholder='Select...', min_values=1, max_values=1,
                          options=options, custom_id='persistent_view:search_track_select')
+        self.bot = bot
 
     async def callback(self, interaction):
         n = int(self.values[0])
@@ -40,7 +41,7 @@ class DropdownMusic(discord.ui.Select):
             return 0
         musicService.addSong(searchQueue[interaction.user.id][n], interaction.channel.guild.id,
                              interaction.user.name, interaction.channel.id)
-        await musicViewService.createPlayer(interaction)
+        await musicViewService.createPlayer(interaction, self.bot)
         if not interaction.response.is_done():
             await interaction.response.send_message('✅', ephemeral=True)
 
@@ -94,7 +95,9 @@ class MusicCog(commands.Cog):
                             if song.stream_url is None:
                                 mp.skip()
                             else:
-                                vc.play(discord.FFmpegPCMAudio(source=song.stream_url, **ffmpeg_options))
+                                source = discord.PCMVolumeTransformer(
+                                    discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=mp.volume/100)
+                                vc.play(source)
                                 if mp.musicPlayerMessageId is not None:
                                     await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
                 else:
@@ -158,7 +161,7 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction('✅')
         else:
             await ctx.message.add_reaction('❌')
-        await musicViewService.createPlayer(ctx)
+        await musicViewService.createPlayer(ctx, self.bot)
 
     @commands.command(aliases=['queue'])
     async def list(self, ctx):
@@ -288,7 +291,7 @@ class MusicCog(commands.Cog):
             title=getLocale("result", ctx.author.id),
             description=text
         )
-        await ctx.send(embed=embed, view=MusicSelectView(options))
+        await ctx.send(embed=embed, view=MusicSelectView(options, self.bot))
 
     @commands.command()
     @commands.check(commandUtils.is_in_vc)
@@ -334,7 +337,21 @@ class MusicCog(commands.Cog):
                 .fetch_message(mp.musicPlayerMessageId)
             await message.delete()
         mp.musicPlayerMessageId = None
-        await musicViewService.createPlayer(ctx)
+        await musicViewService.createPlayer(ctx, self.bot)
+
+    @commands.command()
+    @commands.check(commandUtils.is_in_vc)
+    async def volume(self, ctx, volume: int):
+        mp = musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id)
+        if mp is not None and ctx.voice_client is not None and 0 <= volume <= 200:
+            mp.volume = volume
+            if ctx.voice_client.source is not None:
+                ctx.voice_client.source.volume = volume / 100
+            if mp.musicPlayerChannelId is not None:
+                await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+            await ctx.message.add_reaction('✅')
+        else:
+            await ctx.message.add_reaction('❌')
 
     @app_commands.command(name="play", description="Play songs")
     async def playSlash(self, interaction: discord.Interaction, name: str):
@@ -344,7 +361,7 @@ class MusicCog(commands.Cog):
         await musicService.addTrack(name.strip(), interaction.guild.id, interaction.user.name, interaction.channel.id)
         await interaction.response.send_message(getLocale('ready', interaction.user.id),
                                                 ephemeral=True, delete_after=15)
-        await musicViewService.createPlayer(interaction)
+        await musicViewService.createPlayer(interaction, self.bot)
 
     @app_commands.command(name="search", description="Let you choose one from 5 songs")
     async def searchSlash(self, interaction: discord.Interaction, search: str):
@@ -361,7 +378,7 @@ class MusicCog(commands.Cog):
             title=getLocale("result", interaction.user.id),
             description=text
         )
-        await interaction.followup.send(embed=embed, view=MusicSelectView(options))
+        await interaction.followup.send(embed=embed, view=MusicSelectView(options, self.bot))
 
     @app_commands.command(name="list", description="List of songs in queue")
     async def listSlash(self, interaction: discord.Interaction):
@@ -432,3 +449,17 @@ class MusicCog(commands.Cog):
             else:
                 await interaction.response.send_message(
                     getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
+
+    @app_commands.command(name="volume", description="Set volume between 0 and 200")
+    @commands.check(commandUtils.is_in_vc)
+    async def volumeSlash(self, interaction: discord.Interaction, volume: int):
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        mp = musicService.getMusicPlayer(interaction.guild.id, interaction.channel.id)
+        vc = interaction.guild.voice_client
+        if mp is not None and vc is not None and 0 <= volume <= 200:
+            mp.volume = volume
+            if vc.source is not None:
+                vc.source.volume = volume / 100
+            if mp.musicPlayerChannelId is not None:
+                await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+            await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)

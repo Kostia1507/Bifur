@@ -46,7 +46,7 @@ class RadioCog(commands.Cog):
         res = await connect_to_user_voice(ctx)
         if res == 0:
             return 0
-        await musicViewService.createPlayer(ctx)
+        await musicViewService.createPlayer(ctx, self.bot)
         retStatus = musicService.startRadio(radio_name, ctx.guild.id, ctx.author.name,
                                             ctx.channel.id, ctx.author.id, True)
         if retStatus:
@@ -312,7 +312,8 @@ class RadioCog(commands.Cog):
         if radio.owner == ctx.author.id or ctx.author.id in radio.getEditors():
             await ctx.message.add_reaction('👋')
             cooldownService.setSpecialCooldown(ctx.author.id)
-            radio_id = await commandUtils.run_blocking(radioService.importYouTubePlayList, ctx.author.id, link, radio_id)
+            radio_id = await commandUtils.run_blocking(radioService.importYouTubePlayList, ctx.author.id, link,
+                                                       radio_id)
             if isinstance(radio_id, Exception):
                 embed = discord.Embed(title="Exception!", description=str(radio_id), colour=Colour.red())
                 await ctx.reply(embed=embed)
@@ -332,15 +333,16 @@ class RadioCog(commands.Cog):
 
     @app_commands.command(name="radio", description="Start playing playlist")
     async def radioSlash(self, interaction: discord.Interaction, radio_name: str):
+        await interaction.response.defer(ephemeral=True, thinking=True)
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
             return 0
         retStatus = musicService.startRadio(radio_name, interaction.guild_id, interaction.user.name,
                                             interaction.channel_id, interaction.user.id, True)
         if retStatus:
-            await interaction.response.send_message(getLocale('ready', interaction.user.id),
-                                                    ephemeral=True, delete_after=15)
-            await createPlayer(interaction)
+            await interaction.followup.send(getLocale('ready', interaction.user.id),
+                                            ephemeral=True)
+            await createPlayer(interaction, self.bot)
 
     @app_commands.command(name="addradio", description="Add playlist to queue without clearing it")
     async def addradioSlash(self, interaction: discord.Interaction, radio_name: str):
@@ -352,7 +354,7 @@ class RadioCog(commands.Cog):
         if retStatus:
             await interaction.response.send_message(getLocale('ready', interaction.user.id),
                                                     ephemeral=True, delete_after=15)
-            await createPlayer(interaction)
+            await createPlayer(interaction, self.bot)
 
     @app_commands.command(name="player", description="Recreate player with buttons")
     async def playerSlash(self, interaction: discord.Interaction):
@@ -363,7 +365,7 @@ class RadioCog(commands.Cog):
                     .fetch_message(mp.musicPlayerMessageId)
                 await message.delete()
             mp.musicPlayerMessageId = None
-            await createPlayer(interaction)
+            await createPlayer(interaction, self.bot)
 
     @app_commands.command(name="radios", description="Show playlists")
     async def radiosSlash(self, interaction: discord.Interaction, user: discord.Member = None):
