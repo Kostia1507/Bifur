@@ -172,6 +172,12 @@ locales = {
             'ua': 'Тривалість:',
             'ru': 'Продолжительность:',
         },
+    'volume':
+        {
+            'en': 'Volume:',
+            'ua': 'Гучність:',
+            'ru': 'Громкость:'
+        },
     'not-connected-to-voice':
         {
             'en': 'You are not connected to voice channel',

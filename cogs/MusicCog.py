@@ -94,7 +94,9 @@ class MusicCog(commands.Cog):
                             if song.stream_url is None:
                                 mp.skip()
                             else:
-                                vc.play(discord.FFmpegPCMAudio(source=song.stream_url, **ffmpeg_options))
+                                source = discord.PCMVolumeTransformer(
+                                    discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=mp.volume/100)
+                                vc.play(source)
                                 if mp.musicPlayerMessageId is not None:
                                     await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
                 else:
@@ -336,6 +338,20 @@ class MusicCog(commands.Cog):
         mp.musicPlayerMessageId = None
         await musicViewService.createPlayer(ctx)
 
+    @commands.command()
+    @commands.check(commandUtils.is_in_vc)
+    async def volume(self, ctx, volume: int):
+        mp = musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id)
+        if mp is not None and ctx.voice_client is not None and 0 <= volume <= 200:
+            mp.volume = volume
+            if ctx.voice_client.source is not None:
+                ctx.voice_client.source.volume = volume / 100
+            if mp.musicPlayerChannelId is not None:
+                await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+            await ctx.message.add_reaction('✅')
+        else:
+            await ctx.message.add_reaction('❌')
+
     @app_commands.command(name="play", description="Play songs")
     async def playSlash(self, interaction: discord.Interaction, name: str):
         res = await connect_to_user_voiceInteraction(interaction)
@@ -432,3 +448,17 @@ class MusicCog(commands.Cog):
             else:
                 await interaction.response.send_message(
                     getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
+
+    @app_commands.command(name="volume", description="Set volume between 0 and 200")
+    @commands.check(commandUtils.is_in_vc)
+    async def volumeSlash(self, interaction: discord.Interaction, volume: int):
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        mp = musicService.getMusicPlayer(interaction.guild.id, interaction.channel.id)
+        vc = interaction.guild.voice_client
+        if mp is not None and vc is not None and 0 <= volume <= 200:
+            mp.volume = volume
+            if vc.source is not None:
+                vc.source.volume = volume / 100
+            if mp.musicPlayerChannelId is not None:
+                await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+            await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)

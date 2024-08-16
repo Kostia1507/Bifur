@@ -21,7 +21,8 @@ async def createPlayer(ctx):
             embed = discord.Embed(
                 title=f'{getLocale("playing", userId)} {t.name}',
                 description=f'{getLocale("ordered", userId)} {t.author}\n'
-                            f'{getLocale("duration", userId)} {t.getDurationToStr()}')
+                            f'{getLocale("duration", userId)} {t.getDurationToStr()}\n'
+                            f'{getLocale("volume", userId)} {mp.volume}%')
             embed.set_thumbnail(url=t.icon_link)
             embed.set_footer(text=t.original_url)
         else:
@@ -43,7 +44,8 @@ async def updatePlayer(mediaPlayer, bot):
         embed = discord.Embed(
             title=f'{getLocale("playing", mediaPlayer.musicPlayerAuthorId)} {t.name}',
             description=f'{getLocale("ordered", mediaPlayer.musicPlayerAuthorId)} {t.author}\n'
-                        f'{getLocale("duration", mediaPlayer.musicPlayerAuthorId)} {t.getDurationToStr()}')
+                        f'{getLocale("duration", mediaPlayer.musicPlayerAuthorId)} {t.getDurationToStr()}\n'
+                        f'{getLocale("volume", mediaPlayer.musicPlayerAuthorId)} {mediaPlayer.volume}%')
         embed.set_thumbnail(url=t.icon_link)
         embed.set_footer(text=t.original_url)
     else:
