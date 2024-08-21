@@ -9,6 +9,7 @@ from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions
 
 import config
+from service.ignoreService import manageIgnoredChannels
 from service.localeService import getLocale
 from utils import commandUtils
 from cogs import LogCog
@@ -17,41 +18,6 @@ from service.prefixService import setPrefix
 from cogs.WeatherCog import getCoordinates, getWeather
 from service import pagedMessagesService, autoReactionService
 from models.PendingCommand import PendingCommand
-
-ignoredChannels: list[PendingCommand] = []
-
-
-async def manageIgnoredChannels(ctx, channel_id):
-    if channel_id in ignoredChannels:
-        ignoredChannels.remove(channel_id)
-        conn = psycopg2.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password,
-            port=config.port
-        )
-        cur = conn.cursor()
-        cur.execute('DELETE FROM ignored_channels WHERE channel_id = %s', (ctx.channel.id,))
-        conn.commit()
-        cur.close()
-        conn.close()
-        await ctx.send(getLocale("ignore-off", ctx.author.id))
-    else:
-        ignoredChannels.append(channel_id)
-        conn = psycopg2.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password,
-            port=config.port
-        )
-        cur = conn.cursor()
-        cur.execute("INSERT INTO ignored_channels(channel_id) VALUES (%s);", (channel_id,))
-        conn.commit()
-        cur.close()
-        conn.close()
-        await ctx.send(getLocale("ignore-on", ctx.author.id))
 
 
 class ServerAdministrationCog(commands.Cog):
@@ -74,10 +40,6 @@ class ServerAdministrationCog(commands.Cog):
             new_pc.id = cmd[0]
             new_pc.counter = cmd[5]
             self.pcs.append(new_pc)
-        cur.execute("SELECT * FROM ignored_channels")
-        channels = cur.fetchall()
-        for channel in channels:
-            ignoredChannels.append(channel[0])
         cur.close()
         conn.close()
         self.checkForCommands.start()
