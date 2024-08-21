@@ -20,7 +20,8 @@ from cogs.WarCog import WarCog
 from cogs.WeatherCog import WeatherCog
 from cogs.chatGPTCog import ChatGPTCog
 from discordModels.views.ReportView import ReportView
-from service import cooldownService, chatGPTService, pagedMessagesService, customPrefixService, autoReactionService
+from service import cooldownService, chatGPTService, pagedMessagesService, customPrefixService, autoReactionService, \
+    ignoreService
 from utils import commandUtils, botUtils
 
 import discord
@@ -54,8 +55,7 @@ commandUtils.bot = bot
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, CommandNotFound):
-        await ctx.send(f'Command {ctx.message.content.split()[0]} doesn\'t exist!'
-                       f' Read help at https://bifurhelp.fly.dev/')
+        await ctx.message.add_reaction("❔")
         LogCog.logDebug(f'Commands not exist {ctx.message.content}')
     raise error
 
@@ -100,6 +100,8 @@ async def on_message(message):
     if message.author == bot.user:
         return
     text = message.content.strip()
+    if message.channel.id in ignoreService.ignoredChannels and not text.startswith(f'{bot.command_prefix}ignore'):
+        return
 
     # ChatGPT
     if text.startswith(f'<@{bot.user.id}>'):
