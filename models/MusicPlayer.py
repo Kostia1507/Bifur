@@ -3,7 +3,7 @@ from enum import Enum
 
 from service.localeService import getLocale
 
-HISTORY_SIZE = 3
+HISTORY_SIZE = 5
 
 
 class RepeatType(Enum):
@@ -51,7 +51,8 @@ class MusicPlayer:
                 self.songs.append(self.playing)
             if self.playing is not None:
                 self.history.append(self.playing)
-                self.history = self.history[len(self.history) - 3:]
+                self.history = self.history[-HISTORY_SIZE:] \
+                    if len(self.history) > HISTORY_SIZE else self.history
             self.playing = t
             self.songs.remove(t)
         # looks like one more validation
@@ -66,8 +67,7 @@ class MusicPlayer:
             if self.playing is not None:
                 self.songs = [self.playing] + self.songs
                 self.playing = None
-            else:
-                return
+            return
         query = [self.history.pop(), self.playing] if self.playing is not None else [self.history.pop()]
         self.songs = query + self.songs
         if self.repeating != RepeatType.NOT_REPEATING:
@@ -91,11 +91,12 @@ class MusicPlayer:
                     self.songs.remove(t)
                     t.delete()
 
-    def skip(self):
-        if self.repeating != RepeatType.NOT_REPEATING:
+    def skip(self, saveIfRepeating=True):
+        if self.repeating != RepeatType.NOT_REPEATING and saveIfRepeating:
             self.songs.append(self.playing)
         self.history.append(self.playing)
-        self.history = self.history[len(self.history) - HISTORY_SIZE:]
+        self.history = self.history[-HISTORY_SIZE:] \
+            if len(self.history) > HISTORY_SIZE else self.history
         self.playing = None
 
     def skipLine(self, n):
@@ -125,7 +126,20 @@ class MusicPlayer:
         for i in range(0, len(self.songs)):
             if self.songs[i] is not None:
                 description += f'{i + 1}.{self.songs[i].author}: {self.songs[i].name}'
-                if self.songs[i].duration is not None and self.playing.duration != 0:
+                if self.songs[i].duration is not None:
                     description += f'({self.songs[i].getDurationToStr()})'
                 description += "\n"
         return title, description
+
+    def formatHistory(self, user_id):
+        if len(self.history) == 0 and self.playing is None:
+            return getLocale("list-empty", user_id), ""
+
+        description = ''
+        for i in range(0, len(self.history)):
+            if self.history[i] is not None:
+                description += f'{i + 1}.{self.history[i].author}: {self.history[i].name}'
+                if self.history[i].duration:
+                    description += f'({self.history[i].getDurationToStr()})'
+                description += "\n"
+        return description

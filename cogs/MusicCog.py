@@ -89,11 +89,15 @@ class MusicCog(commands.Cog):
                     if vc.is_connected() and not vc.is_playing() and not vc.is_paused():
                         song = mp.getNext()
                         if song is not None:
-                            if song.stream_url is None or datetime.now() - song.updated >= timedelta(hours=1):
-                                LogCog.logDebug("update song")
-                                song.updateFromWeb()
-                            if song.stream_url is None:
-                                mp.skip()
+                            error = None
+                            if song.stream_url is None or datetime.now() - song.updated >= timedelta(hours=5):
+                                error = song.updateFromWeb()
+                            if error is not None:
+                                embed = discord.Embed(title="Error", description=str(error), color=discord.Color.red())
+                                embed.set_footer(text=song.original_url)
+                                channel = await self.bot.fetch_channel(mp.channelId)
+                                await channel.send(embed=embed)
+                                mp.skip(saveIfRepeating=False)
                             else:
                                 source = discord.PCMVolumeTransformer(
                                     discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=mp.volume/100)
@@ -169,6 +173,16 @@ class MusicCog(commands.Cog):
         if mp is not None:
             ret = mp.formatList(ctx.author.id)
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
+            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+            await ctx.send(embed=embed, view=pagedMsg.view)
+
+    @commands.command()
+    async def history(self, ctx):
+        mp = musicService.findMusicPlayerByGuildId(ctx.guild.id)
+        if mp is not None:
+            ret = mp.formatHistory(ctx.author.id)
+            pagedMsg = pagedMessagesService.initPagedMessage(self.bot, "History", ret)
             embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
             embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
             await ctx.send(embed=embed, view=pagedMsg.view)

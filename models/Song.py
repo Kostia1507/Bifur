@@ -62,6 +62,7 @@ class Song:
                 self.updated = datetime.now()
             except Exception as e:
                 LogCog.logError(f'Помилка при спробі отримати інформацію {self.original_url}: {e}')
+                return e
 
     def download(self, filename):
         if self.is_live:
