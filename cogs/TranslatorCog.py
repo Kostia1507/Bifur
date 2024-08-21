@@ -2,6 +2,7 @@ from discord import Embed
 from discord.ext import commands
 
 from service import translateService
+from service.ignoreService import ignoredChannels
 
 
 class TranslatorCog(commands.Cog):
@@ -11,7 +12,7 @@ class TranslatorCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, event):
-        if event.emoji.name in translateService.langs.keys():
+        if event.emoji.name in translateService.langs.keys() and event.channel_id not in ignoredChannels:
             msg = await self.bot.get_channel(event.channel_id).fetch_message(event.message_id)
             loop = ""
             if msg.content is not None and len(msg.content) > 0:

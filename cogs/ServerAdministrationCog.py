@@ -9,14 +9,13 @@ from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions
 
 import config
-from service.ignoreService import manageIgnoredChannels
 from service.localeService import getLocale
 from utils import commandUtils
 from cogs import LogCog
 from service.currencyService import currency
 from service.prefixService import setPrefix
 from cogs.WeatherCog import getCoordinates, getWeather
-from service import pagedMessagesService, autoReactionService
+from service import pagedMessagesService, autoReactionService, ignoreService
 from models.PendingCommand import PendingCommand
 
 
@@ -42,6 +41,7 @@ class ServerAdministrationCog(commands.Cog):
             self.pcs.append(new_pc)
         cur.close()
         conn.close()
+        ignoreService.initFromDB()
         self.checkForCommands.start()
         LogCog.logSystem('Auto reaction cog loaded')
 
@@ -116,7 +116,7 @@ class ServerAdministrationCog(commands.Cog):
     @commands.command()
     @has_permissions(manage_guild=True)
     async def ignore(self, ctx, channel: discord.TextChannel):
-        await manageIgnoredChannels(ctx, channel.id)
+        await ignoreService.manageIgnoredChannels(ctx, channel.id)
 
     @commands.command()
     @has_permissions(manage_guild=True)
@@ -126,7 +126,8 @@ class ServerAdministrationCog(commands.Cog):
 
     @ignore.error
     async def missing_channel(self, ctx, error):
-        await manageIgnoredChannels(ctx, ctx.channel.id)
+        await ignoreService.manageIgnoredChannels(ctx, ctx.channel.id)
+        return
 
     @commands.command()
     async def guildstat(self, ctx):
