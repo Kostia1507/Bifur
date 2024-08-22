@@ -6,7 +6,7 @@ from service.localeService import getLocale
 ignoredChannels = []
 
 
-async def initFromDB():
+def initFromDB():
     conn = psycopg2.connect(
         host=config.host,
         database=config.database,
