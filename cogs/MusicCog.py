@@ -76,39 +76,44 @@ class MusicCog(commands.Cog):
         self.emptyVoices = []
         self.checkMusicPlayers.start()
         self.checkForEmptyVoices.start()
+        # Bot will skip iteration if previous wasn't finished
+        self.canCheckMusicAgain = True
         LogCog.logSystem("MusicCog started")
 
     @tasks.loop(seconds=2)
     async def checkMusicPlayers(self):
-        check_players = musicService.players.copy()  # окремий лист, щоб не збив процес інший асинхронний процес
-        for mp in check_players.values():
-            try:
-                guild = self.bot.get_guild(mp.guildId)
-                if guild.voice_client:
-                    vc = guild.voice_client
-                    if vc.is_connected() and not vc.is_playing() and not vc.is_paused():
-                        song = mp.getNext()
-                        if song is not None:
-                            error = None
-                            if song.stream_url is None or datetime.now() - song.updated >= timedelta(hours=5):
-                                error = song.updateFromWeb()
-                            if error is not None:
-                                embed = discord.Embed(title="Error", description=str(error), color=discord.Color.red())
-                                embed.set_footer(text=song.original_url)
-                                channel = await self.bot.fetch_channel(mp.channelId)
-                                await channel.send(embed=embed)
-                                mp.skip(saveIfRepeating=False)
-                            else:
-                                source = discord.PCMVolumeTransformer(
-                                    discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=mp.volume/100)
-                                vc.play(source)
-                                if mp.musicPlayerMessageId is not None:
-                                    await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
-                else:
-                    musicService.delete(guild.id)
-            except Exception as e:
-                LogCog.logError('check mp ' + str(e))
-                mp.skip()
+        if self.canCheckMusicAgain:
+            self.canCheckMusicAgain = False
+            check_players = musicService.players.copy()  # окремий лист, щоб не збив процес інший асинхронний процес
+            for mp in check_players.values():
+                try:
+                    guild = self.bot.get_guild(mp.guildId)
+                    if guild.voice_client:
+                        vc = guild.voice_client
+                        if vc.is_connected() and not vc.is_playing() and not vc.is_paused():
+                            song = mp.getNext()
+                            if song is not None:
+                                error = None
+                                if song.stream_url is None or datetime.now() - song.updated >= timedelta(hours=5):
+                                    error = song.updateFromWeb()
+                                if error is not None:
+                                    embed = discord.Embed(title="Error", description=str(error), color=discord.Color.red())
+                                    embed.set_footer(text=song.original_url)
+                                    channel = await self.bot.fetch_channel(mp.channelId)
+                                    await channel.send(embed=embed)
+                                    mp.skip(saveIfRepeating=False)
+                                else:
+                                    source = discord.PCMVolumeTransformer(
+                                        discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=mp.volume/100)
+                                    vc.play(source)
+                                    if mp.musicPlayerMessageId is not None:
+                                        await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+                    else:
+                        musicService.delete(guild.id)
+                except Exception as e:
+                    LogCog.logError('check mp ' + str(e))
+                    mp.skip()
+            self.canCheckMusicAgain = True
 
     @tasks.loop(minutes=5)
     async def checkForEmptyVoices(self):
@@ -161,7 +166,9 @@ class MusicCog(commands.Cog):
         if res == 0:
             return 0
         loop = ' '.join(args)
-        if musicService.addTrack(loop.strip(), ctx.guild.id, ctx.author.name, ctx.channel.id):
+
+        if await commandUtils.run_blocking(musicService.addTrack,
+                                           loop.strip(), ctx.guild.id, ctx.author.name, ctx.channel.id):
             await ctx.message.add_reaction('✅')
         else:
             await ctx.message.add_reaction('❌')
@@ -372,7 +379,8 @@ class MusicCog(commands.Cog):
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
             return 0
-        await musicService.addTrack(name.strip(), interaction.guild.id, interaction.user.name, interaction.channel.id)
+        await commandUtils.run_blocking(musicService.addTrack, name.strip(),
+                                        interaction.guild.id, interaction.user.name, interaction.channel.id)
         await interaction.response.send_message(getLocale('ready', interaction.user.id),
                                                 ephemeral=True, delete_after=15)
         await musicViewService.createPlayer(interaction, self.bot)
