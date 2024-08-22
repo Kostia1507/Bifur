@@ -86,7 +86,10 @@ class AdminCog(commands.Cog):
         res = ""
         for guild in self.bot.guilds:
             res += f'{guild.name} : {guild.id}\n'
-        await ctx.send(res)
+        pagedMsg = pagedMessagesService.initPagedMessage(self.bot, "All guilds", res)
+        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+        await ctx.send(embed=embed, view=pagedMsg.view)
 
     @commands.command(alliases=['listofallcommands', 'listallcommands'])
     @commands.check(commandUtils.is_owner)

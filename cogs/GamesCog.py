@@ -34,8 +34,14 @@ class GamesCog(commands.Cog):
             width = max(min(int(args[1]), 9), 4)
         elif len(args) == 1:
             height = max(min(int(args[0]), 9), 4)
-        game = FourInRowGame(width, height, players=[ctx.author.id, user.id])
-        game.startText = f'Blue: {user.name}\nRed: {ctx.author.name}\n'
+        if user.id != self.bot.user.id:
+            game = FourInRowGame(width, height, players=[ctx.author.id, user.id])
+            game.startText = f'Blue: {user.name}\nRed: {ctx.author.name}\n'
+        else:
+            # User started game against Bifur
+            # Let him make first move
+            game = FourInRowGame(width, height, players=[user.id, ctx.author.id])
+            game.startText = f'Blue: {ctx.author.name}\nRed: {user.name}\n'
         msg = await ctx.send(content=game.printBoard())
         for i in range(0, game.width):
             await msg.add_reaction(numbers[i])
@@ -54,6 +60,9 @@ class GamesCog(commands.Cog):
                         msg = await self.bot.get_channel(event.channel_id).fetch_message(game.messageId)
                         game.makeMove(event.user_id, i)
                         ret = game.isEnd()
+                        if ret == 0 and self.bot.user.id in game.players:
+                            game.makeBotMove(self.bot.user.id)
+                            ret = game.isEnd()
                         text = game.printBoard()
                         if ret == 1:
                             text += '\nRed won'
