@@ -397,6 +397,13 @@ class MusicCog(commands.Cog):
         else:
             await ctx.message.add_reaction('❌')
 
+    @commands.command()
+    async def unlike(self, ctx, song_id: int):
+        if likedSongsService.unlikeSong(ctx.author.id, song_id):
+            await ctx.message.add_reaction('✅')
+        else:
+            await ctx.message.add_reaction('❌')
+
     @commands.command(aliases=["likedsongs"])
     async def liked(self, ctx):
         songs = likedSongsService.getAllLikedSongs(ctx.author.id)
@@ -407,6 +414,19 @@ class MusicCog(commands.Cog):
         embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
         embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
         await ctx.send(embed=embed, view=pagedMsg.view)
+
+    @commands.command(aliases=["pliked"])
+    async def playliked(self, ctx):
+        res = await connect_to_user_voice(ctx)
+        if res == 0:
+            return 0
+        await musicViewService.createPlayer(ctx, self.bot)
+        retStatus = musicService.startLiked(ctx.guild.id, ctx.author.name,
+                                            ctx.channel.id, ctx.author.id, True)
+        if retStatus:
+            await ctx.message.add_reaction('✅')
+        else:
+            await ctx.message.add_reaction('❌')
 
     @app_commands.command(name="play", description="Play songs")
     async def playSlash(self, interaction: discord.Interaction, name: str):

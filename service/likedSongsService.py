@@ -24,7 +24,6 @@ def getAllLikedSongs(user_id):
         song.name = entry[2]
         song.duration = entry[4]
         song.trackId = entry[0]
-        song.author = entry[1]
         songs.append(song)
     return songs
 
@@ -41,6 +40,10 @@ def likeSong(user_id, url):
         port=config.port
     )
     cur = conn.cursor()
+    cur.execute("SELECT * from liked_songs where link = %s and user_id = %s", (song.original_url, user_id))
+    check = cur.fetchone()
+    if check is not None:
+        return False
     cur.execute("INSERT INTO liked_songs(user_id, name, link, duration) VALUES (%s, %s, %s, %s);",
                 (user_id, song.name, song.original_url, song.duration))
     conn.commit()
