@@ -10,7 +10,7 @@ from discord.utils import get
 from cogs import LogCog
 from models.MusicPlayer import RepeatType
 
-from service import musicService, pagedMessagesService, musicViewService
+from service import musicService, pagedMessagesService, musicViewService, likedSongsService
 from service.localeService import getLocale
 from utils import commandUtils
 
@@ -389,6 +389,24 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction('✅')
         else:
             await ctx.message.add_reaction('❌')
+
+    @commands.command()
+    async def like(self, ctx, url):
+        if likedSongsService.likeSong(ctx.author.id, url):
+            await ctx.message.add_reaction('✅')
+        else:
+            await ctx.message.add_reaction('❌')
+
+    @commands.command(aliases=["likedsongs"])
+    async def liked(self, ctx):
+        songs = likedSongsService.getAllLikedSongs(ctx.author.id)
+        ret = ""
+        for song in songs:
+            ret += f'{song.trackId} - {song.name}\n'
+        pagedMsg = pagedMessagesService.initPagedMessage(self.bot, getLocale('favourite', ctx.author.id), ret)
+        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+        await ctx.send(embed=embed, view=pagedMsg.view)
 
     @app_commands.command(name="play", description="Play songs")
     async def playSlash(self, interaction: discord.Interaction, name: str):

@@ -13,7 +13,7 @@ def getAllLikedSongs(user_id):
         port=config.port
     )
     cur = conn.cursor()
-    cur.execute("SELECT * FROM likeds_songs where user_id = '" + user_id + "'")
+    cur.execute("SELECT * FROM liked_songs where user_id = '" + str(user_id) + "'")
     rows = cur.fetchall()
     cur.close()
     conn.close()
@@ -41,7 +41,7 @@ def likeSong(user_id, url):
         port=config.port
     )
     cur = conn.cursor()
-    cur.execute("INSERT INTO liked_songs(user_id, name, link, duration) VALUES (%s, %s, %s, %s, %s);",
+    cur.execute("INSERT INTO liked_songs(user_id, name, link, duration) VALUES (%s, %s, %s, %s);",
                 (user_id, song.name, song.original_url, song.duration))
     conn.commit()
     cur.close()

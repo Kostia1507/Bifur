@@ -1,7 +1,7 @@
 import discord
 
 from models.MusicPlayer import RepeatType
-from service import musicService, musicViewService
+from service import musicService, musicViewService, likedSongsService
 from service.localeService import getLocale
 
 VOLUME_CHANGE_ON_CLICK = 20
@@ -79,8 +79,12 @@ class MusicView(discord.ui.View):
 
     @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🤍", row=1)
     async def likeCallback(self, interaction, button):
-        print("poshel nahui")
-        await interaction.response.send_message("hui tebe")
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        mp = musicService.findMusicPlayerByGuildId(guild_id=interaction.guild.id)
+        if mp.playing is not None and likedSongsService.likeSong(interaction.user.id, mp.playing.original_url):
+            await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)
+        else:
+            await interaction.followup.send(getLocale('something-wrong', interaction.user.id), ephemeral=True)
 
     @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🔈", row=2)
     async def volumeDownCallback(self, interaction, button):
