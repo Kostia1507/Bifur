@@ -98,7 +98,10 @@ class MusicCog(commands.Cog):
                                     error = song.updateFromWeb()
                                 if error is not None:
                                     embed = discord.Embed(title="Error", description=str(error), color=discord.Color.red())
-                                    embed.set_footer(text=song.original_url)
+                                    if song.name is not None:
+                                        embed.set_footer(text=f"{song.name} {song.original_url}")
+                                    else:
+                                        embed.set_footer(text=song.original_url)
                                     channel = await self.bot.fetch_channel(mp.channelId)
                                     await channel.send(embed=embed)
                                     mp.skip(saveIfRepeating=False)
@@ -150,11 +153,24 @@ class MusicCog(commands.Cog):
                         f'I was disconnected buy Discord... reconnecting to guild {before.channel.guild.id}')
                     song = mp.getNext()
                     if song is not None:
-                        if song.stream_url is None:
-                            song.updateFromWeb()
-                        vc.play(discord.FFmpegPCMAudio(source=song.stream_url, **ffmpeg_options))
-                        if mp.musicPlayerMessageId is not None:
-                            await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+                        error = None
+                        if song.stream_url is None or datetime.now() - song.updated >= timedelta(hours=5):
+                            error = song.updateFromWeb()
+                        if error is not None:
+                            embed = discord.Embed(title="Error", description=str(error), color=discord.Color.red())
+                            if song.name is not None:
+                                embed.set_footer(text=f"{song.name} {song.original_url}")
+                            else:
+                                embed.set_footer(text=song.original_url)
+                            channel = await self.bot.fetch_channel(mp.channelId)
+                            await channel.send(embed=embed)
+                            mp.skip(saveIfRepeating=False)
+                        else:
+                            source = discord.PCMVolumeTransformer(
+                                discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=mp.volume / 100)
+                            vc.play(source)
+                            if mp.musicPlayerMessageId is not None:
+                                await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
             else:
                 # User kicked me so I will delete all his data
                 musicService.delete(before.channel.guild.id)
