@@ -238,6 +238,26 @@ helpUA = {
                 "name": ">reset",
                 "aliases": [],
                 "description": "видаляє музичний плеєр, використовувати в випадку несправності"
+            },
+            {
+                "name": ">like [url]",
+                "aliases": [],
+                "description": "добавити пісню в список улюблених"
+            },
+            {
+                "name": ">liked",
+                "aliases": ["likedsongs"],
+                "description": "список ваших улюблених пісень"
+            },
+            {
+                "name": ">playliked",
+                "aliases": ["pliked"],
+                "description": "програти всі ваші улюблені пісні"
+            },
+            {
+                "name": ">unlike",
+                "aliases": [],
+                "description": "прибрати пісню з улюблених"
             }
         ],
     "Команди плейлистів":

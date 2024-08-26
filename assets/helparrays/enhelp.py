@@ -240,6 +240,26 @@ helpEN = {
                 "name": ">reset",
                 "aliases": [],
                 "description": "deletes the music player, use in case of malfunction"
+            },
+            {
+                "name": ">like [url]",
+                "aliases": [],
+                "description": "add song to favourite songs"
+            },
+            {
+                "name": ">liked",
+                "aliases": ["likedsongs"],
+                "description": "list of your favourite songs"
+            },
+            {
+                "name": ">playliked",
+                "aliases": ["pliked"],
+                "description": "play your favourite songs"
+            },
+            {
+                "name": ">unlike",
+                "aliases": [],
+                "description": "remove song from favourites"
             }
         ],
     "Playlist Commands":
