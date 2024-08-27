@@ -260,6 +260,11 @@ helpEN = {
                 "name": ">unlike",
                 "aliases": [],
                 "description": "remove song from favourites"
+            },
+            {
+                "name": ">linfo [id]",
+                "aliases": [],
+                "description": "shows info about your favourite song"
             }
         ],
     "Playlist Commands":

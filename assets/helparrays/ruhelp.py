@@ -260,6 +260,11 @@ helpRU = {
                 "name": ">unlike",
                 "aliases": [],
                 "description": "убрать песню из избранных"
+            },
+            {
+                "name": ">linfo [id]",
+                "aliases": [],
+                "description": "информация об избранной песне"
             }
         ],
     "Команды плейлистов":

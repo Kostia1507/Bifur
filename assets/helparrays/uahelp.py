@@ -258,6 +258,11 @@ helpUA = {
                 "name": ">unlike",
                 "aliases": [],
                 "description": "прибрати пісню з улюблених"
+            },
+            {
+                "name": ">linfo [id]",
+                "aliases": [],
+                "description": "інформація про вподобану пісню"
             }
         ],
     "Команди плейлистів":

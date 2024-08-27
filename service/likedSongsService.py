@@ -28,6 +28,28 @@ def getAllLikedSongs(user_id):
     return songs
 
 
+def getLikedSongById(user_id, song_id):
+    conn = psycopg2.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM liked_songs where user_id = %s and id = %s", (user_id, song_id))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    if row is None:
+        return None
+    song = Song(row[3], False)
+    song.name = row[2]
+    song.duration = row[4]
+    song.trackId = row[0]
+    return song
+
+
 def likeSong(user_id, url):
     song = Song(url, True)
     if song.stream_url is None:

@@ -415,7 +415,20 @@ class MusicCog(commands.Cog):
         embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
         await ctx.send(embed=embed, view=pagedMsg.view)
 
+    @commands.command()
+    async def linfo(self, ctx, track_id: int):
+        song = likedSongsService.getLikedSongById(ctx.author.id, track_id)
+        if song is not None:
+            song.updateFromWeb()
+            embed = discord.Embed(
+                title=f'{song.name}',
+                description=f'URL: {song.original_url}\n{getLocale("duration", ctx.author.id)} {song.getDurationToStr()}'
+            )
+            embed.set_thumbnail(url=song.icon_link)
+            await ctx.send(embed=embed)
+
     @commands.command(aliases=["pliked"])
+    @commands.check(commandUtils.is_in_vc)
     async def playliked(self, ctx):
         res = await connect_to_user_voice(ctx)
         if res == 0:
