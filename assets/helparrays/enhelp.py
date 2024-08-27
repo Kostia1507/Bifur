@@ -370,10 +370,10 @@ helpEN = {
             {
                 "name": ">fourinrow [mention]",
                 "aliases": ['>4inrow', '>connect4'],
-                "description": "A game in which players try to collect 4 layers in a row, vertically, horizontally or diagonally<br>" +
-                               "Layers necessarily fall down the field, or on another layer, so you need to select only column<br>" +
-                               ">4inrow [player] [?height] [?width] - create a new game<br>" +
-                               "The player who was invited goes first<br>" +
+                "description": "A game in which players try to collect 4 layers in a row, vertically, horizontally or diagonally" +
+                               "Layers necessarily fall down the field, or on another layer, so you need to select only column" +
+                               ">4inrow [player] [?height] [?width] - create a new game" +
+                               "The player who was invited goes first" +
                                "Thanks to the height and width parameters, you can create a variety of boards"
             },
         ],
@@ -382,25 +382,25 @@ helpEN = {
             {
                 "name": ">calc [expression]",
                 "aliases": [],
-                "description": "Solves a mathematical expression<br>" +
-                               "Example: >calc 5 + 5 * 2 or >calc 8gcd12<br>" +
-                               "If you write an expression without extra text, the bot will solve it without a command<br>" +
-                               "Use the following notations:<br>" +
-                               "+ adding<br>" +
-                               "- subtraction<br>" +
-                               "* multiplication<br>" +
-                               "\ division<br>" +
-                               "% remainder from division<br>" +
-                               "^ degree<br>" +
-                               "n! - the factorial of the number n<br>" +
-                               "A few features are also available<br>" +
-                               "a gcd b is the greatest common divisor of numbers<br>" +
+                "description": "Solves a mathematical expression" +
+                               "Example: >calc 5 + 5 * 2 or >calc 8gcd12" +
+                               "If you write an expression without extra text, the bot will solve it without a command" +
+                               "Use the following notations:" +
+                               "+ adding" +
+                               "- subtraction" +
+                               "* multiplication" +
+                               "\\ division" +
+                               "% remainder from division" +
+                               "^ degree" +
+                               "n! - the factorial of the number n" +
+                               "A few features are also available" +
+                               "a gcd b is the greatest common divisor of numbers" +
                                "a lcd b is the least common multiple"
             },
             {
                 "name": ">avg [expression],[expression]",
                 "aliases": [],
-                "description": "calculate average value. Use comma to seperate expressions.<br>" +
+                "description": "calculate average value. Use comma to seperate expressions." +
                                "Example: >avg 5, 4+6,10"
             }
         ],
