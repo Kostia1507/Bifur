@@ -3,9 +3,9 @@ import random
 from yt_dlp import utils, YoutubeDL
 
 from cogs import LogCog
-from models.MusicPlayer import MusicPlayer
+from models.MusicPlayer import MusicPlayer, RepeatType
 from models.Song import Song
-from service import radioService
+from service import radioService, likedSongsService
 
 settings = {
     'match_filter': utils.match_filter_func("!is_live"),
@@ -64,7 +64,25 @@ def startRadio(radioName, guildId, author, channelId, userId, isClearPlaylist):
         players[guildId].songs = []
         players[guildId].playing = None
     mp = getMusicPlayer(guildId, channelId)
-    mp.repeating = 2
+    mp.repeating = RepeatType.REPEAT_ALL
+    random.shuffle(tracks)
+    for song in tracks:
+        song.author = author
+        mp.addSong(song)
+    players[guildId] = mp
+    return True
+
+
+def startLiked(guildId, author, channelId, userId, isClearPlaylist):
+    tracks = likedSongsService.getAllLikedSongs(userId)
+    if tracks is None or len(tracks) == 0:
+        return False
+    # clear all songs
+    if isClearPlaylist and guildId in players.keys():
+        players[guildId].songs = []
+        players[guildId].playing = None
+    mp = getMusicPlayer(guildId, channelId)
+    mp.repeating = RepeatType.REPEAT_ALL
     random.shuffle(tracks)
     for song in tracks:
         song.author = author

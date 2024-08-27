@@ -1,7 +1,7 @@
 import discord
 
 from models.MusicPlayer import RepeatType
-from service import musicService, musicViewService
+from service import musicService, musicViewService, likedSongsService
 from service.localeService import getLocale
 
 VOLUME_CHANGE_ON_CLICK = 20
@@ -53,7 +53,7 @@ class MusicView(discord.ui.View):
                 guild.voice_client.stop()
                 await interaction.response.send_message("The song is skipped", ephemeral=True, delete_after=15)
 
-    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🔀", row=0)
+    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🔀", row=1)
     async def shuffleCallback(self, interaction, button):
         if await is_in_vcInteraction(interaction):
             musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id).shuffle()
@@ -77,7 +77,16 @@ class MusicView(discord.ui.View):
                 await interaction.response.send_message(
                     getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
 
-    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🔈", row=1)
+    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🤍", row=1)
+    async def likeCallback(self, interaction, button):
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        mp = musicService.findMusicPlayerByGuildId(guild_id=interaction.guild.id)
+        if mp.playing is not None and likedSongsService.likeSong(interaction.user.id, mp.playing.original_url):
+            await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)
+        else:
+            await interaction.followup.send(getLocale('something-wrong', interaction.user.id), ephemeral=True)
+
+    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🔈", row=2)
     async def volumeDownCallback(self, interaction, button):
         await interaction.response.defer(ephemeral=True, thinking=True)
         vc = interaction.guild.voice_client
@@ -94,7 +103,18 @@ class MusicView(discord.ui.View):
                     await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
                 await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)
 
-    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🔊", row=1)
+    @discord.ui.button(label="", style=discord.ButtonStyle.danger, emoji="⬜", row=2)
+    async def stopCallback(self, interaction, button):
+        if await is_in_vcInteraction(interaction):
+            mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)
+            mp.songs = []
+            mp.repeating = RepeatType.NOT_REPEATING
+            if interaction.guild.voice_client:
+                musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id).skip()
+                interaction.guild.voice_client.stop()
+                await interaction.response.send_message("Stopped playing", ephemeral=True, delete_after=15)
+
+    @discord.ui.button(label="", style=discord.ButtonStyle.primary, emoji="🔊", row=2)
     async def volumeUpCallback(self, interaction, button):
         await interaction.response.defer(ephemeral=True, thinking=True)
         vc = interaction.guild.voice_client
@@ -110,15 +130,3 @@ class MusicView(discord.ui.View):
                 if mp.musicPlayerChannelId is not None:
                     await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
                 await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)
-
-    @discord.ui.button(label="", style=discord.ButtonStyle.danger, emoji="⬜", row=1)
-    async def stopCallback(self, interaction, button):
-        if await is_in_vcInteraction(interaction):
-            mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)
-            mp.songs = []
-            mp.repeating = RepeatType.NOT_REPEATING
-            if interaction.guild.voice_client:
-                musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id).skip()
-                interaction.guild.voice_client.stop()
-                await interaction.response.send_message("Stopped playing", ephemeral=True, delete_after=15)
-

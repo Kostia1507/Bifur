@@ -240,6 +240,31 @@ helpRU = {
                 "name": ">reset",
                 "aliases": [],
                 "description": "удалить плеер в случае поломки"
+            },
+            {
+                "name": ">like [url]",
+                "aliases": [],
+                "description": "добавить песню в избранное"
+            },
+            {
+                "name": ">liked",
+                "aliases": ["likedsongs"],
+                "description": "список избранных песен"
+            },
+            {
+                "name": ">playliked",
+                "aliases": ["pliked"],
+                "description": "воспроизвести избранные песни"
+            },
+            {
+                "name": ">unlike",
+                "aliases": [],
+                "description": "убрать песню из избранных"
+            },
+            {
+                "name": ">linfo [id]",
+                "aliases": [],
+                "description": "информация об избранной песне"
             }
         ],
     "Команды плейлистов":

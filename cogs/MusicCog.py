@@ -10,7 +10,7 @@ from discord.utils import get
 from cogs import LogCog
 from models.MusicPlayer import RepeatType
 
-from service import musicService, pagedMessagesService, musicViewService
+from service import musicService, pagedMessagesService, musicViewService, likedSongsService
 from service.localeService import getLocale
 from utils import commandUtils
 
@@ -386,6 +386,57 @@ class MusicCog(commands.Cog):
                 ctx.voice_client.source.volume = volume / 100
             if mp.musicPlayerChannelId is not None:
                 await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+            await ctx.message.add_reaction('✅')
+        else:
+            await ctx.message.add_reaction('❌')
+
+    @commands.command()
+    async def like(self, ctx, url):
+        if likedSongsService.likeSong(ctx.author.id, url):
+            await ctx.message.add_reaction('✅')
+        else:
+            await ctx.message.add_reaction('❌')
+
+    @commands.command()
+    async def unlike(self, ctx, song_id: int):
+        if likedSongsService.unlikeSong(ctx.author.id, song_id):
+            await ctx.message.add_reaction('✅')
+        else:
+            await ctx.message.add_reaction('❌')
+
+    @commands.command(aliases=["likedsongs"])
+    async def liked(self, ctx):
+        songs = likedSongsService.getAllLikedSongs(ctx.author.id)
+        ret = ""
+        for song in songs:
+            ret += f'{song.trackId} - {song.name}\n'
+        pagedMsg = pagedMessagesService.initPagedMessage(self.bot, getLocale('favourite', ctx.author.id), ret)
+        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+        await ctx.send(embed=embed, view=pagedMsg.view)
+
+    @commands.command()
+    async def linfo(self, ctx, track_id: int):
+        song = likedSongsService.getLikedSongById(ctx.author.id, track_id)
+        if song is not None:
+            song.updateFromWeb()
+            embed = discord.Embed(
+                title=f'{song.name}',
+                description=f'URL: {song.original_url}\n{getLocale("duration", ctx.author.id)} {song.getDurationToStr()}'
+            )
+            embed.set_thumbnail(url=song.icon_link)
+            await ctx.send(embed=embed)
+
+    @commands.command(aliases=["pliked"])
+    @commands.check(commandUtils.is_in_vc)
+    async def playliked(self, ctx):
+        res = await connect_to_user_voice(ctx)
+        if res == 0:
+            return 0
+        await musicViewService.createPlayer(ctx, self.bot)
+        retStatus = musicService.startLiked(ctx.guild.id, ctx.author.name,
+                                            ctx.channel.id, ctx.author.id, True)
+        if retStatus:
             await ctx.message.add_reaction('✅')
         else:
             await ctx.message.add_reaction('❌')
