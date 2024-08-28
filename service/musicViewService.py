@@ -1,7 +1,7 @@
 import discord
 
 from discordModels.views.MusicView import MusicView
-from service.localeService import getLocale
+from service.localeService import getLocale, getUserLang, getLocaleByLang
 from service.musicService import getMusicPlayer
 
 
@@ -15,19 +15,23 @@ async def createPlayer(ctx, bot):
             userId = ctx.author.id
         mp.musicPlayerAuthorId = userId
 
+        userLang = getUserLang(userId)
         # format message
         t = mp.playing
         if t is not None:
             embed = discord.Embed(
-                title=f'{getLocale("playing", userId)} {t.name}',
-                description=f'{getLocale("ordered", userId)} {t.author}\n'
-                            f'{getLocale("duration", userId)} {t.getDurationToStr()}\n'
-                            f'{getLocale("volume", userId)} {mp.volume}%')
+                title=f'{getLocaleByLang("playing", userLang)} {t.name}',
+                description=f'{getLocaleByLang("ordered", userLang)} {t.author}\n'
+                            f'{getLocaleByLang("duration", userLang)} {t.getDurationToStr()}\n'
+                            f'{getLocaleByLang("volume", userLang)} {mp.volume}%')
             embed.set_thumbnail(url=t.icon_link)
             embed.set_footer(text=t.original_url)
+
+            if len(mp.songs) >= 1 and mp.songs[0] is not None:
+                embed.description = embed.description + f"\n\n{getLocaleByLang('next', userLang)} {mp.songs[0].name}"
         else:
             embed = discord.Embed(
-                title=f'{getLocale("playing", userId)} {getLocale("nothing", userId)}'
+                title=f'{getLocaleByLang("playing", userLang)} {getLocaleByLang("nothing", userLang)}'
             )
         if isinstance(ctx, discord.Interaction):
             await ctx.response.send_message(embed=embed, view=MusicView(bot=bot))
@@ -40,17 +44,21 @@ async def createPlayer(ctx, bot):
 
 async def updatePlayer(mediaPlayer, bot):
     t = mediaPlayer.playing
+    userLang = getUserLang(mediaPlayer.musicPlayerAuthorId)
     if t is not None:
         embed = discord.Embed(
-            title=f'{getLocale("playing", mediaPlayer.musicPlayerAuthorId)} {t.name}',
-            description=f'{getLocale("ordered", mediaPlayer.musicPlayerAuthorId)} {t.author}\n'
-                        f'{getLocale("duration", mediaPlayer.musicPlayerAuthorId)} {t.getDurationToStr()}\n'
-                        f'{getLocale("volume", mediaPlayer.musicPlayerAuthorId)} {mediaPlayer.volume}%')
+            title=f'{getLocaleByLang("playing", userLang)} {t.name}',
+            description=f'{getLocaleByLang("ordered", userLang)} {t.author}\n'
+                        f'{getLocaleByLang("duration", userLang)} {t.getDurationToStr()}\n'
+                        f'{getLocaleByLang("volume", userLang)} {mediaPlayer.volume}%')
         embed.set_thumbnail(url=t.icon_link)
         embed.set_footer(text=t.original_url)
+
+        if len(mediaPlayer.songs) >= 1 and mediaPlayer.songs[0] is not None:
+            embed.description = embed.description + f"\n\n{getLocaleByLang('next', userLang)} {mediaPlayer.songs[0].name}"
     else:
         embed = discord.Embed(
-            title=f'{getLocale("playing", mediaPlayer.musicPlayerAuthorId)} {getLocale("nothing", mediaPlayer.musicPlayerAuthorId)}'
+            title=f'{getLocaleByLang("playing", userLang)} {getLocaleByLang("nothing", userLang)}'
         )
 
     message = await bot.get_channel(mediaPlayer.musicPlayerChannelId) \
