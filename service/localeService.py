@@ -6,6 +6,31 @@ from cogs import LogCog
 langs = ['en', 'ua', 'ru']
 
 
+def getUserLang(user_id):
+    if user_id == 0:
+        return "en"
+    conn = psycopg2.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM language WHERE user_id=%s", (user_id,))
+    lang = cur.fetchone()
+    lang = 'en' if lang is None else lang[1]
+    return lang
+
+
+def getLocaleByLang(locale, lang):
+    try:
+        return locales[locale][lang]
+    except KeyError:  # if locale doesn't exist
+        LogCog.logError(f'Can\'t find locale for {locale},lang {lang}')
+        return locales[locale]['en']
+
+
 def getLocale(locale, user_id):
     if user_id == 0:
         return locales[locale]['en']
@@ -166,6 +191,12 @@ locales = {
             'ua': 'Зараз граю:',
             'ru': 'Сейчас проигрываю:',
         },
+    'next':
+        {
+            'en': 'Next:',
+            'ua': 'Наступна:',
+            'ru': 'Следующая:',
+        },
     'duration':
         {
             'en': 'Duration:',
@@ -213,7 +244,7 @@ locales = {
         },
     'favourite':
         {
-            'en':  "Your favourite songs",
+            'en': "Your favourite songs",
             'ua': "Ваші улюблені пісні",
             'ru': "Ваши любимые песни",
         },
@@ -335,7 +366,7 @@ locales = {
         {
             'en': ['capybara', 'parrot', 'wolf', 'dog', 'cat', 'hamster', 'seal', 'pig',
                    'orca', 'goat', 'tiger', 'lion', 'jaguar animal', 'leopard', 'zebra',
-                   'bear', 'walrus', 'penguin',  'donkey', 'pheasant', 'toucan', 'mouse', 'spider',
+                   'bear', 'walrus', 'penguin', 'donkey', 'pheasant', 'toucan', 'mouse', 'spider',
                    'crab', 'shrimp', 'stingray', 'mantis', 'flamingo', 'horse', 'jellyfish',
                    'jackal', 'hyena', 'orangutan', 'chimpanzee', 'baboon', 'pigeon',
                    'turtle', 'eagle', 'falcon', 'dove', 'sparrow', 'monkey', 'goose', 'swan',
@@ -345,11 +376,11 @@ locales = {
                    'lizard', 'boar', 'ant', 'cockroach', 'bee', 'wasp',
                    'hornet', 'worm', 'caterpillar', 'humpback whale', 'squirrel',
                    'beaver', 'viper snake', 'scorpion', 'hedgehog'
-                   'butterfly', 'python', 'boa', 'locust', 'ladybug',
+                                                        'butterfly', 'python', 'boa', 'locust', 'ladybug',
                    'iguana', 'elephant', 'mosquito', 'tapir',
                    'dolphin', 'panda', 'cougar', 'giraffe', 'owl', 'hawk', 'crow',
                    'antelope', 'stork', 'raccoon', 'lemur', 'sloth',
-                   'snail', 'gopher', 'mongoose',  'gecko', 'hummingbird', 'monitor lizard',
+                   'snail', 'gopher', 'mongoose', 'gecko', 'hummingbird', 'monitor lizard',
                    'sheep', 'starfish', 'meerkat', 'porcupine'],
         },
     'fruits':
