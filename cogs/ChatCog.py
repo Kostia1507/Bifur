@@ -11,7 +11,7 @@ from cogs import LogCog
 
 import config
 from discordModels.views.ReportView import ReportView
-from service.localeService import getLocale
+from service.localeService import getLocale, getUserLang, getLocaleByLang
 
 
 class ChatCog(commands.Cog):
@@ -27,15 +27,17 @@ class ChatCog(commands.Cog):
 
     @commands.command()
     async def animal(self, ctx):
-        a = await ctx.send(f'{getLocale("random-animal", ctx.author.id)}'
-                           f' {str(random.choice(getLocale("animals", ctx.author.id)))}')
+        userLang = getUserLang(ctx.author.id)
+        a = await ctx.send(f'{getLocaleByLang("random-animal", userLang)}'
+                           f' {str(random.choice(getLocaleByLang("animals", userLang)))}')
         await a.add_reaction('\N{THUMBS UP SIGN}')
         await a.add_reaction('\N{THUMBS DOWN SIGN}')
 
     @commands.command()
     async def ball(self, ctx):
-        response = random.choice(getLocale('8ball', ctx.author.id))
-        await ctx.send(f'{getLocale("8ball-answer", ctx.author.id)} {response}')
+        userLang = getUserLang(ctx.author.id)
+        response = random.choice(getLocaleByLang('8ball', userLang))
+        await ctx.send(f'{getLocaleByLang("8ball-answer", userLang)} {response}')
 
     @commands.command()
     async def roll(self, ctx, *args):

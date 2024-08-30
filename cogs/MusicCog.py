@@ -11,7 +11,7 @@ from cogs import LogCog
 from models.MusicPlayer import RepeatType
 
 from service import musicService, pagedMessagesService, musicViewService, likedSongsService
-from service.localeService import getLocale
+from service.localeService import getLocale, getUserLang, getLocaleByLang
 from utils import commandUtils
 
 ffmpeg_options = {
@@ -281,17 +281,18 @@ class MusicCog(commands.Cog):
     @commands.command()
     async def current(self, ctx):
         t = musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).getPlaying()
+        userLang = getUserLang(ctx.author.id)
         if t is not None:
             embed = discord.Embed(
-                title=f'{getLocale("playing", ctx.author.id)} {t.name}',
-                description=f'{getLocale("ordered", ctx.author.id)} {t.author}\n'
-                            f'{getLocale("duration", ctx.author.id)} {t.getDurationToStr()}')
+                title=f'{getLocaleByLang("playing", userLang)} {t.name}',
+                description=f'{getLocaleByLang("ordered", userLang)} {t.author}\n'
+                            f'{getLocaleByLang("duration", userLang)} {t.getDurationToStr()}')
             embed.set_thumbnail(url=t.icon_link)
             embed.set_footer(text=t.link)
             await ctx.send(embed=embed)
         else:
             embed = discord.Embed(
-                title=f'{getLocale("playing", ctx.author.id)} {getLocale("nothing", ctx.author.id)}'
+                title=f'{getLocaleByLang("playing", userLang)} {getLocaleByLang("nothing", userLang)}'
             )
             await ctx.send(embed=embed)
 
@@ -442,20 +443,22 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction('❌')
 
     @app_commands.command(name="play", description="Play songs")
-    async def playSlash(self, interaction: discord.Interaction, name: str):
+    async def playSlash(self, interaction: discord.Interaction,
+                        query: str = commands.parameter(description="video title on youtube")):
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
             return 0
-        await commandUtils.run_blocking(musicService.addTrack, name.strip(),
+        await commandUtils.run_blocking(musicService.addTrack, query.strip(),
                                         interaction.guild.id, interaction.user.name, interaction.channel.id)
         await interaction.response.send_message(getLocale('ready', interaction.user.id),
                                                 ephemeral=True, delete_after=15)
         await musicViewService.createPlayer(interaction, self.bot)
 
     @app_commands.command(name="search", description="Let you choose one from 5 songs")
-    async def searchSlash(self, interaction: discord.Interaction, search: str):
+    async def searchSlash(self, interaction: discord.Interaction,
+                          query: str = commands.parameter(description="video title on youtube")):
         await interaction.response.defer(ephemeral=True, thinking=True)
-        tList = musicService.searchFive(search)
+        tList = musicService.searchFive(query)
         searchQueue[interaction.user.id] = tList
         options = []
         text = ''
@@ -541,7 +544,8 @@ class MusicCog(commands.Cog):
 
     @app_commands.command(name="volume", description="Set volume between 0 and 200")
     @commands.check(commandUtils.is_in_vc)
-    async def volumeSlash(self, interaction: discord.Interaction, volume: int):
+    async def volumeSlash(self, interaction: discord.Interaction,
+                          volume: int = commands.parameter(description="value between 0% and 200%")):
         await interaction.response.defer(ephemeral=True, thinking=True)
         mp = musicService.getMusicPlayer(interaction.guild.id, interaction.channel.id)
         vc = interaction.guild.voice_client
