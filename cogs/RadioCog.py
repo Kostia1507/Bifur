@@ -364,17 +364,6 @@ class RadioCog(commands.Cog):
                                                     ephemeral=True, delete_after=15)
             await createPlayer(interaction, self.bot)
 
-    @app_commands.command(name="player", description="Recreate player with buttons")
-    async def playerSlash(self, interaction: discord.Interaction):
-        if await commandUtils.is_in_vcInteraction(interaction):
-            mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)
-            if mp.musicPlayerMessageId is not None:
-                message = await self.bot.get_channel(mp.musicPlayerChannelId) \
-                    .fetch_message(mp.musicPlayerMessageId)
-                await message.delete()
-            mp.musicPlayerMessageId = None
-            await createPlayer(interaction, self.bot)
-
     @app_commands.command(name="radios", description="Show playlists")
     @app_commands.describe(user="Shows user's playlists if user defined")
     async def radiosSlash(self, interaction: discord.Interaction, user: discord.Member = None):

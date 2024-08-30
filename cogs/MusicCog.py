@@ -8,7 +8,7 @@ from discord.ext import commands, tasks
 from discord.utils import get
 
 from cogs import LogCog
-from models.MusicPlayer import RepeatType
+from models.MusicPlayer import RepeatType, ColorTheme
 
 from service import musicService, pagedMessagesService, musicViewService, likedSongsService
 from service.localeService import getLocale, getUserLang, getLocaleByLang
@@ -555,3 +555,17 @@ class MusicCog(commands.Cog):
             if mp.musicPlayerChannelId is not None:
                 await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
             await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)
+
+    @app_commands.command(name="player", description="Recreate player with buttons")
+    @app_commands.describe(theme="change color of buttons")
+    async def playerSlash(self, interaction: discord.Interaction, theme: ColorTheme):
+        if await commandUtils.is_in_vcInteraction(interaction):
+            mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)
+            if theme is not None:
+                mp.theme = theme
+            if mp.musicPlayerMessageId is not None:
+                message = await self.bot.get_channel(mp.musicPlayerChannelId) \
+                    .fetch_message(mp.musicPlayerMessageId)
+                await message.delete()
+            mp.musicPlayerMessageId = None
+            await musicViewService.createPlayer(interaction, self.bot)

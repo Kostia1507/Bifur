@@ -12,12 +12,20 @@ class RepeatType(Enum):
     REPEAT_ALL = 2
 
 
+class ColorTheme(Enum):
+    BLUE = 0
+    GRAY = 1
+    GREEN = 2
+    RED = 3
+
+
 class MusicPlayer:
 
     def __init__(self, guild_id, channel_id):
         self.guildId = guild_id
         self.songs = []
         self.history = []
+        self.theme = ColorTheme.GRAY
         self.playing = None
         self.volume = 100
         self.repeating = RepeatType.NOT_REPEATING
