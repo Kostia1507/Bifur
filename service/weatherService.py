@@ -4,7 +4,7 @@ import aiohttp
 
 import config
 from cogs import LogCog
-from service.localeService import getLocale
+from service.localeService import getUserLang, getLocaleByLang
 
 
 async def getCoordinates(city):
@@ -23,17 +23,18 @@ async def getCoordinates(city):
 # maxDT = rows count to output. Max: 40. Remember that dt = 3 hours
 # pass userId for getting locales
 async def getWeather(lat: str, lon: str, nameOfCity: str, interval, maxDT, userId):
+    userLang = getUserLang(userId)
     async with aiohttp.ClientSession() as session:
         async with session.get(f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}'
-                               f'&lang={getLocale("lang", userId)}&appid={config.weatherKey}') as response:
+                               f'&lang={getLocaleByLang("lang", userLang)}&appid={config.weatherKey}') as response:
             if response.status == 200:
                 js = await response.json()
                 weather = js['weather']
                 main = js['main']
-                res = f'{getLocale("weather-in", userId)} **{nameOfCity}**\n{getLocale("now", userId)}: **' + \
+                res = f'{getLocaleByLang("weather-in", userLang)} **{nameOfCity}**\n{getLocaleByLang("now", userLang)}: **' + \
                       str(round(main['temp'] - 273.15, 1)) + '° **|' + weather[0]['main'] + '|'
         async with session.get('https://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat) + '&lon=' + str(
-                lon) + f'&lang={getLocale("lang", userId)}&appid=' + config.weatherKey) as response:
+                lon) + f'&lang={getLocaleByLang("lang", userLang)}&appid=' + config.weatherKey) as response:
             js = await response.json()
             listW = js['list']
             lastDay = -1
@@ -46,15 +47,16 @@ async def getWeather(lat: str, lon: str, nameOfCity: str, interval, maxDT, userI
                 res += '\n' + str(datetime.fromtimestamp(listW[i]['dt']).hour) + \
                        ':00** ' + str(round(listW[i]['main']['temp'] - 273.15, 1)) + \
                        '°** |' + listW[i]['weather'][0]['main'] + '|(' + listW[i]['weather'][0]['description'] + ')'
-            res = res.replace('|Clouds|', f'{getLocale("clouds", userId)}:cloud:')
-            res = res.replace('|Clear|', f'{getLocale("clear", userId)}:sunny:')
-            res = res.replace('|Snow|', f'{getLocale("snow", userId)}:snowflake:')
-            res = res.replace('|Rain|', f'{getLocale("rain", userId)}:cloud_rain:')
-            res = res.replace('Monday', getLocale('monday', userId))
-            res = res.replace('Tuesday', getLocale('tuesday', userId))
-            res = res.replace('Wednesday', getLocale('wednesday', userId))
-            res = res.replace('Thursday', getLocale('thursday', userId))
-            res = res.replace('Friday', getLocale('friday', userId))
-            res = res.replace('Saturday', getLocale('saturday', userId))
-            res = res.replace('Sunday', getLocale('sunday', userId))
+
+            res = res.replace('|Clouds|', f'{getLocaleByLang("clouds", userLang)}:cloud:')
+            res = res.replace('|Clear|', f'{getLocaleByLang("clear", userLang)}:sunny:')
+            res = res.replace('|Snow|', f'{getLocaleByLang("snow", userLang)}:snowflake:')
+            res = res.replace('|Rain|', f'{getLocaleByLang("rain", userLang)}:cloud_rain:')
+            res = res.replace('Monday', getLocaleByLang('monday', userLang))
+            res = res.replace('Tuesday', getLocaleByLang('tuesday', userLang))
+            res = res.replace('Wednesday', getLocaleByLang('wednesday', userLang))
+            res = res.replace('Thursday', getLocaleByLang('thursday', userLang))
+            res = res.replace('Friday', getLocaleByLang('friday', userLang))
+            res = res.replace('Saturday', getLocaleByLang('saturday', userLang))
+            res = res.replace('Sunday', getLocaleByLang('sunday', userLang))
             return res

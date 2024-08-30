@@ -11,7 +11,7 @@ from cogs import LogCog
 from models.MusicPlayer import RepeatType
 
 from service import musicService, pagedMessagesService, musicViewService, likedSongsService
-from service.localeService import getLocale
+from service.localeService import getLocale, getUserLang, getLocaleByLang
 from utils import commandUtils
 
 ffmpeg_options = {
@@ -281,17 +281,18 @@ class MusicCog(commands.Cog):
     @commands.command()
     async def current(self, ctx):
         t = musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).getPlaying()
+        userLang = getUserLang(ctx.author.id)
         if t is not None:
             embed = discord.Embed(
-                title=f'{getLocale("playing", ctx.author.id)} {t.name}',
-                description=f'{getLocale("ordered", ctx.author.id)} {t.author}\n'
-                            f'{getLocale("duration", ctx.author.id)} {t.getDurationToStr()}')
+                title=f'{getLocaleByLang("playing", userLang)} {t.name}',
+                description=f'{getLocaleByLang("ordered", userLang)} {t.author}\n'
+                            f'{getLocaleByLang("duration", userLang)} {t.getDurationToStr()}')
             embed.set_thumbnail(url=t.icon_link)
             embed.set_footer(text=t.link)
             await ctx.send(embed=embed)
         else:
             embed = discord.Embed(
-                title=f'{getLocale("playing", ctx.author.id)} {getLocale("nothing", ctx.author.id)}'
+                title=f'{getLocaleByLang("playing", userLang)} {getLocaleByLang("nothing", userLang)}'
             )
             await ctx.send(embed=embed)
 

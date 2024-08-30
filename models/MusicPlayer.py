@@ -1,7 +1,7 @@
 import random
 from enum import Enum
 
-from service.localeService import getLocale
+from service.localeService import getLocale, getUserLang, getLocaleByLang
 
 HISTORY_SIZE = 5
 
@@ -111,16 +111,17 @@ class MusicPlayer:
         return True
 
     def formatList(self, user_id):
+        userLang = getUserLang(user_id)
         if len(self.songs) == 0 and self.playing is None:
-            return getLocale("list-empty", user_id), ""
+            return getLocaleByLang("list-empty", userLang), ""
 
         if self.playing is not None:
-            title = f'{getLocale("playing", user_id)} {self.playing.author}: {self.playing.name}'
+            title = f'{getLocaleByLang("playing", userLang)} {self.playing.author}: {self.playing.name}'
             if self.playing.duration is not None and self.playing.duration != 0:
                 title += f'({self.playing.getDurationToStr()})'
             title += "\n"
         else:
-            title = f'{getLocale("nothing", user_id)}'
+            title = f'{getLocaleByLang("nothing", userLang)}'
 
         description = ''
         for i in range(0, len(self.songs)):

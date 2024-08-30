@@ -7,7 +7,7 @@ from discord.ext import commands
 from cogs import LogCog
 from models.Song import Song
 from service import musicService, musicViewService, radioService, pagedMessagesService, cooldownService
-from service.localeService import getLocale
+from service.localeService import getLocale, getUserLang, getLocaleByLang
 from service.musicViewService import createPlayer
 from utils import commandUtils
 
@@ -181,11 +181,12 @@ class RadioCog(commands.Cog):
     async def tinfo(self, ctx, track_id: int):
         track = radioService.getTrackById(track_id)
         radio = radioService.getRadioById(track.radioId)
+        userLang = getUserLang(ctx.author.id)
         if radio.owner == ctx.author.id or radio.is_shared or ctx.author.id in radio.getEditors():
             track = Song(track.original_url, True)
             embed = discord.Embed(
-                title=f'{track.name} {getLocale("from-list", ctx.author.id)} ID:{radio.radio_id}:{radio.name}',
-                description=f'URL: {track.original_url}\n{getLocale("duration", ctx.author.id)} {track.getDurationToStr()}'
+                title=f'{track.name} {getLocaleByLang("from-list", userLang)} ID:{radio.radio_id}:{radio.name}',
+                description=f'URL: {track.original_url}\n{getLocaleByLang("duration", userLang)} {track.getDurationToStr()}'
             )
             embed.set_thumbnail(url=track.icon_link)
             await ctx.send(embed=embed)
@@ -211,13 +212,14 @@ class RadioCog(commands.Cog):
             durationStr = f'{seconds // 3600}:{seconds % 3600 // 60}:{seconds % 60 // 10}{seconds % 60 % 10}'
             while durationStr.startswith('0') or durationStr.startswith(':'):
                 durationStr = durationStr[1:len(durationStr)]
+            userLang = getUserLang(ctx.author.id)
             embed = discord.Embed(
                 title=f'ID:{radio.radio_id}:{radio.name}',
-                description=f'{getLocale("owner", ctx.author.id)} {owner.name}\n'
-                            f'{getLocale("count", ctx.author.id)} {len(tracks)}\n'
-                            f'{getLocale("duration", ctx.author.id)} {durationStr}\n'
-                            f'{getLocale("shared", ctx.author.id)} {radio.is_shared}\n'
-                            f'{getLocale("editors", ctx.author.id)} {EditorsList}'
+                description=f'{getLocaleByLang("owner", userLang)} {owner.name}\n'
+                            f'{getLocaleByLang("count", userLang)} {len(tracks)}\n'
+                            f'{getLocaleByLang("duration", userLang)} {durationStr}\n'
+                            f'{getLocaleByLang("shared", userLang)} {radio.is_shared}\n'
+                            f'{getLocaleByLang("editors", userLang)} {EditorsList}'
             )
             await ctx.send(embed=embed)
 
@@ -233,11 +235,12 @@ class RadioCog(commands.Cog):
         if retStatus:
             await ctx.message.add_reaction('✅')
             owner = await self.bot.fetch_user(radio.owner)
+            userLang = getUserLang(ctx.author.id)
             embed = discord.Embed(
                 title=f'ID:{radio.radio_id}:{radio.name}',
-                description=f'{getLocale("owner", ctx.author.id)} {owner.name}\n'
-                            f'{getLocale("count", ctx.author.id)} {len(radio.getTracks(ctx.author.id))}\n'
-                            f'{getLocale("shared", ctx.author.id)} {radio.is_shared}'
+                description=f'{getLocaleByLang("owner", userLang)} {owner.name}\n'
+                            f'{getLocaleByLang("count", userLang)} {len(radio.getTracks(ctx.author.id))}\n'
+                            f'{getLocaleByLang("shared", userLang)} {radio.is_shared}'
             )
             await ctx.send(embed=embed)
         else:
@@ -255,11 +258,12 @@ class RadioCog(commands.Cog):
         if retStatus:
             await ctx.message.add_reaction('✅')
             owner = await self.bot.fetch_user(radio.owner)
+            userLang = getUserLang(ctx.author.id)
             embed = discord.Embed(
                 title=f'ID:{radio.radio_id}:{radio.name}',
-                description=f'{getLocale("owner", ctx.author.id)} {owner.name}\n'
-                            f'{getLocale("count", ctx.author.id)} {len(radio.getTracks(ctx.author.id))}\n'
-                            f'{getLocale("shared", ctx.author.id)} {radio.is_shared}'
+                description=f'{getLocaleByLang("owner", userLang)} {owner.name}\n'
+                            f'{getLocaleByLang("count", userLang)} {len(radio.getTracks(ctx.author.id))}\n'
+                            f'{getLocaleByLang("shared", userLang)} {radio.is_shared}'
             )
             await ctx.send(embed=embed)
         else:
@@ -297,11 +301,12 @@ class RadioCog(commands.Cog):
         else:
             radio = radioService.getRadioById(radio_id)
             owner = await self.bot.fetch_user(radio.owner)
+            userLang = getUserLang(ctx.author.id)
             embed = discord.Embed(
                 title=f'ID:{radio.radio_id}:{radio.name}',
-                description=f'{getLocale("owner", ctx.author.id)} {owner.name}\n'
-                            f'{getLocale("count", ctx.author.id)} {len(radio.getTracks(ctx.author.id))}\n'
-                            f'{getLocale("shared", ctx.author.id)} {radio.is_shared}'
+                description=f'{getLocaleByLang("owner", userLang)} {owner.name}\n'
+                            f'{getLocaleByLang("count", userLang)} {len(radio.getTracks(ctx.author.id))}\n'
+                            f'{getLocaleByLang("shared", userLang)} {radio.is_shared}'
             )
             await ctx.reply(embed=embed)
             cooldownService.removeCooldown(ctx.author.id)
@@ -320,11 +325,12 @@ class RadioCog(commands.Cog):
             else:
                 radio = radioService.getRadioById(radio_id)
                 owner = await self.bot.fetch_user(radio.owner)
+                userLang = getUserLang(ctx.author.id)
                 embed = discord.Embed(
                     title=f'ID:{radio.radio_id}:{radio.name}',
-                    description=f'{getLocale("owner", ctx.author.id)} {owner.name}\n'
-                                f'{getLocale("count", ctx.author.id)} {len(radio.getTracks(ctx.author.id))}\n'
-                                f'{getLocale("shared", ctx.author.id)} {radio.is_shared}'
+                    description=f'{getLocaleByLang("owner", userLang)} {owner.name}\n'
+                                f'{getLocaleByLang("count", userLang)} {len(radio.getTracks(ctx.author.id))}\n'
+                                f'{getLocaleByLang("shared", userLang)} {radio.is_shared}'
                 )
                 await ctx.reply(embed=embed)
                 cooldownService.removeCooldown(ctx.author.id)
