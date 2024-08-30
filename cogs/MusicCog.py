@@ -443,8 +443,8 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction('❌')
 
     @app_commands.command(name="play", description="Play songs")
-    async def playSlash(self, interaction: discord.Interaction,
-                        query: str = commands.parameter(description="video title on youtube")):
+    @app_commands.describe(query="video title on youtube")
+    async def playSlash(self, interaction: discord.Interaction, query: str):
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
             return 0
@@ -455,8 +455,8 @@ class MusicCog(commands.Cog):
         await musicViewService.createPlayer(interaction, self.bot)
 
     @app_commands.command(name="search", description="Let you choose one from 5 songs")
-    async def searchSlash(self, interaction: discord.Interaction,
-                          query: str = commands.parameter(description="video title on youtube")):
+    @app_commands.describe(query="video title on youtube")
+    async def searchSlash(self, interaction: discord.Interaction, query: str):
         await interaction.response.defer(ephemeral=True, thinking=True)
         tList = musicService.searchFive(query)
         searchQueue[interaction.user.id] = tList
@@ -543,9 +543,9 @@ class MusicCog(commands.Cog):
                     getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
 
     @app_commands.command(name="volume", description="Set volume between 0 and 200")
+    @app_commands.describe(volume="value between 0% and 200%")
     @commands.check(commandUtils.is_in_vc)
-    async def volumeSlash(self, interaction: discord.Interaction,
-                          volume: int = commands.parameter(description="value between 0% and 200%")):
+    async def volumeSlash(self, interaction: discord.Interaction, volume: int):
         await interaction.response.defer(ephemeral=True, thinking=True)
         mp = musicService.getMusicPlayer(interaction.guild.id, interaction.channel.id)
         vc = interaction.guild.voice_client
