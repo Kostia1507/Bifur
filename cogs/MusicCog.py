@@ -429,7 +429,6 @@ class MusicCog(commands.Cog):
             await ctx.send(embed=embed)
 
     @commands.command(aliases=["pliked"])
-    @commands.check(commandUtils.is_in_vc)
     async def playliked(self, ctx):
         res = await connect_to_user_voice(ctx)
         if res == 0:
