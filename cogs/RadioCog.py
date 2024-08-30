@@ -332,7 +332,8 @@ class RadioCog(commands.Cog):
             await ctx.message.add_reaction('❌')
 
     @app_commands.command(name="radio", description="Start playing playlist")
-    async def radioSlash(self, interaction: discord.Interaction, radio_name: str):
+    async def radioSlash(self, interaction: discord.Interaction,
+                         radio_name: str = commands.parameter(description="playlist name or ID")):
         await interaction.response.defer(ephemeral=True, thinking=True)
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
@@ -345,7 +346,8 @@ class RadioCog(commands.Cog):
             await createPlayer(interaction, self.bot)
 
     @app_commands.command(name="addradio", description="Add playlist to queue without clearing it")
-    async def addradioSlash(self, interaction: discord.Interaction, radio_name: str):
+    async def addradioSlash(self, interaction: discord.Interaction,
+                            radio_name: str = commands.parameter(description="playlist name or ID")):
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
             return 0
@@ -368,7 +370,8 @@ class RadioCog(commands.Cog):
             await createPlayer(interaction, self.bot)
 
     @app_commands.command(name="radios", description="Show playlists")
-    async def radiosSlash(self, interaction: discord.Interaction, user: discord.Member = None):
+    async def radiosSlash(self, interaction: discord.Interaction,
+                          user: discord.Member = commands.parameter(description="Shows user's playlists if user defined", default=None)):
         if user is not None:
             radios = radioService.getSharedPlayLists(user.id)
             title = getLocale('user-playlists', interaction.user.id).replace("%p", user.name)
@@ -399,7 +402,8 @@ class RadioCog(commands.Cog):
         await interaction.response.send_message(embed=embed, view=pagedMsg.view)
 
     @app_commands.command(name="radiolist", description="Show tracks in playlist")
-    async def radiolistSlash(self, interaction: discord.Interaction, radio_name: str):
+    async def radiolistSlash(self, interaction: discord.Interaction,
+                             radio_name: str = commands.parameter(description="playlist name or ID")):
         if radio_name[0].isdigit():
             radio = radioService.getRadioById(radio_name)
         else:

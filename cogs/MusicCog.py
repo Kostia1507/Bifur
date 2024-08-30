@@ -442,20 +442,22 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction('❌')
 
     @app_commands.command(name="play", description="Play songs")
-    async def playSlash(self, interaction: discord.Interaction, name: str):
+    async def playSlash(self, interaction: discord.Interaction,
+                        query: str = commands.parameter(description="video title on youtube")):
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
             return 0
-        await commandUtils.run_blocking(musicService.addTrack, name.strip(),
+        await commandUtils.run_blocking(musicService.addTrack, query.strip(),
                                         interaction.guild.id, interaction.user.name, interaction.channel.id)
         await interaction.response.send_message(getLocale('ready', interaction.user.id),
                                                 ephemeral=True, delete_after=15)
         await musicViewService.createPlayer(interaction, self.bot)
 
     @app_commands.command(name="search", description="Let you choose one from 5 songs")
-    async def searchSlash(self, interaction: discord.Interaction, search: str):
+    async def searchSlash(self, interaction: discord.Interaction,
+                          query: str = commands.parameter(description="video title on youtube")):
         await interaction.response.defer(ephemeral=True, thinking=True)
-        tList = musicService.searchFive(search)
+        tList = musicService.searchFive(query)
         searchQueue[interaction.user.id] = tList
         options = []
         text = ''
@@ -541,7 +543,8 @@ class MusicCog(commands.Cog):
 
     @app_commands.command(name="volume", description="Set volume between 0 and 200")
     @commands.check(commandUtils.is_in_vc)
-    async def volumeSlash(self, interaction: discord.Interaction, volume: int):
+    async def volumeSlash(self, interaction: discord.Interaction,
+                          volume: int = commands.parameter(description="value between 0% and 200%")):
         await interaction.response.defer(ephemeral=True, thinking=True)
         mp = musicService.getMusicPlayer(interaction.guild.id, interaction.channel.id)
         vc = interaction.guild.voice_client
