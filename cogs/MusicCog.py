@@ -368,8 +368,12 @@ class MusicCog(commands.Cog):
 
     @commands.command()
     @commands.check(commandUtils.is_in_vc)
-    async def player(self, ctx):
+    async def player(self, ctx, *args):
         mp = musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id)
+        if len(args) > 0:
+            theme = musicViewService.getThemeFromStr(args[0])
+            if theme is not None:
+                mp.theme = theme
         if mp.musicPlayerMessageId is not None:
             message = await self.bot.get_channel(mp.musicPlayerChannelId) \
                 .fetch_message(mp.musicPlayerMessageId)
@@ -558,7 +562,7 @@ class MusicCog(commands.Cog):
 
     @app_commands.command(name="player", description="Recreate player with buttons")
     @app_commands.describe(theme="change color of buttons")
-    async def playerSlash(self, interaction: discord.Interaction, theme: ColorTheme):
+    async def playerSlash(self, interaction: discord.Interaction, theme: ColorTheme = ColorTheme.GRAY):
         if await commandUtils.is_in_vcInteraction(interaction):
             mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)
             if theme is not None:

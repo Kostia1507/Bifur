@@ -1,7 +1,7 @@
 import discord
 
 from discordModels.views.musicViews import MusicViewBlue, MusicViewGreen, MusicViewGray, MusicViewRed
-from service.localeService import getLocale, getUserLang, getLocaleByLang
+from service.localeService import getUserLang, getLocaleByLang
 from service.musicService import getMusicPlayer
 from models.MusicPlayer import ColorTheme
 
@@ -35,25 +35,11 @@ async def createPlayer(ctx, bot):
                 title=f'{getLocaleByLang("playing", userLang)} {getLocaleByLang("nothing", userLang)}'
             )
         if isinstance(ctx, discord.Interaction):
-            if mp.theme == ColorTheme.BLUE:
-                await ctx.response.send_message(embed=embed, view=MusicViewBlue.MusicViewBlue(bot=bot))
-            if mp.theme == ColorTheme.GRAY:
-                await ctx.response.send_message(embed=embed, view=MusicViewGray.MusicViewGray(bot=bot))
-            if mp.theme == ColorTheme.GREEN:
-                await ctx.response.send_message(embed=embed, view=MusicViewGreen.MusicViewGreen(bot=bot))
-            if mp.theme == ColorTheme.RED:
-                await ctx.response.send_message(embed=embed, view=MusicViewRed.MusicViewRed(bot=bot))
+            await ctx.response.send_message(embed=embed, view=getViewByTheme(mp.theme)(bot=bot))
             msg = await ctx.original_response()
             mp.musicPlayerMessageId = msg.id
         else:
-            if mp.theme == ColorTheme.BLUE:
-                msg = await ctx.send(embed=embed, view=MusicViewBlue.MusicViewBlue(bot=bot))
-            if mp.theme == ColorTheme.GRAY:
-                msg = await ctx.send(embed=embed, view=MusicViewGray.MusicViewGray(bot=bot))
-            if mp.theme == ColorTheme.GREEN:
-                msg = await ctx.send(embed=embed, view=MusicViewGreen.MusicViewGreen(bot=bot))
-            if mp.theme == ColorTheme.RED:
-                msg = await ctx.send(embed=embed, view=MusicViewRed.MusicViewRed(bot=bot))
+            msg = await ctx.send(embed=embed, view=getViewByTheme(mp.theme)(bot=bot))
             mp.musicPlayerMessageId = msg.id
 
 
@@ -78,11 +64,21 @@ async def updatePlayer(mediaPlayer, bot):
 
     message = await bot.get_channel(mediaPlayer.musicPlayerChannelId) \
         .fetch_message(mediaPlayer.musicPlayerMessageId)
-    if mediaPlayer.theme == ColorTheme.BLUE:
-        await message.edit(embed=embed, view=MusicViewBlue.MusicViewBlue(bot))
-    if mediaPlayer.theme == ColorTheme.GREEN:
-        await message.edit(embed=embed, view=MusicViewGreen.MusicViewGreen(bot))
-    if mediaPlayer.theme == ColorTheme.GRAY:
-        await message.edit(embed=embed, view=MusicViewGray.MusicViewGray(bot))
-    if mediaPlayer.theme == ColorTheme.RED:
-        await message.edit(embed=embed, view=MusicViewRed.MusicViewRed(bot))
+    await message.edit(embed=embed, view=getViewByTheme(mediaPlayer.theme)(bot))
+
+
+def getThemeFromStr(query: str):
+    query = query.upper().strip()
+    if query == "GREY":
+        query = "GRAY"
+    return getattr(ColorTheme, query, None)
+
+
+def getViewByTheme(colorTheme):
+    if colorTheme == ColorTheme.BLUE:
+        return MusicViewBlue.MusicViewBlue
+    if colorTheme == ColorTheme.GREEN:
+        return MusicViewGreen.MusicViewGreen
+    if colorTheme == ColorTheme.RED:
+        return MusicViewRed.MusicViewRed
+    return MusicViewGray.MusicViewGray
