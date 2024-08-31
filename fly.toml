@@ -1,4 +1,10 @@
-app = "kostiab2"
+# fly.toml app configuration file generated for bifur on 2024-08-30T19:10:14+03:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'bifur'
+primary_region = 'waw'
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
@@ -30,3 +36,8 @@ processes = []
   [[services.ports]]
     handlers = ["tls", "http"]
     port = 443
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
