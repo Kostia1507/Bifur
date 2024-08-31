@@ -34,6 +34,7 @@ class MusicPlayer:
         self.musicPlayerAuthorId = None
         self.musicPlayerMessageId = None
         self.musicPlayerChannelId = None
+        self.isStopped = False
 
     def addSong(self, track):
         self.songs.append(track)

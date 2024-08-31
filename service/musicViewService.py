@@ -35,11 +35,11 @@ async def createPlayer(ctx, bot):
                 title=f'{getLocaleByLang("playing", userLang)} {getLocaleByLang("nothing", userLang)}'
             )
         if isinstance(ctx, discord.Interaction):
-            await ctx.response.send_message(embed=embed, view=getViewByTheme(mp.theme)(bot=bot))
+            await ctx.response.send_message(embed=embed, view=getViewByTheme(mp.theme)(bot=bot, guildId=ctx.guild.id))
             msg = await ctx.original_response()
             mp.musicPlayerMessageId = msg.id
         else:
-            msg = await ctx.send(embed=embed, view=getViewByTheme(mp.theme)(bot=bot))
+            msg = await ctx.send(embed=embed, view=getViewByTheme(mp.theme)(bot=bot, guildId=ctx.guild.id))
             mp.musicPlayerMessageId = msg.id
 
 
@@ -64,7 +64,7 @@ async def updatePlayer(mediaPlayer, bot):
 
     message = await bot.get_channel(mediaPlayer.musicPlayerChannelId) \
         .fetch_message(mediaPlayer.musicPlayerMessageId)
-    await message.edit(embed=embed, view=getViewByTheme(mediaPlayer.theme)(bot))
+    await message.edit(embed=embed, view=getViewByTheme(mediaPlayer.theme)(bot, mediaPlayer.guildId))
 
 
 def getThemeFromStr(query: str):

@@ -351,6 +351,10 @@ class MusicCog(commands.Cog):
     async def pause(self, ctx):
         if ctx.message.guild.voice_client:
             ctx.message.guild.voice_client.pause()
+            mp = musicService.findMusicPlayerByGuildId(ctx.guild.id)
+            if mp is not None:
+                mp.isStopped = True
+                await musicViewService.updatePlayer(mp, self.bot)
             await ctx.message.add_reaction('✅')
 
     @commands.command()
@@ -358,6 +362,10 @@ class MusicCog(commands.Cog):
     async def resume(self, ctx):
         if ctx.message.guild.voice_client:
             ctx.message.guild.voice_client.resume()
+            mp = musicService.findMusicPlayerByGuildId(ctx.guild.id)
+            if mp is not None:
+                mp.isStopped = False
+                await musicViewService.updatePlayer(mp, self.bot)
             await ctx.message.add_reaction('✅')
 
     @commands.command(aliases=["dwlmp3"])
