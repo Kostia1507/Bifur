@@ -6,6 +6,7 @@ from cogs import LogCog
 langs = ['en', 'ua', 'ru']
 
 
+# return language code
 def getUserLang(user_id):
     if user_id == 0:
         return "en"
@@ -23,6 +24,7 @@ def getUserLang(user_id):
     return lang
 
 
+# use this function if you know language code
 def getLocaleByLang(locale, lang):
     try:
         return locales[locale][lang]
@@ -31,6 +33,8 @@ def getLocaleByLang(locale, lang):
         return locales[locale]['en']
 
 
+# shortcut for getLocaleByLang(locale, getUserLang(user_id))
+# can be useful if you have only one request to localeService
 def getLocale(locale, user_id):
     if user_id == 0:
         return locales[locale]['en']
