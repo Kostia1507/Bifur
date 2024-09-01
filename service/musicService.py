@@ -21,12 +21,14 @@ settings = {
 players = {}
 
 
+# this function will create new player if it doesn't exist
 def getMusicPlayer(guild_id, channel_id):
     if guild_id not in players.keys():
         players[guild_id] = MusicPlayer(guild_id, channel_id)
     return players[guild_id]
 
 
+# this function can't create new music player, so be careful and check for None
 def findMusicPlayerByGuildId(guild_id):
     return players[guild_id] if guild_id in players.keys() else None
 
@@ -150,6 +152,6 @@ def delete(guild_id):
 def downloadVideo(url):
     t = searchByLink(url)[0]
     t.updateFromWeb()
-    filename = f'music/{t.name}.mp3'
+    filename = f'temp/{t.name}.mp3'
     t.download(filename)
     return filename

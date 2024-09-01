@@ -10,10 +10,10 @@ options = {
     'format': 'bestaudio/best',
     'quiet': True,
     'no_warnings': True,
+    'noplaylist': True,
     'source_address': '0.0.0.0',
     'prefferedcodec': 'mp3',
     'live_from_start': False,
-    'playlist_items': '1:20'
 }
 
 
