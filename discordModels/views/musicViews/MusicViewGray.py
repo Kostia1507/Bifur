@@ -34,7 +34,7 @@ class MusicViewGray(discord.ui.View):
                         child.emoji = config.playEmoji
                     else:
                         child.emoji = config.pauseEmoji
-                break
+                    break
         self.bot = bot
 
     @discord.ui.button(label="", style=discord.ButtonStyle.gray, emoji=config.previousEmoji, row=0)
@@ -46,7 +46,8 @@ class MusicViewGray(discord.ui.View):
                 guild.voice_client.stop()
                 await interaction.response.send_message("Return to previous song", ephemeral=True, delete_after=15)
 
-    @discord.ui.button(label="", style=discord.ButtonStyle.gray, emoji=config.pauseEmoji, row=0, custom_id="mp:pause_button")
+    @discord.ui.button(label="", style=discord.ButtonStyle.gray, emoji=config.pauseEmoji, row=0,
+                       custom_id="mp:pause_button")
     async def pauseCallback(self, interaction, button):
         if await is_in_vcInteraction(interaction):
             if interaction.guild.voice_client.is_paused():

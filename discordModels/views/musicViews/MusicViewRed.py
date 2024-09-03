@@ -22,8 +22,19 @@ async def is_in_vcInteraction(interaction):
 
 class MusicViewRed(discord.ui.View):
 
-    def __init__(self, bot):
+    def __init__(self, bot, guildId):
         super().__init__(timeout=None)
+
+        # init pause button
+        for child in self.children:
+            if isinstance(child, discord.ui.Button):
+                if child.custom_id == "mp:pause_button":
+                    mp = musicService.findMusicPlayerByGuildId(guildId)
+                    if mp.isStopped:
+                        child.emoji = config.playEmoji
+                    else:
+                        child.emoji = config.pauseEmoji
+                    break
         self.bot = bot
 
     @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji=config.previousEmoji, row=0)
@@ -35,15 +46,23 @@ class MusicViewRed(discord.ui.View):
                 guild.voice_client.stop()
                 await interaction.response.send_message("Return to previous song", ephemeral=True, delete_after=15)
 
-    @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji=config.pauseEmoji, row=0)
+    @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji=config.pauseEmoji, row=0,
+                       custom_id="mp:pause_button")
     async def pauseCallback(self, interaction, button):
         if await is_in_vcInteraction(interaction):
             if interaction.guild.voice_client.is_paused():
                 interaction.guild.voice_client.resume()
+                mp = musicService.findMusicPlayerByGuildId(interaction.guild.id)
+                if mp is not None:
+                    mp.isStopped = False
                 await interaction.response.send_message("Resumed playing", ephemeral=True, delete_after=15)
             else:
                 interaction.guild.voice_client.pause()
+                mp = musicService.findMusicPlayerByGuildId(interaction.guild.id)
+                if mp is not None:
+                    mp.isStopped = True
                 await interaction.response.send_message("Now on pause", ephemeral=True, delete_after=15)
+            await musicViewService.updatePlayer(musicService.findMusicPlayerByGuildId(interaction.guild_id), self.bot)
 
     @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji=config.skipEmoji, row=0)
     async def skipCallback(self, interaction, button):
