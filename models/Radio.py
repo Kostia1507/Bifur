@@ -45,6 +45,9 @@ class Radio:
             tracks.sort(key=lambda radioEntry: radioEntry.trackId)
             result = ""
             for t in tracks:
+                if t.name is None or len(str(t.name)) == 0:
+                    t.updateFromWeb()
+                    t.updateInDB()
                 result += f'{t.trackId} - {t.name}\n'
             return f'ID: {self.radio_id} Name: {self.name}', result
         else:

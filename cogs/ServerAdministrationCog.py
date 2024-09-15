@@ -16,7 +16,7 @@ from service.currencyService import currency
 from service.prefixService import setPrefix
 from cogs.WeatherCog import getCoordinates, getWeather
 from service import pagedMessagesService, autoReactionService, ignoreService
-from models.PendingCommand import PendingCommand
+from models.PendingCommand import PendingCommand, get_pending_command
 
 
 class ServerAdministrationCog(commands.Cog):
@@ -112,6 +112,16 @@ class ServerAdministrationCog(commands.Cog):
             if cmd.id == cmdId:
                 self.pcs.remove(cmd)
         await ctx.message.add_reaction('✅')
+
+    @commands.command()
+    @has_permissions(manage_guild=True)
+    async def initcmd(self, ctx, cmdId: int):
+        pc = get_pending_command(cmdId)
+        if pc is not None and ctx.channel.id == pc.channelId:
+            pc.init_counter()
+            await ctx.message.add_reaction('✅')
+        else:
+            await ctx.message.add_reaction('❌')
 
     @commands.command()
     @has_permissions(manage_guild=True)

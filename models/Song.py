@@ -1,7 +1,9 @@
 from datetime import datetime
 
+import psycopg2
 from yt_dlp import YoutubeDL, utils
 
+import config
 from cogs import LogCog
 
 options = {
@@ -81,3 +83,19 @@ class Song:
             except Exception as e:
                 LogCog.logError(f'Помилка при загрузці {filename}: {e}')
                 return e
+
+    def updateInDB(self):
+        if self.trackId is not None:
+            conn = psycopg2.connect(
+                host=config.host,
+                database=config.database,
+                user=config.user,
+                password=config.password,
+                port=config.port
+            )
+            cur = conn.cursor()
+            cur.execute("UPDATE tracks SET name = %s, duration = %s WHERE id = %s",
+                        (self.name, self.duration, self.trackId))
+            conn.commit()
+            cur.close()
+            conn.close()
