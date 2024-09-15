@@ -1,3 +1,4 @@
+import io
 from datetime import datetime, timedelta
 
 import discord
@@ -73,6 +74,18 @@ class GamesCog(commands.Cog):
                         if ret == 3:
                             text += '\nDraw'
                             self.rowGames.remove(game)
+                        if ret != 0:
+                            historyOutput = "B:R"
+                            move = 0
+                            for line in game.history:
+                                if move % 2 == 0:
+                                    move += 1
+                                    historyOutput += f"\n{line+1}"
+                                else:
+                                    move += 1
+                                    historyOutput += f":{line+1}"
+                            file = io.BytesIO(historyOutput.encode('utf-8'))
+                            await msg.reply(file=discord.File(file, filename="history.txt"))
                         await msg.edit(content=text)
                         await msg.remove_reaction(numbers[i], await self.bot.fetch_user(event.user_id))
                         break
