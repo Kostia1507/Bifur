@@ -119,6 +119,9 @@ class ServerAdministrationCog(commands.Cog):
         pc = get_pending_command(cmdId)
         if pc is not None and ctx.channel.id == pc.channelId:
             pc.init_counter()
+            for cmd in self.pcs:
+                if cmd.id == pc.id:
+                    cmd.counter = 0
             await ctx.message.add_reaction('✅')
         else:
             await ctx.message.add_reaction('❌')
