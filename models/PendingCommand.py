@@ -3,6 +3,24 @@ import psycopg2
 import config
 
 
+def get_pending_command(command_id):
+    conn = psycopg2.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM autocommands WHERE id=%s", (command_id,))
+    row = cur.fetchone()
+    if row is not None:
+        pc = PendingCommand(row[1], row[2], row[3], row[4])
+        pc.id = row[0]
+        pc.counter = row[5]
+        return pc
+    return None
+
 class PendingCommand:
 
     def __init__(self, channelId, interval, cmdType, args):

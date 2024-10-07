@@ -126,6 +126,15 @@ class AdminCog(commands.Cog):
         embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
         await ctx.send(embed=embed, view=pagedMsg.view)
 
+    @commands.command()
+    @commands.check(commandUtils.is_owner)
+    async def rawoutput(self, ctx):
+        with open(f'{ctx.message.id}.txt', "w") as file:
+            file.write(str(ctx.message.content))
+        with open(f'{ctx.message.id}.txt', "rb") as file:
+            await ctx.send(file=discord.File(file, f'{ctx.message.id}.txt'))
+        os.remove(f'{ctx.message.id}.txt')
+
     @tasks.loop(minutes=20)
     async def checkHealth(self):
         # I don't want to run it at local machine

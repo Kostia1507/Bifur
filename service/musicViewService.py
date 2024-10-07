@@ -1,8 +1,9 @@
 import discord
 
-from discordModels.views.MusicView import MusicView
-from service.localeService import getLocale, getUserLang, getLocaleByLang
+from discordModels.views.musicViews import MusicViewBlue, MusicViewGreen, MusicViewGray, MusicViewRed
+from service.localeService import getUserLang, getLocaleByLang
 from service.musicService import getMusicPlayer
+from models.MusicPlayer import ColorTheme
 
 
 async def createPlayer(ctx, bot):
@@ -34,11 +35,11 @@ async def createPlayer(ctx, bot):
                 title=f'{getLocaleByLang("playing", userLang)} {getLocaleByLang("nothing", userLang)}'
             )
         if isinstance(ctx, discord.Interaction):
-            await ctx.response.send_message(embed=embed, view=MusicView(bot=bot))
+            await ctx.response.send_message(embed=embed, view=getViewByTheme(mp.theme)(bot=bot, guildId=ctx.guild.id))
             msg = await ctx.original_response()
             mp.musicPlayerMessageId = msg.id
         else:
-            msg = await ctx.send(embed=embed, view=MusicView(bot=bot))
+            msg = await ctx.send(embed=embed, view=getViewByTheme(mp.theme)(bot=bot, guildId=ctx.guild.id))
             mp.musicPlayerMessageId = msg.id
 
 
@@ -63,4 +64,21 @@ async def updatePlayer(mediaPlayer, bot):
 
     message = await bot.get_channel(mediaPlayer.musicPlayerChannelId) \
         .fetch_message(mediaPlayer.musicPlayerMessageId)
-    await message.edit(embed=embed, view=MusicView(bot))
+    await message.edit(embed=embed, view=getViewByTheme(mediaPlayer.theme)(bot, mediaPlayer.guildId))
+
+
+def getThemeFromStr(query: str):
+    query = query.upper().strip()
+    if query == "GREY":
+        query = "GRAY"
+    return getattr(ColorTheme, query, None)
+
+
+def getViewByTheme(colorTheme):
+    if colorTheme == ColorTheme.BLUE:
+        return MusicViewBlue.MusicViewBlue
+    if colorTheme == ColorTheme.GREEN:
+        return MusicViewGreen.MusicViewGreen
+    if colorTheme == ColorTheme.RED:
+        return MusicViewRed.MusicViewRed
+    return MusicViewGray.MusicViewGray

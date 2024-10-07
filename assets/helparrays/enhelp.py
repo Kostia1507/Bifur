@@ -485,9 +485,15 @@ helpEN = {
                 "description": "list of all commands in this channel"
             },
             {
+                "name": ">initcmd [id]",
+                "aliases": [],
+                "description": "set cmd interval counter to 0.\n"
+                               "All commands are executed when counter is equal to setter interval"
+            },
+            {
                 "name": ">delcmd [id]",
                 "aliases": [],
-                "description": "вdelete cmd by ID. Look for ID in >getcmds"
+                "description": "delete cmd by ID. Look for ID in >getcmds"
             },
         ],
     "Configuring server roles":

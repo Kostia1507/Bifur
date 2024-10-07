@@ -8,7 +8,7 @@ from discord.ext import commands, tasks
 from discord.utils import get
 
 from cogs import LogCog
-from models.MusicPlayer import RepeatType
+from models.MusicPlayer import RepeatType, ColorTheme
 
 from service import musicService, pagedMessagesService, musicViewService, likedSongsService
 from service.localeService import getLocale, getUserLang, getLocaleByLang
@@ -351,6 +351,10 @@ class MusicCog(commands.Cog):
     async def pause(self, ctx):
         if ctx.message.guild.voice_client:
             ctx.message.guild.voice_client.pause()
+            mp = musicService.findMusicPlayerByGuildId(ctx.guild.id)
+            if mp is not None:
+                mp.isStopped = True
+                await musicViewService.updatePlayer(mp, self.bot)
             await ctx.message.add_reaction('✅')
 
     @commands.command()
@@ -358,6 +362,10 @@ class MusicCog(commands.Cog):
     async def resume(self, ctx):
         if ctx.message.guild.voice_client:
             ctx.message.guild.voice_client.resume()
+            mp = musicService.findMusicPlayerByGuildId(ctx.guild.id)
+            if mp is not None:
+                mp.isStopped = False
+                await musicViewService.updatePlayer(mp, self.bot)
             await ctx.message.add_reaction('✅')
 
     @commands.command(aliases=["dwlmp3"])
@@ -368,8 +376,12 @@ class MusicCog(commands.Cog):
 
     @commands.command()
     @commands.check(commandUtils.is_in_vc)
-    async def player(self, ctx):
+    async def player(self, ctx, *args):
         mp = musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id)
+        if len(args) > 0:
+            theme = musicViewService.getThemeFromStr(args[0])
+            if theme is not None:
+                mp.theme = theme
         if mp.musicPlayerMessageId is not None:
             message = await self.bot.get_channel(mp.musicPlayerChannelId) \
                 .fetch_message(mp.musicPlayerMessageId)
@@ -429,7 +441,6 @@ class MusicCog(commands.Cog):
             await ctx.send(embed=embed)
 
     @commands.command(aliases=["pliked"])
-    @commands.check(commandUtils.is_in_vc)
     async def playliked(self, ctx):
         res = await connect_to_user_voice(ctx)
         if res == 0:
@@ -556,3 +567,17 @@ class MusicCog(commands.Cog):
             if mp.musicPlayerChannelId is not None:
                 await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
             await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)
+
+    @app_commands.command(name="player", description="Recreate player with buttons")
+    @app_commands.describe(theme="change color of buttons")
+    async def playerSlash(self, interaction: discord.Interaction, theme: ColorTheme = ColorTheme.GRAY):
+        if await commandUtils.is_in_vcInteraction(interaction):
+            mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)
+            if theme is not None:
+                mp.theme = theme
+            if mp.musicPlayerMessageId is not None:
+                message = await self.bot.get_channel(mp.musicPlayerChannelId) \
+                    .fetch_message(mp.musicPlayerMessageId)
+                await message.delete()
+            mp.musicPlayerMessageId = None
+            await musicViewService.createPlayer(interaction, self.bot)
