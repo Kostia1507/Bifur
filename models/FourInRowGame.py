@@ -284,7 +284,7 @@ class FourInRowGame:
             return min_eval, min_line
 
     async def animate_history(self):
-        SIZE = 50
+        SIZE = 40
         GRAY_COLOR = "#ef1346"
         BLUE_COLOR = "#16b1ea"
         RED_COLOR = "#ef1346"
@@ -298,12 +298,16 @@ class FourInRowGame:
 
         for move in range(0, len(self.history)):
             canvas = frames[-1].copy()
-            draw = ImageDraw(canvas)
+            draw = ImageDraw.Draw(canvas)
             current_color = BLUE_COLOR if move % 2 == 0 else RED_COLOR
-            draw.ellipse(((self.history[move]*50, height-current_height[self.history[move]]*50),
-                          ((self.history[move]+1)*50, height-(current_height[self.history[move]]+1)*50)),
+            draw.ellipse(((self.history[move]*SIZE, height-(current_height[self.history[move]]+1)*SIZE),
+                          ((self.history[move]+1)*SIZE, height-current_height[self.history[move]]*SIZE)),
                          fill=current_color)
             frames.append(canvas)
+            current_height[self.history[move]] = current_height[self.history[move]] + 1
+
+        frames.append(frames[-1].copy())
+        frames.append(frames[-1].copy())
 
         gif_image, save_kwargs = await self.__animate_gif(frames)
 
@@ -313,7 +317,7 @@ class FourInRowGame:
 
         return buffer
 
-    async def __animate_gif(self, images: list[IMG], durations: Union[int, list[int]] = 20) -> tuple[
+    async def __animate_gif(self, images: list[IMG], durations: Union[int, list[int]] = 100) -> tuple[
         IMG, dict[str, Any]]:
         save_kwargs: dict[str, Any] = {}
         new_images: list[IMG] = []

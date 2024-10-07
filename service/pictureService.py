@@ -29,6 +29,7 @@ async def totext(image_url, message_id, mode):
     k = math.sqrt((width * height) / mx_sym)
     width = int((width * 2) / k)
     height = int(height / k)
+    height = int(height / k)
     while width * height >= mx_sym or width > 96:
         width -= 2
         height -= 1
