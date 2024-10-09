@@ -11,12 +11,12 @@ from service.TransparertAnimatedGifConverter import TransparentAnimatedGifConver
 
 numbers = [":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:"]
 POINTS_FOR_CENTER = 3
-POINTS_FOR_ALL_ROW = 100
+POINTS_FOR_ALL_ROW = 120
 POINTS_FOR_3_IN_ROW = 5
 POINTS_FOR_2_IN_ROW = 2
 POINTS_FOR_2_ENEMY_IN_ROW = -1
 POINTS_FOR_3_ENEMY_IN_ROW = -4
-POINTS_FOR_4_ENEMY_IN_ROW = -99
+POINTS_FOR_4_ENEMY_IN_ROW = -115
 
 
 def evaluate_row(row, player):
@@ -110,7 +110,7 @@ class FourInRowGame:
         if waveOf == bot_id:
             # First move bot will make by random. It will create unique games against him
             if self.move == 2:
-                line = random.choice(self.get_empty_columns(self.board))
+                line = random.choice(self.get_empty_columns(self.board)[1:-1])
             else:
                 best_score, best_move = self.alpha_beta(copy.deepcopy(self.board), depth=4, alpha=float('-inf'), beta=float('inf'), maximizing_player=True)
                 line = best_move
@@ -284,8 +284,8 @@ class FourInRowGame:
             return min_eval, min_line
 
     async def animate_history(self):
-        SIZE = 40
-        GRAY_COLOR = "#ef1346"
+        SIZE = 50
+        PADDING = 4
         BLUE_COLOR = "#16b1ea"
         RED_COLOR = "#ef1346"
 
@@ -300,8 +300,8 @@ class FourInRowGame:
             canvas = frames[-1].copy()
             draw = ImageDraw.Draw(canvas)
             current_color = BLUE_COLOR if move % 2 == 0 else RED_COLOR
-            draw.ellipse(((self.history[move]*SIZE, height-(current_height[self.history[move]]+1)*SIZE),
-                          ((self.history[move]+1)*SIZE, height-current_height[self.history[move]]*SIZE)),
+            draw.ellipse(((self.history[move]*SIZE+PADDING, height-(current_height[self.history[move]]+1)*SIZE+PADDING),
+                          ((self.history[move]+1)*SIZE-PADDING, height-current_height[self.history[move]]*SIZE-PADDING)),
                          fill=current_color)
             frames.append(canvas)
             current_height[self.history[move]] = current_height[self.history[move]] + 1
