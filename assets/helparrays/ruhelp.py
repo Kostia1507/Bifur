@@ -248,7 +248,7 @@ helpRU = {
             },
             {
                 "name": ">liked",
-                "aliases": ["likedsongs"],
+                "aliases": ["likedsongs", "likedlist"],
                 "description": "список избранных песен"
             },
             {

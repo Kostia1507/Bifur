@@ -246,7 +246,7 @@ helpUA = {
             },
             {
                 "name": ">liked",
-                "aliases": ["likedsongs"],
+                "aliases": ["likedsongs", "likedlist"],
                 "description": "список ваших улюблених пісень"
             },
             {

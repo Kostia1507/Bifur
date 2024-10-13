@@ -248,7 +248,7 @@ helpEN = {
             },
             {
                 "name": ">liked",
-                "aliases": ["likedsongs"],
+                "aliases": ["likedsongs", "likedlist"],
                 "description": "list of your favourite songs"
             },
             {

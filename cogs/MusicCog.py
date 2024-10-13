@@ -417,7 +417,7 @@ class MusicCog(commands.Cog):
         else:
             await ctx.message.add_reaction('❌')
 
-    @commands.command(aliases=["likedsongs"])
+    @commands.command(aliases=["likedsongs", "likedlist"])
     async def liked(self, ctx):
         songs = likedSongsService.getAllLikedSongs(ctx.author.id)
         ret = ""

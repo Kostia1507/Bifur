@@ -56,6 +56,7 @@ class FourInRowGame:
         self.messageId = None
         self.channelId = None
         self.startText = None
+        self.difficult = 4
         self.history = []
         self.move = 1
         self.width = width
@@ -112,7 +113,7 @@ class FourInRowGame:
             if self.move == 2:
                 line = random.choice(self.get_empty_columns(self.board)[1:-1])
             else:
-                best_score, best_move = self.alpha_beta(copy.deepcopy(self.board), depth=4, alpha=float('-inf'), beta=float('inf'), maximizing_player=True)
+                best_score, best_move = self.alpha_beta(copy.deepcopy(self.board), depth=self.difficult, alpha=float('-inf'), beta=float('inf'), maximizing_player=True)
                 line = best_move
             for i in range(0, self.height):
                 if self.board[self.height - 1 - i][line] == 0:
