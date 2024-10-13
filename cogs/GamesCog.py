@@ -71,7 +71,7 @@ class GamesCog(commands.Cog):
             game.startText = f'Blue: {opponent.name}\nRed: {interaction.user.name}\n'
         else:
             game = FourInRowGame(7, 6, players=[opponent.id, interaction.user.id])
-            game.startText = f'Blue: {interaction.user.name}: {difficult.name}\nRed: {opponent.name}\n'
+            game.startText = f'Blue: {interaction.user.name}\nRed: {opponent.name}: {difficult.name}\n'
             game.difficult = difficult.value
         msg = await interaction.followup.send(content=game.printBoard())
         for i in range(0, game.width):

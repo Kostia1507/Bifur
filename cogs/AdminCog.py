@@ -91,6 +91,25 @@ class AdminCog(commands.Cog):
         embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
         await ctx.send(embed=embed, view=pagedMsg.view)
 
+    @commands.command()
+    @commands.check(commandUtils.is_owner)
+    async def guildinfo(self, ctx, guild_id: int):
+        guild = self.bot.get_guild(guild_id)
+        fetchGuild = await self.bot.fetch_guild(guild_id)
+        message = f'Created at {guild.created_at.strftime("%d/%m/%Y")}\n' \
+                  f'Members count: {fetchGuild.approximate_member_count}\n' \
+                  f'Online members: {fetchGuild.approximate_presence_count}\n' \
+                  f'Emojis {len(guild.emojis)}/{guild.emoji_limit}\n' \
+                  f'Stickers {len(guild.stickers)}/{guild.sticker_limit}\n' \
+                  f'Owner: {guild.owner.name}\n'
+
+        pagedMsg = pagedMessagesService.initPagedMessage(self.bot, guild.name, message)
+        pagedMsg.imageUrl = guild.icon.url
+        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+        embed.set_image(url=guild.icon.url)
+        await ctx.send(embed=embed, view=pagedMsg.view)
+
     @commands.command(alliases=['listofallcommands', 'listallcommands'])
     @commands.check(commandUtils.is_owner)
     async def listallcmds(self, ctx):
