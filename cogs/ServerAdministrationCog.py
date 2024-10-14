@@ -158,10 +158,11 @@ class ServerAdministrationCog(commands.Cog):
                            f' created at {role.created_at.strftime("%d/%m/%Y")}\n'
 
         pagedMsg = pagedMessagesService.initPagedMessage(self.bot, guild.name, message)
-        pagedMsg.imageUrl = guild.icon.url
         embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
         embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        embed.set_image(url=guild.icon.url)
+        if guild.icon is not None:
+            pagedMsg.imageUrl = guild.icon.url
+            embed.set_image(url=guild.icon.url)
         await ctx.send(embed=embed, view=pagedMsg.view)
 
     @tasks.loop(minutes=13)
