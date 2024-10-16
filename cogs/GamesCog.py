@@ -104,12 +104,12 @@ class GamesCog(commands.Cog):
                         if ret == 3:
                             text += '\nDraw'
                             self.rowGames.remove(game)
+                        await msg.edit(content=text)
+                        await msg.remove_reaction(numbers[i], await self.bot.fetch_user(event.user_id))
                         if ret != 0:
                             history_buffer = await game.animate_history()
                             history_gif = discord.File(history_buffer, filename=f'{game.messageId}history.gif')
                             await msg.reply(file=history_gif)
-                        await msg.edit(content=text)
-                        await msg.remove_reaction(numbers[i], await self.bot.fetch_user(event.user_id))
                         break
 
     @tasks.loop(minutes=11)
@@ -128,4 +128,7 @@ class GamesCog(commands.Cog):
                 else:
                     text += '\nRed won. Game finished!'
                 await msg.edit(content=text)
+                history_buffer = await game.animate_history()
+                history_gif = discord.File(history_buffer, filename=f'{game.messageId}history.gif')
+                await msg.reply(file=history_gif)
                 self.rowGames.remove(game)
