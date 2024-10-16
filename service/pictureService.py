@@ -27,9 +27,12 @@ async def totext(image_url, message_id, mode):
 
     width, height, mx_sym = img.size[0], img.size[1], 1940
     k = math.sqrt((width * height) / mx_sym)
-    width = int((width * 2) / k)
-    height = int(height / k)
-    height = int(height / k)
+    if height >= width * 1.5:
+        width = int((width * 2) / k)
+        height = int(height // 4 / k)
+    else:
+        height = int(height // 2 // k)
+        width = int(width // k)
     while width * height >= mx_sym or width > 96:
         width -= 2
         height -= 1
@@ -61,6 +64,54 @@ async def totext(image_url, message_id, mode):
         res += "\n"
     os.remove(name_of_file)
     return "```" + res + "```"
+
+async def filetotext(image_url, message_id, mode):
+    brloop = 'Ñ@#W$861?!abc;:+=-,._ '
+    name_of_file = f'temp/{message_id}.jpg'
+    await download_image(image_url, name_of_file)
+    img = Image.open(name_of_file)
+
+    width, height, mx_sym = img.size[0], img.size[1], 11500
+    k = math.sqrt((width * height) / mx_sym)
+    if height >= width*1.5:
+        width = int((width * 2) / k)
+        height = int(height // 4 / k)
+    else:
+        height = int(height//2//k)
+        width = int(width//k)
+    print(width, height, k)
+    while width * height >= mx_sym or width > 230:
+        width -= 2
+        height -= 1
+    print(width, height)
+    small_img = img.resize((width, height), Image.BILINEAR).convert('RGB')
+
+    pixels = small_img.load()
+    res = ''
+    mx, mn = 0, 255
+    for i in range(0, height):
+        for g in range(0, width):
+            r, g, b = pixels[g, i]
+            if mode == 'r':
+                bright = (r * 0.3 + g * 0.59 + b * 0.11) / 3
+            else:
+                bright = 255 - (r * 0.3 + g * 0.59 + b * 0.11) / 3
+            mx, mn = max(bright, mx), min(bright, mn)
+    price = (mx - mn) / len(brloop)
+    for i in range(0, height):
+        for g in range(0, width):
+            r, g, b = pixels[g, i]
+            if mode == 'r':
+                bright = (r * 0.3 + g * 0.59 + b * 0.11) / 3
+            else:
+                bright = 255 - (r * 0.3 + g * 0.59 + b * 0.11) / 3
+            br = int((bright - mn) / price)
+            if br >= len(brloop):
+                br = len(brloop) - 1
+            res += brloop[br]
+        res += "\n"
+    os.remove(name_of_file)
+    return res
 
 
 async def black(image_url, message_id):
