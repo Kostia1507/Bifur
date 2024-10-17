@@ -6,6 +6,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 
+from discordModels.views.TicTacToeView import TicTacToeView
+from models.TicTacToeGame import TicTacToeGame
+
 
 class Connect4Difficult(Enum):
     EASY = 2
@@ -59,6 +62,21 @@ class GamesCog(commands.Cog):
         game.channelId = msg.channel.id
         LogCog.logSystem(f'start conneсt4 at {game.lastIterated} with messageId {game.messageId}')
         self.rowGames.append(game)
+
+    @commands.command()
+    async def tictactoe(self, ctx, user: discord.User, *args):
+        if user.id != self.bot.user.id:
+            game = TicTacToeGame(players=[ctx.author.id, user.id])
+            game.startText = f'Blue: {user.name}\nRed: {ctx.author.name}\n'
+        else:
+            # User started game against Bifur
+            # Let him make first move
+            game = TicTacToeGame(players=[user.id, ctx.author.id])
+            game.startText = f'Blue: {ctx.author.name}\nRed: {user.name}\n'
+        msg = await ctx.send(content=game.startText, view=TicTacToeView(game))
+        game.messageId = msg.id
+        game.channelId = msg.channel.id
+        LogCog.logSystem(f'start TicTacToe at {game.lastIterated} with messageId {game.messageId}')
 
     @app_commands.command(name="connect4", description="Challenge your friends in Connect 4")
     @app_commands.describe(opponent="Friend to play with. Choose Bifur to play against him")
