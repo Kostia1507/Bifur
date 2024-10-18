@@ -72,6 +72,7 @@ class GamesCog(commands.Cog):
             # User started game against Bifur
             # Let him make first move
             game = TicTacToeGame(players=[user.id, ctx.author.id])
+            game.ai_game = True
             game.startText = f'Blue: {ctx.author.name}\nRed: {user.name}\n'
         msg = await ctx.send(content=game.startText, view=TicTacToeView(game))
         game.messageId = msg.id

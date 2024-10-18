@@ -16,6 +16,7 @@ class TicTacToeGame:
         self.channelId = None
         self.startText = None
         self.finished = False
+        self.ai_game = False
         self.difficult = 4
         self.history = []
         self.move = 1
@@ -32,6 +33,8 @@ class TicTacToeGame:
             self.move += 1
             self.history.append((x,y))
             self.board[x][y] = 1 if self.move % 2 == 1 else 5
+            if self.ai_game:
+                pass
             return True
         return False
 
@@ -75,4 +78,36 @@ class TicTacToeGame:
                 if self.board[i][g] == 0:
                     return 0
         return 3
+
+        # Return True if game was finished
+    def is_terminal(self, board):
+        for i in range(self.size):
+            for g in range(self.size - 3):
+                suma = board[i][g] + board[i][g + 1] + board[i][g + 2] + board[i][g + 3]
+                if suma == 4 or suma == 20:
+                    return True
+            # check all columns
+        for i in range(self.size - 3):
+            for g in range(self.size):
+                suma = board[i][g] + board[i + 1][g] + board[i + 2][g] + board[i + 3][g]
+                if suma == 4 or suma == 20:
+                    return True
+            # check all diagonals
+        for i in range(self.size - 3):
+            for g in range(self.size - 3):
+                suma = board[i][g] + board[i + 1][g + 1] + board[i + 2][g + 2] + board[i + 3][g + 3]
+                if suma == 4 or suma == 20:
+                    return True
+            # check all reversed diagonals
+        for i in range(self.size - 3):
+            for g in range(self.size - 3):
+                suma = board[i][g + 3] + board[i + 1][g + 2] + board[i + 2][g + 1] + board[i + 3][g]
+                if suma == 4 or suma == 20:
+                    return True
+            # check is there any empty cells
+        for i in range(self.size):
+            for g in range(self.size):
+                if self.board[i][g] == 0:
+                    return False
+        return True
 
