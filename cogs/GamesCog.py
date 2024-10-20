@@ -7,6 +7,7 @@ from discord import app_commands
 from discord.ext import commands, tasks
 
 from discordModels.views.TicTacToeView import TicTacToeView
+from discordModels.views.musicViews.connect4HistoryView import Connect4HistoryView
 from models.TicTacToeGame import TicTacToeGame
 
 
@@ -123,13 +124,12 @@ class GamesCog(commands.Cog):
                         if ret == 3:
                             text += '\nDraw'
                             self.rowGames.remove(game)
-                        await msg.edit(content=text)
-                        await msg.remove_reaction(numbers[i], await self.bot.fetch_user(event.user_id))
                         if ret != 0:
-                            history_buffer = await game.animate_history()
-                            history_gif = discord.File(history_buffer, filename=f'{game.messageId}history.gif')
-                            await msg.reply(file=history_gif)
-                        break
+                            await msg.edit(content=text, view=Connect4HistoryView(game.width, game.height, game.history))
+                        else:
+                            await msg.edit(content=text)
+                        await msg.remove_reaction(numbers[i], await self.bot.fetch_user(event.user_id))
+
 
     @tasks.loop(minutes=11)
     async def checkNotFinishedGames(self):

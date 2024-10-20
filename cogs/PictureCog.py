@@ -57,7 +57,6 @@ class PictureCog(commands.Cog):
             await ctx.send(text)
 
     @commands.command()
-    @commands.check(is_owner)
     async def filetotext(self, ctx, *args):
         url = None
         if len(ctx.message.attachments) > 0:
