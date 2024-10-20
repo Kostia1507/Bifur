@@ -30,7 +30,7 @@ class TicTacToeButton(discord.ui.Button):
                 self.game.startText = self.game.startText + "\nDraw!"
                 self.game.finished = True
             await interaction.message.edit(content=self.game.startText, view=TicTacToeView(self.game))
-            await interaction.followup.send(localeService.getLocale("ready", interaction.user.id), ephermal=True)
+            # await interaction.followup.send(localeService.getLocale("ready", interaction.user.id), ephemeral=True)
         else:
             await interaction.response.send_message("It's not your turn!", ephemeral=True)
 
