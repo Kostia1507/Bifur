@@ -130,6 +130,48 @@ class TicTacToeGame:
                     return 0
         return 3
 
+
+    # check is there any combination to win
+    def is_possible(self):
+        # init two boards
+        loopBoardBlue = copy.deepcopy(self.board)
+        loopBoardRed = copy.deepcopy(self.board)
+        for x in range(self.size):
+            for y in range(self.size):
+                if self.board[x][y] == 0:
+                    loopBoardRed[x][y] = 1
+                    loopBoardBlue[x][y] = 5
+        #check all rows
+        for i in range(self.size):
+            for g in range(self.size - 3):
+                sumaBlue = loopBoardBlue[i][g] + loopBoardBlue[i][g + 1] + loopBoardBlue[i][g + 2] + loopBoardBlue[i][g + 3]
+                sumaRed = loopBoardRed[i][g] + loopBoardRed[i][g + 1] + loopBoardRed[i][g + 2] + loopBoardRed[i][g + 3]
+                if sumaBlue == 20 or sumaRed == 4:
+                    return True
+        # check all columns
+        for i in range(self.size - 3):
+            for g in range(self.size):
+                sumaBlue = loopBoardBlue[i][g] + loopBoardBlue[i + 1][g] + loopBoardBlue[i + 2][g] + loopBoardBlue[i + 3][g]
+                sumaRed = loopBoardRed[i][g] + loopBoardRed[i + 1][g] + loopBoardRed[i + 2][g] + loopBoardRed[i + 3][g]
+                if sumaBlue == 20 or sumaRed == 4:
+                    return True
+        # check all diagonals
+        for i in range(self.size - 3):
+            for g in range(self.size - 3):
+                sumaBlue = loopBoardBlue[i][g] + loopBoardBlue[i + 1][g + 1] + loopBoardBlue[i + 2][g + 2] + loopBoardBlue[i + 3][g + 3]
+                sumaRed = loopBoardRed[i][g] + loopBoardRed[i + 1][g + 1] + loopBoardRed[i + 2][g + 2] + loopBoardRed[i + 3][ g + 3]
+                if sumaBlue == 20 or sumaRed == 4:
+                    return True
+        # check all reversed diagonals
+        for i in range(self.size - 3):
+            for g in range(self.size - 3):
+                sumaBlue = loopBoardBlue[i][g + 3] + loopBoardBlue[i + 1][g + 2] + loopBoardBlue[i + 2][g + 1] + loopBoardBlue[i + 3][g]
+                sumaRed = loopBoardRed[i][g] + loopBoardRed[i + 1][g + 1] + loopBoardRed[i + 2][g + 2] + loopBoardRed[i + 3][g + 3]
+                if sumaBlue == 20 or sumaRed == 4:
+                    return True
+        return False
+
+
     # Return True if game was finished
     def is_terminal(self, board):
         for i in range(self.size):
