@@ -1,3 +1,4 @@
+import io
 import os
 
 import discord
@@ -6,6 +7,7 @@ from discord.ext import commands
 from cogs import LogCog
 from service import pictureService
 from service.localeService import getLocale
+from utils.commandUtils import is_owner
 
 
 class PictureCog(commands.Cog):
@@ -53,6 +55,21 @@ class PictureCog(commands.Cog):
         if url is not None:
             text = await pictureService.totext(url, ctx.message.id, 'n')
             await ctx.send(text)
+
+    @commands.command()
+    async def filetotext(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            text = await pictureService.filetotext(url, ctx.message.id, 'n')
+            file = io.BytesIO(text.encode('utf-8'))
+            file = discord.File(file, "result.txt")
+            await ctx.send(file=file)
 
     @commands.command()
     async def rtotext(self, ctx, *args):

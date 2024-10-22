@@ -6,6 +6,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 
+from discordModels.views.TicTacToeView import TicTacToeView
+from discordModels.views.musicViews.connect4HistoryView import Connect4HistoryView
+from models.TicTacToeGame import TicTacToeGame
+
 
 class Connect4Difficult(Enum):
     EASY = 2
@@ -60,6 +64,22 @@ class GamesCog(commands.Cog):
         LogCog.logSystem(f'start conneсt4 at {game.lastIterated} with messageId {game.messageId}')
         self.rowGames.append(game)
 
+    @commands.command()
+    async def tictactoe(self, ctx, user: discord.User, *args):
+        if user.id != self.bot.user.id:
+            game = TicTacToeGame(players=[ctx.author.id, user.id])
+            game.startText = f'Blue: {user.name}\nRed: {ctx.author.name}\n'
+        else:
+            # User started game against Bifur
+            # Let him make first move
+            game = TicTacToeGame(players=[user.id, ctx.author.id])
+            game.ai_game = True
+            game.startText = f'Blue: {ctx.author.name}\nRed: {user.name}\n'
+        msg = await ctx.send(content=game.startText, view=TicTacToeView(game))
+        game.messageId = msg.id
+        game.channelId = msg.channel.id
+        LogCog.logSystem(f'start TicTacToe at {game.lastIterated} with messageId {game.messageId}')
+
     @app_commands.command(name="connect4", description="Challenge your friends in Connect 4")
     @app_commands.describe(opponent="Friend to play with. Choose Bifur to play against him")
     @app_commands.describe(difficult="Choose difficult if you playing against Bifur")
@@ -105,12 +125,11 @@ class GamesCog(commands.Cog):
                             text += '\nDraw'
                             self.rowGames.remove(game)
                         if ret != 0:
-                            history_buffer = await game.animate_history()
-                            history_gif = discord.File(history_buffer, filename=f'{game.messageId}history.gif')
-                            await msg.reply(file=history_gif)
-                        await msg.edit(content=text)
+                            await msg.edit(content=text, view=Connect4HistoryView(game.width, game.height, game.history))
+                        else:
+                            await msg.edit(content=text)
                         await msg.remove_reaction(numbers[i], await self.bot.fetch_user(event.user_id))
-                        break
+
 
     @tasks.loop(minutes=11)
     async def checkNotFinishedGames(self):
@@ -128,4 +147,7 @@ class GamesCog(commands.Cog):
                 else:
                     text += '\nRed won. Game finished!'
                 await msg.edit(content=text)
+                history_buffer = await game.animate_history()
+                history_gif = discord.File(history_buffer, filename=f'{game.messageId}history.gif')
+                await msg.reply(file=history_gif)
                 self.rowGames.remove(game)
