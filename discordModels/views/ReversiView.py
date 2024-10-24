@@ -42,22 +42,20 @@ class ReversiModal(discord.ui.Modal, title='Reversi'):
             img = discord.File(self.game.generate_picture(), "reversi.jpg")
             embed = discord.Embed(title="Reversi", description=self.game.get_text())
             embed.set_image(url=f'attachment://reversi.jpg')
-            await interaction.message.edit(content="", embed=embed, view=ReversiView(self.bot, self.game), attachments=[img])
-            await interaction.followup.send(localeService.getLocale('ready', interaction.user.id))
+            await interaction.edit_original_response(content="", embed=embed, view=ReversiView(self.bot, self.game), attachments=[img])
         else:
             img = discord.File(self.game.generate_picture(), "reversi.jpg")
             embed = discord.Embed(title="Reversi", description=self.game.get_text())
             embed.set_image(url=f'attachment://reversi.jpg')
             white, black = count_marks(self.game.board)
             if white > black:
-                await interaction.message.edit(content="Game finished! White won the game!", embed=embed,
+                await interaction.edit_original_response(content="Game finished! White won the game!", embed=embed,
                                                attachments=[img])
             elif black > white:
-                await interaction.message.edit(content="Game finished! Black won the game!", embed=embed,
+                await interaction.edit_original_response(content="Game finished! Black won the game!", embed=embed,
                                                attachments=[img])
             else:
-                await interaction.message.edit(content="Game finished! Draw.", embed=embed, attachments=[img])
-            await interaction.followup.send(localeService.getLocale('ready', interaction.user.id))
+                await interaction.edit_original_response(content="Game finished! Draw.", embed=embed, attachments=[img])
 
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
