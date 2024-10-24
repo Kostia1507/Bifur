@@ -17,6 +17,7 @@ class CellsValue(Enum):
 
 # This method converts cords like "e4" to numbers
 def convert_str_to_cords(loop: str):
+    loop = loop.lower()
     first,last = loop[0], loop[1]
     if first.isnumeric():
         first, last = last, first
@@ -198,11 +199,11 @@ class ReversiGame:
         self.playersNicknames = players_nicknames
         self.messageId = None
         self.channelId = None
-        self.startText = f"2⚫ {self.playersNicknames[0]} -  2⚪ {self.playersNicknames[1]}"
+        self.ai_game = False
         self.lastIterated = datetime.utcnow().hour
 
     def make_move(self, row, col, player_id):
-        if player_id == self.players[self.turn//2]:
+        if player_id == self.players[self.turn % 2]:
             value = CellsValue.BLACK.value if self.turn % 2 == 0 else CellsValue.WHITE.value
             enemy = CellsValue.WHITE.value if self.turn % 2 == 0 else CellsValue.BLACK.value
             cellsToChange = []
@@ -333,6 +334,9 @@ class ReversiGame:
                     continue
                 else:
                     break
+            for element in enemies:
+                cellsToChange.append(element)
+            enemies = []
             # checks finished
             if len(cellsToChange) == 0:
                 return False
@@ -354,7 +358,27 @@ class ReversiGame:
                     color = BLACK_MARK_COLOR if self.board[row][col] == CellsValue.BLACK.value else WHITE_MARK_COLOR
                     draw.ellipse(((55 + col * 100, 55 + row * 100), (145 + col * 100, 145 + row * 100)), fill=color)
 
+        buffer = BytesIO()
+        board_img.save(buffer, format="JPEG")
+        buffer.seek(0)
+        return buffer
 
-        imgByteArr = BytesIO()
-        board_img.save(imgByteArr, format=board_img.format)
-        return imgByteArr.getvalue()
+    def get_text(self):
+        white, black = count_marks(self.board)
+        turn = "Turn: ⚫" if self.turn%2==0 else "Turn: ⚪"
+        return f"{black}⚫ {self.playersNicknames[0]} -  {white}⚪ {self.playersNicknames[1]}\n\n{turn}"
+
+    def handle_move(self, x, y, user_id):
+        ret = self.make_move(x, y, user_id)
+        print(ret)
+        if ret:
+            possible = get_possible_moves(self.board, self.turn)
+            # Player can't move. Next move
+            if len(possible) == 0:
+                self.turn += 1
+                possible = get_possible_moves(self.board, self.turn)
+                if len(possible) == 0:
+                    # this is the end
+                    return False
+        return True
+

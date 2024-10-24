@@ -5,8 +5,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 
+from discordModels.views.ReversiView import ReversiView
 from discordModels.views.TicTacToeView import TicTacToeView
 from discordModels.views.connect4HistoryView import Connect4HistoryView
+from models.ReversiGame import ReversiGame
 from models.TicTacToeGame import TicTacToeGame
 
 
@@ -78,6 +80,23 @@ class GamesCog(commands.Cog):
         game.messageId = msg.id
         game.channelId = msg.channel.id
         LogCog.logSystem(f'start TicTacToe at {game.lastIterated} with messageId {game.messageId}')
+
+    @commands.command(aliases=["othello"])
+    async def reversi(self, ctx, user: discord.User, *args):
+        if user.id != self.bot.user.id:
+            game = ReversiGame(players=[user.id, ctx.author.id], players_nicknames=[user.name, ctx.author.name])
+        else:
+            # User started game against Bifur
+            # Let him make first move
+            game = ReversiGame(players=[ctx.author.id, user.id], players_nicknames=[ctx.author.name, user.name])
+            game.ai_game = True
+        img = discord.File(game.generate_picture(), "reversi.jpg")
+        embed = discord.Embed(title="Reversi", description=game.get_text())
+        embed.set_image(url=f'attachment://reversi.jpg')
+        msg = await ctx.send(embed=embed, view=ReversiView(self.bot, game), file=img)
+        game.messageId = msg.id
+        game.channelId = msg.channel.id
+        LogCog.logSystem(f'start reversi at {game.lastIterated} with messageId {game.messageId}')
 
     @app_commands.command(name="connect4", description="Challenge your friends in Connect 4")
     @app_commands.describe(opponent="Friend to play with. Choose Bifur to play against him")
