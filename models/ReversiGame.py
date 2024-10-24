@@ -1,8 +1,14 @@
 from datetime import datetime
 from enum import Enum
+from PIL import ImageDraw, Image
+from io import BytesIO
 
 columnLetters = "abcdefgh"
 BOARD_SIZE = 8
+
+WHITE_MARK_COLOR = "#CCCCCC"
+BLACK_MARK_COLOR = "#000000"
+
 
 class CellsValue(Enum):
     EMPTY = 0
@@ -59,7 +65,7 @@ def get_possible_moves(board, turn):
                         enemies += 1
                         continue
                     elif enemies > 0:
-                        ret += (row, col)
+                        ret.append((row, col))
                         found = True
                         break
                 enemies = 0
@@ -75,7 +81,7 @@ def get_possible_moves(board, turn):
                         enemies += 1
                         continue
                     elif enemies > 0:
-                        ret += (row, col)
+                        ret.append((row, col))
                         found = True
                         break
                 enemies = 0
@@ -91,7 +97,7 @@ def get_possible_moves(board, turn):
                         enemies += 1
                         continue
                     elif enemies > 0:
-                        ret += (row, col)
+                        ret.append((row, col))
                         found = True
                         break
                 enemies = 0
@@ -107,7 +113,7 @@ def get_possible_moves(board, turn):
                         enemies += 1
                         continue
                     elif enemies > 0:
-                        ret += (row, col)
+                        ret.append((row, col))
                         found = True
                         break
                 enemies = 0
@@ -123,8 +129,7 @@ def get_possible_moves(board, turn):
                         enemies += 1
                         continue
                     elif enemies > 0:
-                        print(board[row + change][col + change])
-                        ret += (row, col)
+                        ret.append((row, col))
                         found = True
                         break
                 enemies = 0
@@ -140,7 +145,7 @@ def get_possible_moves(board, turn):
                         enemies += 1
                         continue
                     elif enemies > 0:
-                        ret += (row, col)
+                        ret.append((row, col))
                         found = True
                         break
                 enemies = 0
@@ -156,7 +161,7 @@ def get_possible_moves(board, turn):
                         enemies += 1
                         continue
                     elif enemies > 0:
-                        ret += (row, col)
+                        ret.append((row, col))
                         found = True
                         break
                 enemies = 0
@@ -172,7 +177,7 @@ def get_possible_moves(board, turn):
                         enemies += 1
                         continue
                     elif enemies > 0:
-                        ret += (row, col)
+                        ret.append((row, col))
                         found = True
                         break
                 if found:
@@ -339,3 +344,17 @@ class ReversiGame:
                 return True
         else:
             return False
+
+    def generate_picture(self):
+        board_img = Image.open("assets/chessboard.jpg").convert("RGB")
+        draw = ImageDraw.Draw(board_img)
+        for row in range(BOARD_SIZE):
+            for col in range(BOARD_SIZE):
+                if self.board[row][col] != CellsValue.EMPTY.value:
+                    color = BLACK_MARK_COLOR if self.board[row][col] == CellsValue.BLACK.value else WHITE_MARK_COLOR
+                    draw.ellipse(((55 + col * 100, 55 + row * 100), (145 + col * 100, 145 + row * 100)), fill=color)
+
+
+        imgByteArr = BytesIO()
+        board_img.save(imgByteArr, format=board_img.format)
+        return imgByteArr.getvalue()

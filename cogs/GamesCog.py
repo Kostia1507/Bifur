@@ -1,5 +1,4 @@
-import io
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 
 import discord
@@ -7,7 +6,7 @@ from discord import app_commands
 from discord.ext import commands, tasks
 
 from discordModels.views.TicTacToeView import TicTacToeView
-from discordModels.views.musicViews.connect4HistoryView import Connect4HistoryView
+from discordModels.views.connect4HistoryView import Connect4HistoryView
 from models.TicTacToeGame import TicTacToeGame
 
 
