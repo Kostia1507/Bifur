@@ -1,3 +1,5 @@
+import copy
+import random
 from datetime import datetime
 from enum import Enum
 from PIL import ImageDraw, Image
@@ -15,13 +17,15 @@ class CellsValue(Enum):
     WHITE = 1
     BLACK = 2
 
+
 # This method converts cords like "e4" to numbers
 def convert_str_to_cords(loop: str):
     loop = loop.lower()
-    first,last = loop[0], loop[1]
+    first, last = loop[0], loop[1]
     if first.isnumeric():
         first, last = last, first
-    return 8-int(last), columnLetters.find(first)
+    return 8 - int(last), columnLetters.find(first)
+
 
 # return True if there is no moves for all players
 def is_terminal(board):
@@ -32,6 +36,7 @@ def is_terminal(board):
     if len(possible) > 0:
         return False
     return True
+
 
 # returns two numbers. First is count of White. Second - Black
 def count_marks(board):
@@ -58,16 +63,18 @@ def get_possible_moves(board, turn):
                 enemies = 0
                 # left top
                 for change in range(1, 8):
-                    if row-change < 0 or col-change < 0:
+                    if row - change < 0 or col - change < 0:
                         break
-                    if board[row-change][col-change] == CellsValue.EMPTY.value:
+                    if board[row - change][col - change] == CellsValue.EMPTY.value:
                         break
-                    elif board[row-change][col-change] == enemy:
+                    elif board[row - change][col - change] == enemy:
                         enemies += 1
                         continue
                     elif enemies > 0:
                         ret.append((row, col))
                         found = True
+                        break
+                    else:
                         break
                 enemies = 0
                 if found:
@@ -85,6 +92,8 @@ def get_possible_moves(board, turn):
                         ret.append((row, col))
                         found = True
                         break
+                    else:
+                        break
                 enemies = 0
                 if found:
                     continue
@@ -100,6 +109,8 @@ def get_possible_moves(board, turn):
                     elif enemies > 0:
                         ret.append((row, col))
                         found = True
+                        break
+                    else:
                         break
                 enemies = 0
                 if found:
@@ -117,6 +128,8 @@ def get_possible_moves(board, turn):
                         ret.append((row, col))
                         found = True
                         break
+                    else:
+                        break
                 enemies = 0
                 if found:
                     continue
@@ -132,6 +145,8 @@ def get_possible_moves(board, turn):
                     elif enemies > 0:
                         ret.append((row, col))
                         found = True
+                        break
+                    else:
                         break
                 enemies = 0
                 if found:
@@ -149,6 +164,8 @@ def get_possible_moves(board, turn):
                         ret.append((row, col))
                         found = True
                         break
+                    else:
+                        break
                 enemies = 0
                 if found:
                     continue
@@ -164,6 +181,8 @@ def get_possible_moves(board, turn):
                     elif enemies > 0:
                         ret.append((row, col))
                         found = True
+                        break
+                    else:
                         break
                 enemies = 0
                 if found:
@@ -181,6 +200,8 @@ def get_possible_moves(board, turn):
                         ret.append((row, col))
                         found = True
                         break
+                    else:
+                        break
                 if found:
                     continue
     return ret
@@ -189,17 +210,18 @@ def get_possible_moves(board, turn):
 class ReversiGame:
 
     def __init__(self, players, players_nicknames):
-        self.board = [[CellsValue.EMPTY.value for _ in range(BOARD_SIZE) ] for _ in range(BOARD_SIZE)]
+        self.board = [[CellsValue.EMPTY.value for _ in range(BOARD_SIZE)] for _ in range(BOARD_SIZE)]
         self.board[3][4] = CellsValue.BLACK.value
         self.board[4][3] = CellsValue.BLACK.value
         self.board[3][3] = CellsValue.WHITE.value
         self.board[4][4] = CellsValue.WHITE.value
-        self.turn = 0 # if turn is even - black turn, else white
+        self.turn = 0  # if turn is even - black turn, else white
         self.players = players
         self.playersNicknames = players_nicknames
         self.messageId = None
         self.channelId = None
         self.ai_game = False
+        self.bot_id = False
         self.lastIterated = datetime.utcnow().hour
 
     def make_move(self, row, col, player_id):
@@ -365,12 +387,11 @@ class ReversiGame:
 
     def get_text(self):
         white, black = count_marks(self.board)
-        turn = "Turn: ⚫" if self.turn%2==0 else "Turn: ⚪"
+        turn = "Turn: ⚫" if self.turn % 2 == 0 else "Turn: ⚪"
         return f"{black}⚫ {self.playersNicknames[0]} -  {white}⚪ {self.playersNicknames[1]}\n\n{turn}"
 
     def handle_move(self, x, y, user_id):
         ret = self.make_move(x, y, user_id)
-        print(ret)
         if ret:
             possible = get_possible_moves(self.board, self.turn)
             # Player can't move. Next move
@@ -380,5 +401,77 @@ class ReversiGame:
                 if len(possible) == 0:
                     # this is the end
                     return False
+            # if game is AI, let's play
+            elif self.ai_game and self.players[self.turn % 2] == self.bot_id:
+                playing = True
+                while playing:
+                    # first moves bot will make for random
+                    if self.turn < 0:
+                        possible = get_possible_moves(self.board, self.turn)
+                        x, y = random.choice(possible)
+                        self.make_move(x, y, self.bot_id)
+                    else:
+                        val, best_cord = self.alpha_beta(copy.deepcopy(self.board), 4,
+                                                         alpha=float('-inf'), beta=float('inf'), maximizing_player=True,
+                                                         ai_color=(self.turn+1) % 2 + 1, turn=self.turn)
+                        if best_cord is not None:
+                            self.make_move(best_cord[0], best_cord[1], self.players[self.turn % 2])
+                        else:
+                            possible = get_possible_moves(self.board, self.turn)
+                            x, y = random.choice(possible)
+                            self.make_move(x, y, self.players[self.turn % 2])
+                    possible = get_possible_moves(self.board, self.turn)
+                    if len(possible) == 0:
+                        self.turn += 1
+                        possible = get_possible_moves(self.board, self.turn)
+                        if len(possible) == 0:
+                            # this is the end
+                            return False
+                    else:
+                        playing = False
         return True
 
+    def get_child(self, board: list, player_ball: int, cord):
+        child = copy.deepcopy(board)
+        child[cord[0]][cord[1]] = player_ball
+        return child
+
+    def alpha_beta(self, board, depth, alpha, beta, maximizing_player, ai_color, turn):
+        if depth == 0 or is_terminal(board):
+            white, black = count_marks(board)
+            if ai_color == CellsValue.WHITE.value:
+                return white, -1
+            else:
+                return black, -1
+
+        if maximizing_player:
+            max_eval = float('-inf')
+            max_cord = None
+            possible_moves = get_possible_moves(board, turn)
+            for cord in possible_moves:
+                value = CellsValue.WHITE.value if ai_color == CellsValue.WHITE.value else CellsValue.BLACK.value
+                child = self.get_child(board, value, cord)  # Отримуємо всі можливі ходи
+                eval, _ = self.alpha_beta(child, depth - 1, alpha, beta, False, ai_color, turn + 1)
+                if eval > max_eval:
+                    max_eval = eval
+                    max_cord = cord
+                max_eval = max(max_eval, eval)
+                alpha = max(alpha, eval)
+                if beta <= alpha:
+                    break  # Відсікання
+            return max_eval, max_cord
+        else:
+            min_eval = float('inf')
+            min_cord = None
+            possible_moves = get_possible_moves(board, turn)
+            for cord in possible_moves:
+                value = CellsValue.WHITE.value if ai_color == CellsValue.BLACK.value else CellsValue.BLACK.value
+                child = self.get_child(board, value, cord)
+                eval, _ = self.alpha_beta(child, depth - 1, alpha, beta, True, ai_color, turn + 1)
+                if eval < min_eval:
+                    min_eval = eval
+                    min_cord = cord
+                beta = min(beta, eval)
+                if beta <= alpha:
+                    break  # Відсікання
+            return min_eval, min_cord

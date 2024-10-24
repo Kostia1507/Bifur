@@ -13,18 +13,18 @@ class ReversiView(discord.ui.View):
         self.bot = bot
         self.game = game
 
-    @discord.ui.button(label="Move", style=discord.ButtonStyle.primary, custom_id='persistent_view:report_view')
+    @discord.ui.button(label="Move", style=discord.ButtonStyle.primary)
     async def moveCallback(self, interaction, button):
-        user_id = self.game.players[self.game.turn%2]
+        user_id = self.game.players[self.game.turn % 2]
         if interaction.user.id == user_id:
             await interaction.response.send_modal(ReversiModal(self.bot, self.game))
         else:
-            print(user_id)
             await interaction.response.send_message(content="It's not your turn!", ephemeral=True)
+
 
 class ReversiModal(discord.ui.Modal, title='Reversi'):
 
-    def __init__(self, bot, game:ReversiGame):
+    def __init__(self, bot, game: ReversiGame):
         super().__init__()
         self.bot = bot
         self.game = game
@@ -58,7 +58,6 @@ class ReversiModal(discord.ui.Modal, title='Reversi'):
                                                attachments=[img])
             else:
                 await interaction.message.edit(content="Game finished! Draw.", embed=embed, attachments=[img])
-
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
         await interaction.response.send_message('Something wrong!', ephemeral=True)

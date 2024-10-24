@@ -90,6 +90,7 @@ class GamesCog(commands.Cog):
             # Let him make first move
             game = ReversiGame(players=[ctx.author.id, user.id], players_nicknames=[ctx.author.name, user.name])
             game.ai_game = True
+            game.bot_id = self.bot.user.id
         img = discord.File(game.generate_picture(), "reversi.jpg")
         embed = discord.Embed(title="Reversi", description=game.get_text())
         embed.set_image(url=f'attachment://reversi.jpg')
@@ -143,11 +144,11 @@ class GamesCog(commands.Cog):
                             text += '\nDraw'
                             self.rowGames.remove(game)
                         if ret != 0:
-                            await msg.edit(content=text, view=Connect4HistoryView(game.width, game.height, game.history))
+                            await msg.edit(content=text,
+                                           view=Connect4HistoryView(game.width, game.height, game.history))
                         else:
                             await msg.edit(content=text)
                         await msg.remove_reaction(numbers[i], await self.bot.fetch_user(event.user_id))
-
 
     @tasks.loop(minutes=11)
     async def checkNotFinishedGames(self):
