@@ -2,6 +2,8 @@ import copy
 import random
 from datetime import datetime
 from enum import Enum
+from itertools import count
+
 from PIL import ImageDraw, Image
 from io import BytesIO
 
@@ -10,6 +12,8 @@ BOARD_SIZE = 8
 
 WHITE_MARK_COLOR = "#CCCCCC"
 BLACK_MARK_COLOR = "#000000"
+
+POINTS_FOR_CORNER = 10
 
 
 class CellsValue(Enum):
@@ -37,6 +41,18 @@ def is_terminal(board):
         return False
     return True
 
+def eval_position(board, color):
+    white, black = count_marks(board)
+    res = white if color == CellsValue.WHITE.value else black
+    if board[0][0] == color:
+        res += POINTS_FOR_CORNER
+    if board[0][BOARD_SIZE-1] == color:
+        res += POINTS_FOR_CORNER
+    if board[BOARD_SIZE-1][0] == color:
+        res += POINTS_FOR_CORNER
+    if board[BOARD_SIZE-1][BOARD_SIZE-1] == color:
+        res += POINTS_FOR_CORNER
+    return res
 
 # returns two numbers. First is count of White. Second - Black
 def count_marks(board):
@@ -62,7 +78,7 @@ def get_possible_moves(board, turn):
                 found = False
                 enemies = 0
                 # left top
-                for change in range(1, 8):
+                for change in range(1, 9):
                     if row - change < 0 or col - change < 0:
                         break
                     if board[row - change][col - change] == CellsValue.EMPTY.value:
@@ -80,7 +96,7 @@ def get_possible_moves(board, turn):
                 if found:
                     continue
                 # left
-                for change in range(1, 8):
+                for change in range(1, 9):
                     if col - change < 0:
                         break
                     if board[row][col - change] == CellsValue.EMPTY.value:
@@ -98,7 +114,7 @@ def get_possible_moves(board, turn):
                 if found:
                     continue
                 # left bottom
-                for change in range(1, 8):
+                for change in range(1, 9):
                     if col - change < 0 or row + change >= BOARD_SIZE:
                         break
                     if board[row + change][col - change] == CellsValue.EMPTY.value:
@@ -116,7 +132,7 @@ def get_possible_moves(board, turn):
                 if found:
                     continue
                 # bottom
-                for change in range(1, 8):
+                for change in range(1, 9):
                     if row + change >= BOARD_SIZE:
                         break
                     if board[row + change][col] == CellsValue.EMPTY.value:
@@ -134,7 +150,7 @@ def get_possible_moves(board, turn):
                 if found:
                     continue
                 # bottom-right
-                for change in range(1, 8):
+                for change in range(1, 9):
                     if row + change >= BOARD_SIZE or col + change >= BOARD_SIZE:
                         break
                     if board[row + change][col + change] == CellsValue.EMPTY.value:
@@ -152,7 +168,7 @@ def get_possible_moves(board, turn):
                 if found:
                     continue
                 # right
-                for change in range(1, 8):
+                for change in range(1, 9):
                     if col + change >= BOARD_SIZE:
                         break
                     if board[row][col + change] == CellsValue.EMPTY.value:
@@ -170,7 +186,7 @@ def get_possible_moves(board, turn):
                 if found:
                     continue
                 # top-right
-                for change in range(1, 8):
+                for change in range(1, 9):
                     if row - change < 0 or col + change >= BOARD_SIZE:
                         break
                     if board[row - change][col + change] == CellsValue.EMPTY.value:
@@ -188,7 +204,7 @@ def get_possible_moves(board, turn):
                 if found:
                     continue
                 # top
-                for change in range(1, 8):
+                for change in range(1, 9):
                     if row - change < 0:
                         break
                     if board[row - change][col] == CellsValue.EMPTY.value:
@@ -232,7 +248,7 @@ class ReversiGame:
             enemies = []
 
             # left top
-            for change in range(1, 8):
+            for change in range(1, 9):
                 if row - change < 0 or col - change < 0:
                     enemies = []
                     break
@@ -248,7 +264,7 @@ class ReversiGame:
                 cellsToChange.append(element)
             enemies = []
             # left
-            for change in range(1, 8):
+            for change in range(1, 9):
                 if col - change < 0:
                     enemies = []
                     break
@@ -264,7 +280,7 @@ class ReversiGame:
                 cellsToChange.append(element)
             enemies = []
             # left bottom
-            for change in range(1, 8):
+            for change in range(1, 9):
                 if col - change < 0 or row + change >= BOARD_SIZE:
                     enemies = []
                     break
@@ -280,7 +296,7 @@ class ReversiGame:
                 cellsToChange.append(element)
             enemies = []
             # bottom
-            for change in range(1, 8):
+            for change in range(1, 9):
                 if row + change >= BOARD_SIZE:
                     enemies = []
                     break
@@ -296,7 +312,7 @@ class ReversiGame:
                 cellsToChange.append(element)
             enemies = []
             # bottom-right
-            for change in range(1, 8):
+            for change in range(1, 9):
                 if row + change >= BOARD_SIZE or col + change >= BOARD_SIZE:
                     enemies = []
                     break
@@ -312,7 +328,7 @@ class ReversiGame:
                 cellsToChange.append(element)
             enemies = []
             # right
-            for change in range(1, 8):
+            for change in range(1, 9):
                 if col + change >= BOARD_SIZE:
                     enemies = []
                     break
@@ -328,7 +344,7 @@ class ReversiGame:
                 cellsToChange.append(element)
             enemies = []
             # top-right
-            for change in range(1, 8):
+            for change in range(1, 9):
                 if row - change < 0 or col + change >= BOARD_SIZE:
                     enemies = []
                     break
@@ -344,7 +360,7 @@ class ReversiGame:
                 cellsToChange.append(element)
             enemies = []
             # top
-            for change in range(1, 8):
+            for change in range(1, 9):
                 if row - change < 0:
                     enemies = []
                     break
@@ -438,11 +454,7 @@ class ReversiGame:
 
     def alpha_beta(self, board, depth, alpha, beta, maximizing_player, ai_color, turn):
         if depth == 0 or is_terminal(board):
-            white, black = count_marks(board)
-            if ai_color == CellsValue.WHITE.value:
-                return white, -1
-            else:
-                return black, -1
+            return eval_position(board, ai_color), -1
 
         if maximizing_player:
             max_eval = float('-inf')
