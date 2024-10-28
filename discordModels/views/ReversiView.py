@@ -46,6 +46,7 @@ class ReversiModal(discord.ui.Modal, title='Reversi'):
                                            attachments=[img])
             await interaction.followup.send(localeService.getLocale('ready', interaction.user.id))
         else:
+            await interaction.followup.send(localeService.getLocale('ready', interaction.user.id))
             img = discord.File(self.game.generate_picture(), "reversi.jpg")
             embed = discord.Embed(title="Reversi", description=self.game.get_text())
             embed.set_image(url=f'attachment://reversi.jpg')

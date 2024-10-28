@@ -2,7 +2,6 @@ import copy
 import random
 from datetime import datetime
 from enum import Enum
-from itertools import count
 
 from PIL import ImageDraw, Image
 from io import BytesIO
@@ -43,15 +42,24 @@ def is_terminal(board):
 
 def eval_position(board, color):
     white, black = count_marks(board)
-    res = white if color == CellsValue.WHITE.value else black
+    res = white - black if color == CellsValue.WHITE.value else black - white
+    res += 64
     if board[0][0] == color:
         res += POINTS_FOR_CORNER
+    elif board[0][0] != CellsValue.EMPTY.value:
+        res -= POINTS_FOR_CORNER
     if board[0][BOARD_SIZE-1] == color:
         res += POINTS_FOR_CORNER
+    elif board[0][BOARD_SIZE-1] != CellsValue.EMPTY.value:
+        res -= POINTS_FOR_CORNER
     if board[BOARD_SIZE-1][0] == color:
         res += POINTS_FOR_CORNER
+    elif board[BOARD_SIZE-1][0] != CellsValue.EMPTY.value:
+        res -= POINTS_FOR_CORNER
     if board[BOARD_SIZE-1][BOARD_SIZE-1] == color:
         res += POINTS_FOR_CORNER
+    elif board[BOARD_SIZE-1][BOARD_SIZE-1] != CellsValue.EMPTY.value:
+        res -= POINTS_FOR_CORNER
     return res
 
 # returns two numbers. First is count of White. Second - Black
@@ -411,7 +419,7 @@ class ReversiGame:
         if ret:
             possible = get_possible_moves(self.board, self.turn)
             # Player can't move. Next move
-            if len(possible) == 0:
+            if len(possible) == 4:
                 self.turn += 1
                 possible = get_possible_moves(self.board, self.turn)
                 if len(possible) == 0:
@@ -460,6 +468,8 @@ class ReversiGame:
             max_eval = float('-inf')
             max_cord = None
             possible_moves = get_possible_moves(board, turn)
+            if len(possible_moves) == 0:
+                return  self.alpha_beta(board, depth - 1, alpha, beta, False, ai_color, turn + 1)
             for cord in possible_moves:
                 value = CellsValue.WHITE.value if ai_color == CellsValue.WHITE.value else CellsValue.BLACK.value
                 child = self.get_child(board, value, cord)  # Отримуємо всі можливі ходи
@@ -476,6 +486,8 @@ class ReversiGame:
             min_eval = float('inf')
             min_cord = None
             possible_moves = get_possible_moves(board, turn)
+            if len(possible_moves) == 0:
+                return self.alpha_beta(board, depth - 1, alpha, beta, True, ai_color, turn + 1)
             for cord in possible_moves:
                 value = CellsValue.WHITE.value if ai_color == CellsValue.BLACK.value else CellsValue.BLACK.value
                 child = self.get_child(board, value, cord)
