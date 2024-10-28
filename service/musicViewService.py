@@ -24,12 +24,12 @@ async def createPlayer(ctx, bot):
                 title=f'{getLocaleByLang("playing", userLang)} {t.name}',
                 description=f'{getLocaleByLang("ordered", userLang)} {t.author}\n'
                             f'{getLocaleByLang("duration", userLang)} {t.getDurationToStr()}\n'
-                            f'{getLocaleByLang("volume", userLang)} {mp.volume}%')
+                            f'{getLocaleByLang("volume", userLang)} {mp.volume}%\n'
+                            f'[Link]({t.original_url})')
             embed.set_thumbnail(url=t.icon_link)
-            embed.set_footer(text=t.original_url)
 
             if len(mp.songs) >= 1 and mp.songs[0] is not None:
-                embed.description = embed.description + f"\n\n{getLocaleByLang('next', userLang)} {mp.songs[0].name}"
+                embed.set_footer(text=f"{getLocaleByLang('next', userLang)} {mp.songs[0].name}")
         else:
             embed = discord.Embed(
                 title=f'{getLocaleByLang("playing", userLang)} {getLocaleByLang("nothing", userLang)}'
@@ -51,12 +51,12 @@ async def updatePlayer(mediaPlayer, bot):
             title=f'{getLocaleByLang("playing", userLang)} {t.name}',
             description=f'{getLocaleByLang("ordered", userLang)} {t.author}\n'
                         f'{getLocaleByLang("duration", userLang)} {t.getDurationToStr()}\n'
-                        f'{getLocaleByLang("volume", userLang)} {mediaPlayer.volume}%')
+                        f'{getLocaleByLang("volume", userLang)} {mediaPlayer.volume}%\n'
+                        f'[Link]({t.original_url})')
         embed.set_thumbnail(url=t.icon_link)
-        embed.set_footer(text=t.original_url)
 
         if len(mediaPlayer.songs) >= 1 and mediaPlayer.songs[0] is not None:
-            embed.description = embed.description + f"\n\n{getLocaleByLang('next', userLang)} {mediaPlayer.songs[0].name}"
+            embed.set_footer(text=f"{getLocaleByLang('next', userLang)} {mediaPlayer.songs[0].name}")
     else:
         embed = discord.Embed(
             title=f'{getLocaleByLang("playing", userLang)} {getLocaleByLang("nothing", userLang)}'

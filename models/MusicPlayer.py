@@ -1,4 +1,5 @@
 import random
+from datetime import datetime, timedelta
 from enum import Enum
 
 from service.localeService import getLocale, getUserLang, getLocaleByLang
@@ -35,6 +36,7 @@ class MusicPlayer:
         self.musicPlayerMessageId = None
         self.musicPlayerChannelId = None
         self.isStopped = False
+        self.playCooldown = datetime.now() - timedelta(seconds=10)
 
     def addSong(self, track):
         self.songs.append(track)

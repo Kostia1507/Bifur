@@ -90,7 +90,8 @@ class MusicCog(commands.Cog):
                     guild = self.bot.get_guild(mp.guildId)
                     if guild.voice_client:
                         vc = guild.voice_client
-                        if vc.is_connected() and not vc.is_playing() and not vc.is_paused():
+                        if (vc.is_connected() and not vc.is_playing() and not vc.is_paused()
+                                and datetime.now() - mp.playCooldown > timedelta(seconds=10)):
                             song = mp.getNext()
                             if song is not None:
                                 error = None
@@ -109,6 +110,7 @@ class MusicCog(commands.Cog):
                                     source = discord.PCMVolumeTransformer(
                                         discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=mp.volume/100)
                                     vc.play(source)
+                                    mp.playCooldown = datetime.now()
                                     if mp.musicPlayerMessageId is not None:
                                         await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
                     else:

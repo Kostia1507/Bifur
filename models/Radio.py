@@ -132,7 +132,7 @@ class Radio:
             )
             cur = conn.cursor()
             for i in tracks:
-                cur.execute("DELETE FROM tracks WHERE id='" + str(i[0]) + "'")
+                cur.execute("DELETE FROM tracks WHERE id='" + str(i.trackId) + "'")
             cur.execute("DELETE FROM radios WHERE id='" + str(self.radio_id) + "'")
             conn.commit()
             cur.close()
