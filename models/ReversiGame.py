@@ -30,6 +30,10 @@ def convert_str_to_cords(loop: str):
     return 8 - int(last), columnLetters.find(first)
 
 
+def convert_cords_to_str(row, col):
+    return f"{columnLetters[col]}{8 - row}"
+
+
 # return True if there is no moves for all players
 def is_terminal(board):
     possible = get_possible_moves(board, 0)
@@ -40,6 +44,7 @@ def is_terminal(board):
         return False
     return True
 
+
 def eval_position(board, color):
     white, black = count_marks(board)
     res = white - black if color == CellsValue.WHITE.value else black - white
@@ -48,19 +53,20 @@ def eval_position(board, color):
         res += POINTS_FOR_CORNER
     elif board[0][0] != CellsValue.EMPTY.value:
         res -= POINTS_FOR_CORNER
-    if board[0][BOARD_SIZE-1] == color:
+    if board[0][BOARD_SIZE - 1] == color:
         res += POINTS_FOR_CORNER
-    elif board[0][BOARD_SIZE-1] != CellsValue.EMPTY.value:
+    elif board[0][BOARD_SIZE - 1] != CellsValue.EMPTY.value:
         res -= POINTS_FOR_CORNER
-    if board[BOARD_SIZE-1][0] == color:
+    if board[BOARD_SIZE - 1][0] == color:
         res += POINTS_FOR_CORNER
-    elif board[BOARD_SIZE-1][0] != CellsValue.EMPTY.value:
+    elif board[BOARD_SIZE - 1][0] != CellsValue.EMPTY.value:
         res -= POINTS_FOR_CORNER
-    if board[BOARD_SIZE-1][BOARD_SIZE-1] == color:
+    if board[BOARD_SIZE - 1][BOARD_SIZE - 1] == color:
         res += POINTS_FOR_CORNER
-    elif board[BOARD_SIZE-1][BOARD_SIZE-1] != CellsValue.EMPTY.value:
+    elif board[BOARD_SIZE - 1][BOARD_SIZE - 1] != CellsValue.EMPTY.value:
         res -= POINTS_FOR_CORNER
     return res
+
 
 # returns two numbers. First is count of White. Second - Black
 def count_marks(board):
@@ -244,6 +250,7 @@ class ReversiGame:
         self.playersNicknames = players_nicknames
         self.messageId = None
         self.channelId = None
+        self.lastMove = None
         self.ai_game = False
         self.bot_id = False
         self.lastIterated = datetime.utcnow().hour
@@ -387,6 +394,8 @@ class ReversiGame:
             if len(cellsToChange) == 0:
                 return False
             else:
+                self.lastMove = f"⚫{convert_cords_to_str(row, col)}" if self.turn % 2 == 0 else \
+                    f"⚪{convert_cords_to_str(row, col)}"
                 for cords in cellsToChange:
                     self.board[cords[0]][cords[1]] = value
                 self.board[row][col] = value
@@ -411,7 +420,9 @@ class ReversiGame:
 
     def get_text(self):
         white, black = count_marks(self.board)
-        turn = "Turn: ⚫" if self.turn % 2 == 0 else "Turn: ⚪"
+        turn = f"Turn {self.turn}: ⚫\n" if self.turn % 2 == 0 else f"Turn {self.turn}: ⚪\n"
+        if self.lastMove is not None:
+            turn += "Previous: " + self.lastMove
         return f"{black}⚫ {self.playersNicknames[0]} -  {white}⚪ {self.playersNicknames[1]}\n\n{turn}"
 
     def handle_move(self, x, y, user_id):
@@ -419,7 +430,7 @@ class ReversiGame:
         if ret:
             possible = get_possible_moves(self.board, self.turn)
             # Player can't move. Next move
-            if len(possible) == 4:
+            if len(possible) == 0:
                 self.turn += 1
                 possible = get_possible_moves(self.board, self.turn)
                 if len(possible) == 0:
@@ -430,14 +441,14 @@ class ReversiGame:
                 playing = True
                 while playing:
                     # first moves bot will make for random
-                    if self.turn < 0:
+                    if self.turn < 4:
                         possible = get_possible_moves(self.board, self.turn)
                         x, y = random.choice(possible)
                         self.make_move(x, y, self.bot_id)
                     else:
-                        val, best_cord = self.alpha_beta(copy.deepcopy(self.board), 4,
+                        val, best_cord = self.alpha_beta(copy.deepcopy(self.board), 6,
                                                          alpha=float('-inf'), beta=float('inf'), maximizing_player=True,
-                                                         ai_color=(self.turn+1) % 2 + 1, turn=self.turn)
+                                                         ai_color=(self.turn + 1) % 2 + 1, turn=self.turn)
                         if best_cord is not None:
                             self.make_move(best_cord[0], best_cord[1], self.players[self.turn % 2])
                         else:
@@ -469,7 +480,7 @@ class ReversiGame:
             max_cord = None
             possible_moves = get_possible_moves(board, turn)
             if len(possible_moves) == 0:
-                return  self.alpha_beta(board, depth - 1, alpha, beta, False, ai_color, turn + 1)
+                return self.alpha_beta(board, depth - 1, alpha, beta, False, ai_color, turn + 1)
             for cord in possible_moves:
                 value = CellsValue.WHITE.value if ai_color == CellsValue.WHITE.value else CellsValue.BLACK.value
                 child = self.get_child(board, value, cord)  # Отримуємо всі можливі ходи
