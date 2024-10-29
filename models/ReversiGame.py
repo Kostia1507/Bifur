@@ -253,7 +253,6 @@ class ReversiGame:
         self.lastMove = None
         self.ai_game = False
         self.bot_id = False
-        self.lastIterated = datetime.utcnow().hour
 
     def make_move(self, row, col, player_id):
         if player_id == self.players[self.turn % 2]:

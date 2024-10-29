@@ -97,7 +97,7 @@ class GamesCog(commands.Cog):
         msg = await ctx.send(embed=embed, view=ReversiView(self.bot, game), file=img)
         game.messageId = msg.id
         game.channelId = msg.channel.id
-        LogCog.logSystem(f'start reversi at {game.lastIterated} with messageId {game.messageId}')
+        LogCog.logSystem(f'start reversi at {datetime.now} with messageId {game.messageId}')
 
     @app_commands.command(name="connect4", description="Challenge your friends in Connect 4")
     @app_commands.describe(opponent="Friend to play with. Choose Bifur to play against him")
