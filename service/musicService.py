@@ -11,6 +11,7 @@ settings = {
     'match_filter': utils.match_filter_func("!is_live"),
     'nocheckcertificate': True,
     'format': 'bestaudio/best',
+    'retries: 5'
     'quiet': True,
     'no_warnings': True,
     'source_address': '0.0.0.0',

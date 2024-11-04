@@ -13,6 +13,7 @@ options = {
     'quiet': True,
     'no_warnings': True,
     'noplaylist': True,
+    'retries': 5,
     'source_address': '0.0.0.0',
     'prefferedcodec': 'mp3',
     'live_from_start': False,

@@ -21,6 +21,10 @@ ffmpeg_options = {
 
 searchQueue = {}
 
+def after_player(error):
+    if error is not None:
+        LogCog.logError(str(error))
+
 
 class MusicSelectView(discord.ui.View):
     def __init__(self, options, bot):
@@ -109,7 +113,7 @@ class MusicCog(commands.Cog):
                                 else:
                                     source = discord.PCMVolumeTransformer(
                                         discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=mp.volume/100)
-                                    vc.play(source)
+                                    vc.play(source, after=after_player)
                                     mp.playCooldown = datetime.now()
                                     if mp.musicPlayerMessageId is not None:
                                         await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
@@ -170,7 +174,7 @@ class MusicCog(commands.Cog):
                         else:
                             source = discord.PCMVolumeTransformer(
                                 discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=mp.volume / 100)
-                            vc.play(source)
+                            vc.play(source, after=after_player)
                             if mp.musicPlayerMessageId is not None:
                                 await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
             else:
@@ -345,7 +349,7 @@ class MusicCog(commands.Cog):
     @commands.command(aliases=['mclean'])
     @commands.check(commandUtils.is_in_vc)
     async def mclear(self, ctx):
-        musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).clearTrackList()
+        musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).songs = []
         await ctx.message.add_reaction('✅')
 
     @commands.command()

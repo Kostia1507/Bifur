@@ -4,13 +4,17 @@ Invite bot to your guild - https://discord.com/api/oauth2/authorize?client_id=80
 
 My discord: comradekostia
 
+[![Discord](https://discord.com/api/guilds/336642139381301249/embed.png)](https://discord.gg/2EGkGzDTK5 "Discord")
+
 ### Current features:
 - Music
 - Playlists
 - Weather Forecast
-- Picture Editor
+- Picture Editor (some simple commands like convert to black and white profile)
 - Translator
-- Connect 4 (MinMax)
+- Connect 4
+- Reversi
+- TicTacToe (5x5 field)
 - ChatGPT Integration
 - Calculator
 - Currency rates
