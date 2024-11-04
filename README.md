@@ -4,8 +4,6 @@ Invite bot to your guild - https://discord.com/api/oauth2/authorize?client_id=80
 
 My discord: comradekostia
 
-[![Discord](https://discord.com/api/guilds/336642139381301249/embed.png)](https://discord.gg/2EGkGzDTK5 "Discord")
-
 ### Current features:
 - Music
 - Playlists
