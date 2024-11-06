@@ -1,3 +1,4 @@
+import asyncio
 import random
 
 from yt_dlp import utils, YoutubeDL
@@ -114,7 +115,7 @@ async def searchByLink(name):
                 if info['is_live']:
                     return None
                 song = Song(info['webpage_url'], False)
-                await song.updateFromWeb()
+                await asyncio.create_task(song.updateFromWeb())
                 return [song]
         except Exception as e:
             LogCog.logError(f'Помилка при пошуку за посиланням {name}: {e}')
@@ -128,7 +129,7 @@ async def searchOne(name):
             if info['is_live']:
                 return None
             song = Song(info['webpage_url'], False)
-            await song.updateFromWeb()
+            await asyncio.create_task(song.updateFromWeb())
             return [song]
         except Exception as e:
             LogCog.logError(f'Помилка при пошуку {name}: {e}')
