@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import aiohttp
 import psycopg2
 from yt_dlp import YoutubeDL, utils
 
@@ -53,7 +54,9 @@ class Song:
             ret = ret[1:len(ret)]
         return ret
 
-    def updateFromWeb(self):
+    async def updateFromWeb(self, count = 0):
+        if count >= 5:
+            return
         with YoutubeDL(options) as ydl:
             try:
                 info = ydl.extract_info(self.original_url, download=False)
@@ -63,6 +66,11 @@ class Song:
                 self.icon_link = info['thumbnail']
                 self.stream_url = info['url']
                 self.updated = datetime.now()
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url=self.stream_url) as response:
+                        # Try once again
+                        if response.status != 200:
+                            await self.updateFromWeb(count + 1)
             except Exception as e:
                 LogCog.logError(f'Помилка при спробі отримати інформацію {self.original_url}: {e}')
                 return e

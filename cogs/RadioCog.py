@@ -98,7 +98,7 @@ class RadioCog(commands.Cog):
             radio = radioService.getRadioById(radio_name)
         else:
             radio = radioService.getRadioByName(radio_name, ctx.author.id)
-        ret = radio.getInfo(ctx.author.id)
+        ret = await radio.getInfo(ctx.author.id)
         if isinstance(ret, tuple):
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
             embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
@@ -403,7 +403,7 @@ class RadioCog(commands.Cog):
             radio = radioService.getRadioById(radio_name)
         else:
             radio = radioService.getRadioByName(radio_name, interaction.user.id)
-        ret = radio.getInfo(interaction.user.id)
+        ret = await radio.getInfo(interaction.user.id)
         if isinstance(ret, tuple):
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
             embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])

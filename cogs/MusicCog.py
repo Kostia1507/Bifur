@@ -100,7 +100,7 @@ class MusicCog(commands.Cog):
                             if song is not None:
                                 error = None
                                 if song.stream_url is None or datetime.now() - song.updated >= timedelta(hours=5):
-                                    error = song.updateFromWeb()
+                                    error = await song.updateFromWeb()
                                 if error is not None:
                                     embed = discord.Embed(title="Error", description=str(error), color=discord.Color.red())
                                     if song.name is not None:
@@ -161,7 +161,7 @@ class MusicCog(commands.Cog):
                     if song is not None:
                         error = None
                         if song.stream_url is None or datetime.now() - song.updated >= timedelta(hours=5):
-                            error = song.updateFromWeb()
+                            error = await song.updateFromWeb()
                         if error is not None:
                             embed = discord.Embed(title="Error", description=str(error), color=discord.Color.red())
                             if song.name is not None:
@@ -189,8 +189,7 @@ class MusicCog(commands.Cog):
             return 0
         loop = ' '.join(args)
 
-        if await commandUtils.run_blocking(musicService.addTrack,
-                                           loop.strip(), ctx.guild.id, ctx.author.name, ctx.channel.id):
+        if await musicService.addTrack(loop.strip(), ctx.guild.id, ctx.author.name, ctx.channel.id):
             await ctx.message.add_reaction('✅')
         else:
             await ctx.message.add_reaction('❌')
@@ -376,7 +375,7 @@ class MusicCog(commands.Cog):
 
     @commands.command(aliases=["dwlmp3"])
     async def downloadmp3(self, ctx, url):
-        filename = musicService.downloadVideo(url)
+        filename = await musicService.downloadVideo(url)
         await ctx.send(file=discord.File(filename))
         os.remove(filename)
 
@@ -438,7 +437,7 @@ class MusicCog(commands.Cog):
     async def linfo(self, ctx, track_id: int):
         song = likedSongsService.getLikedSongById(ctx.author.id, track_id)
         if song is not None:
-            song.updateFromWeb()
+            await song.updateFromWeb()
             embed = discord.Embed(
                 title=f'{song.name}',
                 description=f'URL: {song.original_url}\n{getLocale("duration", ctx.author.id)} {song.getDurationToStr()}'
@@ -465,8 +464,7 @@ class MusicCog(commands.Cog):
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
             return 0
-        await commandUtils.run_blocking(musicService.addTrack, query.strip(),
-                                        interaction.guild.id, interaction.user.name, interaction.channel.id)
+        await musicService.addTrack( query.strip(), interaction.guild.id, interaction.user.name, interaction.channel.id)
         await interaction.response.send_message(getLocale('ready', interaction.user.id),
                                                 ephemeral=True, delete_after=15)
         await musicViewService.createPlayer(interaction, self.bot)

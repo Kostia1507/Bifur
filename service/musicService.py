@@ -34,8 +34,8 @@ def findMusicPlayerByGuildId(guild_id):
     return players[guild_id] if guild_id in players.keys() else None
 
 
-def addTrack(name, guild_id, author, channel_id):
-    ret = searchByLink(name) if str(name).startswith('http') else searchOne(name)
+async def addTrack(name, guild_id, author, channel_id):
+    ret = await searchByLink(name) if str(name).startswith('http') else await searchOne(name)
     if ret is not None:
         for song in ret:
             song.author = author
@@ -94,7 +94,7 @@ def startLiked(guildId, author, channelId, userId, isClearPlaylist):
     return True
 
 
-def searchByLink(name):
+async def searchByLink(name):
     new_settings = settings.copy()
     new_settings["forceurl"] = True
     new_settings["simulate"] = True
@@ -106,24 +106,30 @@ def searchByLink(name):
                 entries = info['entries']
                 ret = []
                 for entry in entries:
-                    ret.append(Song(entry["webpage_url"], True))
+                    song = Song(entry["webpage_url"], False)
+                    await song.updateFromWeb()
+                    ret.append(song)
                 return ret
             else:
                 if info['is_live']:
                     return None
-                return [Song(info['webpage_url'], True)]
+                song = Song(info['webpage_url'], False)
+                await song.updateFromWeb()
+                return [song]
         except Exception as e:
             LogCog.logError(f'Помилка при пошуку за посиланням {name}: {e}')
             return None
 
 
-def searchOne(name):
+async def searchOne(name):
     with YoutubeDL(settings) as ydl:
         try:
             info = ydl.extract_info("ytsearch:%s" % name, download=False)['entries'][0]
             if info['is_live']:
                 return None
-            return [Song(info['webpage_url'], True)]
+            song = Song(info['webpage_url'], False)
+            await song.updateFromWeb()
+            return [song]
         except Exception as e:
             LogCog.logError(f'Помилка при пошуку {name}: {e}')
             return None
@@ -150,9 +156,9 @@ def delete(guild_id):
         del players[guild_id]
 
 
-def downloadVideo(url):
+async def downloadVideo(url):
     t = searchByLink(url)[0]
-    t.updateFromWeb()
+    await t.updateFromWeb()
     filename = f'temp/{t.name}.mp3'
     t.download(filename)
     return filename
