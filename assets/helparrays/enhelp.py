@@ -376,6 +376,17 @@ helpEN = {
                                "The player who was invited goes first" +
                                "Thanks to the height and width parameters, you can create a variety of boards"
             },
+            {
+                "name": ">reversi [mention]",
+                "aliases": ['>othello'],
+                "description": "Reversies are played on a board of 8x8 cells. Players take turns placing their pieces (disks)"
+                                " (white on one side, black on the other) so that between your existing disk and that one"
+                                "what was put on the table turned out to be continuous"
+                                " a row of enemy disks. All enemy disks in such rows are turned over.\n"
+                                "If there is no move that will flip at least one enemy disk, the move is skipped."
+                                " If both players cannot move - the game ends\n"
+                                "The one with more disks on the table wins"
+            },
         ],
     "Calculator":
         [
