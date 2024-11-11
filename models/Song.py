@@ -23,6 +23,8 @@ options = {
 
 class Song:
 
+    # it's rather better not to use initFromWeb and set it to False
+    # Use updateFromWeb method which has validation
     def __init__(self, original_url, initFromWeb):
         self.original_url = original_url
         self.name = ""

@@ -23,7 +23,7 @@ searchQueue = {}
 
 def after_player(error):
     if error is not None:
-        LogCog.logError(str(error))
+        LogCog.logError("after_player" + str(error))
 
 
 class MusicSelectView(discord.ui.View):
@@ -322,19 +322,22 @@ class MusicCog(commands.Cog):
     async def search(self, ctx, *args):
         await ctx.message.add_reaction('✅')
         loop = ' '.join(args)
-        tList = musicService.searchFive(loop)
-        searchQueue[ctx.message.author.id] = tList
-        options = []
-        text = ''
-        for i in range(0, len(tList)):
-            options.append(discord.SelectOption(label=f"{i + 1}. {tList[i].name[0:80]} ({tList[i].getDurationToStr()})",
-                                                value=str(i)))
-            text += f'{i + 1}. {tList[i].name} ({tList[i].getDurationToStr()})\n'
-        embed = discord.Embed(
-            title=getLocale("result", ctx.author.id),
-            description=text
-        )
-        await ctx.send(embed=embed, view=MusicSelectView(options, self.bot))
+        tList = await musicService.searchFive(loop)
+        if len(tList) > 0:
+            searchQueue[ctx.message.author.id] = tList
+            options = []
+            text = ''
+            for i in range(0, len(tList)):
+                options.append(discord.SelectOption(label=f"{i + 1}. {tList[i].name[0:80]} ({tList[i].getDurationToStr()})",
+                                                    value=str(i)))
+                text += f'{i + 1}. {tList[i].name} ({tList[i].getDurationToStr()})\n'
+            embed = discord.Embed(
+                title=getLocale("result", ctx.author.id),
+                description=text
+            )
+            await ctx.send(embed=embed, view=MusicSelectView(options, self.bot))
+        else:
+            await ctx.send(getLocale("nothing-found", ctx.author.id))
 
     @commands.command()
     @commands.check(commandUtils.is_in_vc)
@@ -473,19 +476,22 @@ class MusicCog(commands.Cog):
     @app_commands.describe(query="video title on youtube")
     async def searchSlash(self, interaction: discord.Interaction, query: str):
         await interaction.response.defer(ephemeral=True, thinking=True)
-        tList = musicService.searchFive(query)
-        searchQueue[interaction.user.id] = tList
-        options = []
-        text = ''
-        for i in range(0, len(tList)):
-            options.append(discord.SelectOption(label=f"{i + 1}. {tList[i].name[0:80]} ({tList[i].getDurationToStr()})",
-                                                value=str(i)))
-            text += f'{i + 1}. {tList[i].name} ({tList[i].getDurationToStr()})\n'
-        embed = discord.Embed(
-            title=getLocale("result", interaction.user.id),
-            description=text
-        )
-        await interaction.followup.send(embed=embed, view=MusicSelectView(options, self.bot))
+        tList = await musicService.searchFive(query)
+        if len(tList) > 0:
+            searchQueue[interaction.user.id] = tList
+            options = []
+            text = ''
+            for i in range(0, len(tList)):
+                options.append(discord.SelectOption(label=f"{i + 1}. {tList[i].name[0:80]} ({tList[i].getDurationToStr()})",
+                                                    value=str(i)))
+                text += f'{i + 1}. {tList[i].name} ({tList[i].getDurationToStr()})\n'
+            embed = discord.Embed(
+                title=getLocale("result", interaction.user.id),
+                description=text
+            )
+            await interaction.followup.send(embed=embed, view=MusicSelectView(options, self.bot))
+        else:
+            await interaction.followup.send(getLocale("nothing-found", interaction.user.id))
 
     @app_commands.command(name="list", description="List of songs in queue")
     async def listSlash(self, interaction: discord.Interaction):

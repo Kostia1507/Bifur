@@ -136,7 +136,7 @@ async def searchOne(name):
             return None
 
 
-def searchFive(name):
+async def searchFive(name):
     with YoutubeDL(settings) as ydl:
         try:
             info = ydl.extract_info(f"ytsearch5:{name}", download=False)['entries'][0:5]
@@ -144,7 +144,8 @@ def searchFive(name):
             for e in info:
                 if e['is_live']:
                     continue
-                t = Song(e['webpage_url'], True)
+                t = Song(e['webpage_url'], False)
+                await asyncio.create_task(t.updateFromWeb())
                 ret.append(t)
             return ret
         except Exception as e:
