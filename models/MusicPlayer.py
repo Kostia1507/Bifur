@@ -36,6 +36,8 @@ class MusicPlayer:
         self.musicPlayerMessageId = None
         self.musicPlayerChannelId = None
         self.isStopped = False
+        # is checked in checkMusicPlayer()
+        self.checked = False
         self.playCooldown = datetime.now() - timedelta(seconds=10)
 
     def addSong(self, track):
@@ -109,6 +111,7 @@ class MusicPlayer:
         self.history = self.history[-HISTORY_SIZE:] \
             if len(self.history) > HISTORY_SIZE else self.history
         self.playing = None
+        self.checked = False
 
     def skipLine(self, n):
         n = max(min(n - 1, len(self.songs) - 1), 1)
@@ -116,6 +119,7 @@ class MusicPlayer:
             if self.repeating:
                 self.songs.append(self.songs[0])
             self.songs.remove(self.songs[0])
+        self.checked = False
 
     def shuffle(self):
         random.shuffle(self.songs)

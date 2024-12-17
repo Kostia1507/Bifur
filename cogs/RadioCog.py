@@ -1,3 +1,4 @@
+import asyncio
 import random
 
 import discord
@@ -109,8 +110,12 @@ class RadioCog(commands.Cog):
 
     @commands.command(aliases=['at'])
     async def addtrack(self, ctx, radio_id, url):
-        song = Song(url, True)
+        song = Song(url, False)
+        await asyncio.create_task(song.updateFromWeb())
         name, duration = song.name, song.duration
+        if name is None or duration is None:
+            await ctx.message.add_reaction('❌')
+            return
         retStatus = radioService.createTrack(name, radio_id, url, ctx.author.id, duration)
         if retStatus is None:
             await ctx.reply(getLocale('url-exist', ctx.author.id))

@@ -21,6 +21,12 @@ ffmpeg_options = {
 
 searchQueue = {}
 
+
+async def update_music_view(mp, bot):
+    await asyncio.sleep(10)  # асинхронна затримка на 10 секунд
+    await musicViewService.updatePlayer(mediaPlayer=mp, bot=bot)
+
+
 def after_player(error):
     if error is not None:
         LogCog.logError("after_player" + str(error))
@@ -95,14 +101,16 @@ class MusicCog(commands.Cog):
                     if guild.voice_client:
                         vc = guild.voice_client
                         if (vc.is_connected() and not vc.is_playing() and not vc.is_paused()
-                                and datetime.now() - mp.playCooldown > timedelta(seconds=10)):
+                                and datetime.now() - mp.playCooldown > timedelta(seconds=10)) and not mp.checked:
+                            mp.checked = True
                             song = mp.getNext()
                             if song is not None:
                                 error = None
                                 if song.stream_url is None or datetime.now() - song.updated >= timedelta(hours=5):
                                     error = await song.updateFromWeb()
                                 if error is not None:
-                                    embed = discord.Embed(title="Error", description=str(error), color=discord.Color.red())
+                                    embed = discord.Embed(title="Error", description=str(error),
+                                                          color=discord.Color.red())
                                     if song.name is not None:
                                         embed.set_footer(text=f"{song.name} {song.original_url}")
                                     else:
@@ -112,14 +120,18 @@ class MusicCog(commands.Cog):
                                     mp.skip(saveIfRepeating=False)
                                 else:
                                     source = discord.PCMVolumeTransformer(
-                                        discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=mp.volume/100)
+                                        discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options),
+                                        volume=mp.volume / 100)
                                     vc.play(source, after=after_player)
                                     mp.playCooldown = datetime.now()
                                     if mp.musicPlayerMessageId is not None:
                                         await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+                                        await asyncio.create_task(update_music_view(mp, self.bot))
+                            mp.checked = False
                     else:
                         musicService.delete(guild.id)
                 except Exception as e:
+                    mp.checked = False
                     LogCog.logError('check mp ' + str(e))
                     mp.skip()
             self.canCheckMusicAgain = True
@@ -155,6 +167,7 @@ class MusicCog(commands.Cog):
             if vc is not None and vc.is_connected():
                 mp = musicService.players[before.channel.guild.id]
                 if mp is not None:
+                    mp.checked = True
                     LogCog.logSystem(
                         f'I was disconnected buy Discord... reconnecting to guild {before.channel.guild.id}')
                     song = mp.getNext()
@@ -177,6 +190,7 @@ class MusicCog(commands.Cog):
                             vc.play(source, after=after_player)
                             if mp.musicPlayerMessageId is not None:
                                 await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+                    mp.checked = False
             else:
                 # User kicked me so I will delete all his data
                 musicService.delete(before.channel.guild.id)
@@ -328,8 +342,9 @@ class MusicCog(commands.Cog):
             options = []
             text = ''
             for i in range(0, len(tList)):
-                options.append(discord.SelectOption(label=f"{i + 1}. {tList[i].name[0:80]} ({tList[i].getDurationToStr()})",
-                                                    value=str(i)))
+                options.append(
+                    discord.SelectOption(label=f"{i + 1}. {tList[i].name[0:80]} ({tList[i].getDurationToStr()})",
+                                         value=str(i)))
                 text += f'{i + 1}. {tList[i].name} ({tList[i].getDurationToStr()})\n'
             embed = discord.Embed(
                 title=getLocale("result", ctx.author.id),
@@ -467,7 +482,7 @@ class MusicCog(commands.Cog):
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
             return 0
-        await musicService.addTrack( query.strip(), interaction.guild.id, interaction.user.name, interaction.channel.id)
+        await musicService.addTrack(query.strip(), interaction.guild.id, interaction.user.name, interaction.channel.id)
         await interaction.response.send_message(getLocale('ready', interaction.user.id),
                                                 ephemeral=True, delete_after=15)
         await musicViewService.createPlayer(interaction, self.bot)
@@ -482,8 +497,9 @@ class MusicCog(commands.Cog):
             options = []
             text = ''
             for i in range(0, len(tList)):
-                options.append(discord.SelectOption(label=f"{i + 1}. {tList[i].name[0:80]} ({tList[i].getDurationToStr()})",
-                                                    value=str(i)))
+                options.append(
+                    discord.SelectOption(label=f"{i + 1}. {tList[i].name[0:80]} ({tList[i].getDurationToStr()})",
+                                         value=str(i)))
                 text += f'{i + 1}. {tList[i].name} ({tList[i].getDurationToStr()})\n'
             embed = discord.Embed(
                 title=getLocale("result", interaction.user.id),

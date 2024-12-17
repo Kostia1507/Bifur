@@ -18,7 +18,8 @@ settings = {
     'source_address': '0.0.0.0',
     'prefferedcodec': 'mp3',
     'live_from_start': False,
-    'playlist_items': '1:20'
+    'playlist_items': '1:20',
+    'ignoreerrors': True,
 }
 players = {}
 
@@ -36,7 +37,10 @@ def findMusicPlayerByGuildId(guild_id):
 
 
 async def addTrack(name, guild_id, author, channel_id):
-    ret = await searchByLink(name) if str(name).startswith('http') else await searchOne(name)
+    if str(name).startswith('http'):
+        ret = asyncio.create_task(searchByLink(name))
+    else:
+        ret = await searchOne(name)
     if ret is not None:
         for song in ret:
             song.author = author

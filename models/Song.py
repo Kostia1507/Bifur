@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 
 import aiohttp
@@ -68,6 +69,7 @@ class Song:
                 self.icon_link = info['thumbnail']
                 self.stream_url = info['url']
                 self.updated = datetime.now()
+                await asyncio.sleep(count)
                 async with aiohttp.ClientSession() as session:
                     async with session.get(url=self.stream_url) as response:
                         # Try once again
