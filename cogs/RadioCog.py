@@ -6,6 +6,7 @@ from discord import Colour, app_commands
 from discord.ext import commands
 
 from cogs import LogCog
+from discordModels.views import RadioInfoView
 from models.Song import Song
 from service import musicService, musicViewService, radioService, pagedMessagesService, cooldownService
 from service.localeService import getLocale, getUserLang, getLocaleByLang
@@ -226,7 +227,7 @@ class RadioCog(commands.Cog):
                             f'{getLocaleByLang("shared", userLang)} {radio.is_shared}\n'
                             f'{getLocaleByLang("editors", userLang)} {EditorsList}'
             )
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, view=RadioInfoView.RadioInfoView(self.bot, radio.radio_id))
 
     @commands.command(aliases=['rradio', 'randomradio'])
     async def randradio(self, ctx):
