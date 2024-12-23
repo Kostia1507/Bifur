@@ -1,5 +1,6 @@
 import asyncio
 import os
+import traceback
 from datetime import datetime, timedelta
 
 import discord
@@ -133,6 +134,7 @@ class MusicCog(commands.Cog):
                 except Exception as e:
                     mp.checked = False
                     LogCog.logError('check mp ' + str(e))
+                    traceback.print_exception(type(e), e, e.__traceback__)
                     mp.skip()
             self.canCheckMusicAgain = True
 
@@ -164,7 +166,7 @@ class MusicCog(commands.Cog):
             # Wait for reconnecting
             await asyncio.sleep(7)
             vc = get(self.bot.voice_clients, guild=before.channel.guild)
-            if vc is not None and vc.is_connected():
+            if vc is not None and vc.is_connected() and before.channel.guild.id in musicService.players.keys():
                 mp = musicService.players[before.channel.guild.id]
                 if mp is not None:
                     mp.checked = True
@@ -337,7 +339,7 @@ class MusicCog(commands.Cog):
         await ctx.message.add_reaction('✅')
         loop = ' '.join(args)
         tList = await musicService.searchFive(loop)
-        if len(tList) > 0:
+        if tList is not None and len(tList) > 0:
             searchQueue[ctx.message.author.id] = tList
             options = []
             text = ''

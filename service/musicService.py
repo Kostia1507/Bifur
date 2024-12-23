@@ -38,7 +38,7 @@ def findMusicPlayerByGuildId(guild_id):
 
 async def addTrack(name, guild_id, author, channel_id):
     if str(name).startswith('http'):
-        ret = asyncio.create_task(searchByLink(name))
+        ret = await asyncio.create_task(searchByLink(name))
     else:
         ret = await searchOne(name)
     if ret is not None:

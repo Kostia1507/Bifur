@@ -44,7 +44,7 @@ class RenameModal(discord.ui.Modal, title='Rename'):
             await interaction.response.send_message(getLocale("first-not-number", interaction.user.id))
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
-        await interaction.response.send_message('Error happened. Report it, lol!', ephemeral=True)
+        await interaction.response.send_message('Error happened. Report it!', ephemeral=True)
         traceback.print_exception(type(error), error, error.__traceback__)
 
 class AddTrackModal(discord.ui.Modal, title='Add song'):
@@ -77,7 +77,7 @@ class AddTrackModal(discord.ui.Modal, title='Add song'):
 
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
-        await interaction.response.send_message('Error happened. Report it, lol!', ephemeral=True)
+        await interaction.response.send_message('Error happened. Report it!', ephemeral=True)
         traceback.print_exception(type(error), error, error.__traceback__)
 
 
