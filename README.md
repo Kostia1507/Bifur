@@ -1,8 +1,8 @@
 ## Bifur is the discord bot, based on discord.py
 
-Invite bot to your guild - https://discord.com/api/oauth2/authorize?client_id=802546295906107423&permissions=1644372164209&scope=bot
+[Invite bot to your guild](https://discord.com/api/oauth2/authorize?client_id=802546295906107423&permissions=1644372164209&scope=bot)
 
-My discord: comradekostia
+[Our Discord guild](https://discord.gg/2EGkGzDTK5)
 
 ### Current features:
 - Music
@@ -18,11 +18,12 @@ My discord: comradekostia
 - Currency rates
 - Commands with fixed intervals
 
-If you want to create your own command:
+**If you want to create your own command:**
 1. All views and modals create in discordModels package
 2. If you want to output a lot of information, consider to use PagedMessage from pagedMessagesService
 3. Use locales and add your own in localeService
 4. Consider to write all functions in services
+5. Inform me if you add something to config
 
 Don't forgive to create your own config.py with keys and tokens
 

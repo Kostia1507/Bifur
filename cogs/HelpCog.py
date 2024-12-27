@@ -20,14 +20,16 @@ helpLocales = {
                   "? - means it's optional\n"
                   "So you can write >roll 10, and it will return random number in range from 0 to 10\n"
                   "All commands start with >, It's command prefix\n"
-                  "Change language if you need with >lang [lang]. All available languages: >langs",
+                  "Change language if you need with >lang [lang]. All available languages: >langs\n"
+                  "**Still have a questions? Join to our [Discord](https://discord.gg/2EGkGzDTK5)**\n",
             'ua': "Всі команди описані подібним чином:\n"
                   ">roll [?start] [?end] - відправляє випадкове число від start до end. За замовчанням це 0 і 100\n"
                   "[start] - змінна\n"
                   "? - означає що змінна не обов'язкова\n"
                   "Тому Ви можете написати >roll 10, і отримати випадкове число від 0 до 10\n"
                   "Всі команди починаються з >. Це префікс команд бота\n"
-                  "Змінити мову можна завдяки >lang [lang]. Всі доступні мови: >langs",
+                  "Змінити мову можна завдяки >lang [lang]. Всі доступні мови: >langs\n"
+                  "**Задати питання завжди можна в нашому [Discord](https://discord.gg/2EGkGzDTK5)**\n",
             'ru': "Все команды здесь описаны как:\n"
                   ">roll [?start] [?end] - отправление случайного числа от start до end. По умолчанию от 0 до 100\n"
                   "[start] - переменная\n"
@@ -35,6 +37,7 @@ helpLocales = {
                   "Вы можете написать >roll 10, и оно отправит случайное число от 0 до 10\n"
                   "Все команды начинаются с >. Это префикс команд\n"
                   "Если нужно сменить язык, используйте команду >lang [lang]. Поддерживаемые ботом языки: >langs\n"
+                  "**Остались вопросы? Присоединяйся к нашему [Discord](https://discord.gg/2EGkGzDTK5)**\n"
         }
 }
 
@@ -116,7 +119,7 @@ class HelpCog(commands.Cog):
                 if len(cmd['aliases']) > 0:
                     addString = f"Command: {cmd['name']}\nAlliases: {' '.join(cmd['aliases'])}\n-- {cmd['description']}"
                 else:
-                    addString = f"Command: {cmd['name']}\n-- {cmd['description']}"
+                    addString = f"Command: {cmd['name']}\n{cmd['description']}"
                 if len(addString) + len(currentString) > 3500:
                     pages.append(currentString)
                     currentString = addString
@@ -130,9 +133,9 @@ class HelpCog(commands.Cog):
             currentString = ""
             for cmd in uahelp.helpUA[part]:
                 if len(cmd['aliases']) > 0:
-                    addString = f"Command: {cmd['name']}\nAlliases: {' '.join(cmd['aliases'])}\n-- {cmd['description']}"
+                    addString = f"Command: {cmd['name']}\nAlliases: {' '.join(cmd['aliases'])}\n--\n{cmd['description']}"
                 else:
-                    addString = f"Command: {cmd['name']}\n-- {cmd['description']}"
+                    addString = f"Command: {cmd['name']}\n{cmd['description']}"
                 if len(addString) + len(currentString) > 3500:
                     pages.append(currentString)
                     currentString = addString
@@ -148,7 +151,7 @@ class HelpCog(commands.Cog):
                 if len(cmd['aliases']) > 0:
                     addString = f"Command: {cmd['name']}\nAlliases: {' '.join(cmd['aliases'])}\n-- {cmd['description']}"
                 else:
-                    addString = f"Command: {cmd['name']}\n-- {cmd['description']}"
+                    addString = f"Command: {cmd['name']}\n{cmd['description']}"
                 if len(addString) + len(currentString) > 3500:
                     pages.append(currentString)
                     currentString = addString
