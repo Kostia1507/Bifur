@@ -169,11 +169,11 @@ class MusicCog(commands.Cog):
             if vc is not None and vc.is_connected() and before.channel.guild.id in musicService.players.keys():
                 mp = musicService.players[before.channel.guild.id]
                 if mp is not None:
-                    mp.checked = True
                     LogCog.logSystem(
-                        f'I was disconnected buy Discord... reconnecting to guild {before.channel.guild.id}')
+                        f'I was disconnected by Discord... reconnecting to guild {before.channel.guild.id}')
                     song = mp.getNext()
                     if song is not None:
+                        LogCog.logDebug(f'Song is not None {before.channel.guild.id}')
                         error = None
                         if song.stream_url is None or datetime.now() - song.updated >= timedelta(hours=5):
                             error = await song.updateFromWeb()
@@ -187,8 +187,10 @@ class MusicCog(commands.Cog):
                             await channel.send(embed=embed)
                             mp.skip(saveIfRepeating=False)
                         else:
+                            LogCog.logDebug(f'Try to play {before.channel.guild.id}')
                             source = discord.PCMVolumeTransformer(
-                                discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=mp.volume / 100)
+                                discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options),
+                                volume=mp.volume / 100)
                             vc.play(source, after=after_player)
                             if mp.musicPlayerMessageId is not None:
                                 await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
