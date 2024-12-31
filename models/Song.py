@@ -74,6 +74,7 @@ class Song:
                     async with session.get(url=self.stream_url) as response:
                         # Try once again
                         if response.status != 200:
+                            print("fuck 403")
                             await self.updateFromWeb(count + 1)
             except Exception as e:
                 LogCog.logError(f'Помилка при спробі отримати інформацію {self.original_url}: {e}')
