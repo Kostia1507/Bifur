@@ -526,5 +526,23 @@ locales = {
             'ua': "Щось пішло не так!",
             'ru': "Ошибка!",
         },
+    'buy-premium':
+        {
+            'en': f"To support the bot and get more features, subscribe to [Patreon]({config.patreon})",
+            'ua': f"Для того щоб підтримати бота та отримати більше можливостей, оформіть підписку на [Patreon]({config.patreon})",
+            'ru': f"Для того, чтобы поддержать бота и получить больше возможностей, оформите подписку на [Patreon]({config.patreon})"
+        },
+    'you-are-premium':
+        {
+            'en': f"You are premium user. Thank you for support! [Patreon]({config.patreon}",
+            'ua': f"Ви преміум користувач. Дякую за підтримку! [Patreon]({config.patreon})",
+            'ru': f"Вы премиум пользователь. Спасибо за поддержку [Patreon]({config.patreon})"
+        },
+    'premium-func':
+        {
+            'en': f"You have to be a premium user to use this! [Patreon]({config.patreon}",
+            'ua': f"Ви маєте бути преміум користувачем щоб використовувати це! [Patreon]({config.patreon})",
+            'ru': f"Вы должны быть премиум пользователем что бы использовать это [Patreon]({config.patreon})"
+        }
 
 }

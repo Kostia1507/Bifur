@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from assets.helparrays import enhelp, uahelp, ruhelp
+from discordModels.views.PagedMessageView import PagedMessageView
 from service import localeService, pagedMessagesService
 from cogs import LogCog
 
@@ -56,7 +57,7 @@ class DropdownEN(discord.ui.Select):
         pagedMsg = pagedMessagesService.setPagedMessage(self.bot, user_selected, ENhelpPages[user_selected])
         embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
         embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.response.send_message(embed=embed, view=pagedMsg.view, ephemeral=True)
 
 
 class DropdownUA(discord.ui.Select):
@@ -73,7 +74,7 @@ class DropdownUA(discord.ui.Select):
         pagedMsg = pagedMessagesService.setPagedMessage(self.bot, user_selected, UAhelpPages[user_selected])
         embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
         embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.response.send_message(embed=embed, view=pagedMsg.view, ephemeral=True)
 
 
 class DropdownRU(discord.ui.Select):
@@ -90,7 +91,7 @@ class DropdownRU(discord.ui.Select):
         pagedMsg = pagedMessagesService.setPagedMessage(self.bot, user_selected, RUhelpPages[user_selected])
         embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
         embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.response.send_message(embed=embed, view=pagedMsg.view, ephemeral=True)
 
 
 class HelpView(discord.ui.View):
