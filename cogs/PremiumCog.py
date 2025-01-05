@@ -5,7 +5,8 @@ import discord
 from discord.ext import commands
 
 from cogs import LogCog
-from service import pictureService, premiumService, localeService
+from service import pictureService, premiumService, localeService, pagedMessagesService
+from utils import commandUtils
 
 
 class PremiumCog(commands.Cog):
@@ -21,3 +22,40 @@ class PremiumCog(commands.Cog):
         else:
             await ctx.send(localeService.getLocale('buy-premium', ctx.author.id))
 
+    @commands.command()
+    @commands.check(commandUtils.is_owner)
+    async def setpremium(self, ctx, user: discord.User):
+        if premiumService.add_premium(user.id):
+            await ctx.message.add_reaction('✅')
+        else:
+            await ctx.message.add_reaction('❌')
+
+    @commands.command()
+    @commands.check(commandUtils.is_owner)
+    async def delpremium(self, ctx, user: discord.User):
+        if premiumService.delete_premium(user.id):
+            await ctx.message.add_reaction('✅')
+        else:
+            await ctx.message.add_reaction('❌')
+
+    @commands.command()
+    @commands.check(commandUtils.is_owner)
+    async def listpremium(self, ctx):
+        ids = premiumService.get_all_premiums()
+        if ids is None or len(ids) == 0:
+            await ctx.send("List of premium is empty")
+        else:
+            res = ""
+            for id in ids:
+                user_id = id
+                if isinstance(id, tuple):
+                    user_id = id[0]
+                try:
+                    user = await self.bot.fetch_user(user_id)
+                    res += f"{user.name}\n"
+                except discord.errors.NotFound:
+                    res += "Discord NotFound\n"
+            pagedMsg = pagedMessagesService.setPagedMessage(self.bot, "Premium users", res)
+            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+            await ctx.send(embed=embed, view=pagedMsg.view)

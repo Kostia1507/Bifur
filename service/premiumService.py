@@ -3,6 +3,22 @@ import psycopg2
 import config
 
 
+def get_all_premiums():
+    conn = psycopg2.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT * from premium_users")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return rows
+
+
 def is_premium(user_id):
     conn = psycopg2.connect(
         host=config.host,
