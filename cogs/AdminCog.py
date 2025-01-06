@@ -11,7 +11,7 @@ from discord.ext import commands, tasks
 import config
 from utils import commandUtils
 from cogs import LogCog
-from service import cooldownService, pagedMessagesService
+from service import cooldownService, pagedMessagesService, premiumService
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -173,6 +173,8 @@ class AdminCog(commands.Cog):
         status = f'Бот живий вже: {str(seconds // 3600)}h' \
                  f' {str(seconds // 60 % 60)}m {str(seconds % 60)}s\n'
         status += f'Кількість унікальних користувачів: {str(len(cooldownService.cooldownUser))}\n'
+        status += f'Кількість серверів: {len(self.bot.guilds)}\n'
+        status += f'Преміум користувачів: {premiumService.get_premium_count()}\n'
         status += f'Зараз я використовую {currentRAM} МБ\n'
         status += f'Система {currentSystemRam} МБ\n'
         while len(self.RAMHistory) > 12:

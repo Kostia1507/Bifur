@@ -4,6 +4,8 @@
 
 [Our Discord guild](https://discord.gg/2EGkGzDTK5)
 
+[Patreon](https://www.patreon.com/Bifur)
+
 ### Current features:
 - Music
 - Playlists
@@ -56,6 +58,7 @@ status_channel = 1200814696564019231
 
 # OTHER INFO for commands
 invite = "https://discord.com/api/oauth2/authorize?client_id=802546295906107423&permissions=1644372164209&scope=bot"
+patreon = "https://www.patreon.com/Bifur"
 
 # EMOJIS
 cubesEmojis = ["<:cube1:1143593710471360522>", "<:cube2:1143593711951954001>", "<:cube3:1143593714229461154>",
@@ -71,4 +74,8 @@ shuffleEmoji = "<:shuffle:1279134977946292344>"
 volumeUpEmoji = "<:volume_up:1279134992705785918>"
 volumeDownEmoji = "<:volume_down:1279134972703277116>"
 likeEmoji = "<:like:1279134974628597924>"
+
+previousPageEmoji = "<:previous_page:1325153589961949195>"
+nextPageEmoji = "<:next_page:1325153617090707518>"
+saveEmoji = "<:save:1325153661755850835>"
 ```

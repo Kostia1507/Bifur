@@ -75,3 +75,18 @@ def delete_premium(user_id):
     cur.close()
     conn.close()
     return True
+
+def get_premium_count():
+    conn = psycopg2.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(user_id) FROM premium_users")
+    count = cur.fetchone()
+    cur.close()
+    conn.close()
+    return count[0]

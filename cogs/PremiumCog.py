@@ -1,11 +1,8 @@
-import io
-import os
-
 import discord
 from discord.ext import commands
 
 from cogs import LogCog
-from service import pictureService, premiumService, localeService, pagedMessagesService
+from service import premiumService, localeService, pagedMessagesService
 from utils import commandUtils
 
 
@@ -46,16 +43,16 @@ class PremiumCog(commands.Cog):
             await ctx.send("List of premium is empty")
         else:
             res = ""
-            for id in ids:
-                user_id = id
-                if isinstance(id, tuple):
-                    user_id = id[0]
+            for premium_id in ids:
+                user_id = premium_id
+                if isinstance(premium_id, tuple):
+                    user_id = premium_id[0]
                 try:
                     user = await self.bot.fetch_user(user_id)
                     res += f"{user.name}\n"
                 except discord.errors.NotFound:
                     res += "Discord NotFound\n"
-            pagedMsg = pagedMessagesService.setPagedMessage(self.bot, "Premium users", res)
+            pagedMsg = pagedMessagesService.initPagedMessage(self.bot, "Premium users", res)
             embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
             embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
             await ctx.send(embed=embed, view=pagedMsg.view)
