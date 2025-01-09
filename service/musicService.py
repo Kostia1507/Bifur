@@ -110,9 +110,12 @@ async def searchByLink(name):
             if "entries" in info:
                 entries = info['entries']
                 ret = []
+                count = 0
                 for entry in entries:
+                    count += 1
                     song = Song(entry["webpage_url"], False)
-                    await song.updateFromWeb()
+                    if count < 5:
+                        await song.updateFromWeb()
                     ret.append(song)
                 return ret
             else:
@@ -163,7 +166,7 @@ def delete(guild_id):
 
 
 async def downloadVideo(url):
-    t = searchByLink(url)[0]
+    t = (await searchByLink(url))[0]
     await t.updateFromWeb()
     filename = f'temp/{t.name}.mp3'
     t.download(filename)

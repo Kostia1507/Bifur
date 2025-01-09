@@ -1,5 +1,7 @@
 import asyncio
+import copy
 import os
+import subprocess
 import traceback
 from datetime import datetime, timedelta
 
@@ -120,6 +122,16 @@ class MusicCog(commands.Cog):
                                     await channel.send(embed=embed)
                                     mp.skip(saveIfRepeating=False)
                                 else:
+                                    ffmpeg_options = {
+                                        'before_options': '-reconnect 1 '
+                                                          '-reconnect_streamed 1 '
+                                                          '-reconnect_delay_max 5 '
+                                                          '-nostdin '
+                                                          '-preset ultrafast '
+                                                          '-user_agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" '
+                                                          f'-headers "Referer: {song.original_url}\r\nOrigin: https://www.youtube.com\r\n"',
+                                        'options': '-vn',
+                                    }
                                     source = discord.PCMVolumeTransformer(
                                         discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options),
                                         volume=mp.volume / 100)
