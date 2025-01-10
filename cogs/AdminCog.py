@@ -208,3 +208,23 @@ class AdminCog(commands.Cog):
     async def sync(self, ctx):
         count = len(await self.bot.tree.sync())
         await ctx.send(f'Synced {count} commands')
+
+    @commands.command()
+    @commands.check(commandUtils.is_owner)
+    async def tempfiles(self, ctx):
+        try:
+            res = ""
+            files = [f for f in os.listdir("temp") if os.path.isfile(os.path.join("temp", f))]
+            for file in files:
+                res += f"{file}\n"
+
+            if len(res) == 0:
+                res = "There is no files"
+            pagedMsg = pagedMessagesService.initPagedMessage(self.bot, "Temp files", res)
+            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+            await ctx.send(embed=embed, view=pagedMsg.view)
+        except FileNotFoundError:
+            LogCog.logError(f"Папка temp не знайдена.")
+        except PermissionError:
+            LogCog.logError(f"Немає доступу до папки temp.")
