@@ -132,6 +132,7 @@ class MusicCog(commands.Cog):
                                         if mp.musicPlayerMessageId is not None:
                                             await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
                                             await asyncio.create_task(update_music_view(mp, self.bot))
+                                        await mp.tryPredownload()
                             mp.checked = False
                     else:
                         musicService.delete(guild.id)
@@ -162,16 +163,16 @@ class MusicCog(commands.Cog):
             elif vc.channel.id in self.emptyVoices:
                 self.emptyVoices.remove(vc.channel.id)
 
-    @tasks.loop(hours=config.delete_songs_after_hours)
+    @tasks.loop(minutes=config.delete_songs_after_hours*15)
     async def deleteOldFiles(self):
-        loopArr = downloadSongService.filesArr.keys()
+        loopArr = list(downloadSongService.filesArr.keys())
         for url in loopArr:
-            if loopArr[url].download_time + timedelta(hours=1) < datetime.now():
+            if downloadSongService.filesArr[url].download_time + timedelta(hours=config.delete_songs_after_hours) < datetime.now():
                 try:
-                    os.remove(loopArr[url].filename)
+                    os.remove(downloadSongService.filesArr[url].filename)
                     del downloadSongService.filesArr[url]
                 except (FileNotFoundError, PermissionError) as e:
-                    LogCog.logError(f'{loopArr[url].filename} cant delete cause {str(e)}')
+                    LogCog.logError(f'{downloadSongService.filesArr[url].filename} cant delete cause {str(e)}')
 
 
     # need to be tested

@@ -40,6 +40,8 @@ class DownloadedSong:
 
 async def get_file_by_url(url):
     if url in filesArr.keys():
+        # prevent from deleting this file
+        filesArr[url].download_time = datetime.now()
         return filesArr[url]
     else:
         downloadedSong = DownloadedSong(url)

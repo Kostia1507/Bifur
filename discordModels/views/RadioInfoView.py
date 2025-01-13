@@ -11,7 +11,7 @@ from service.localeService import getLocale
 class RadioInfoView(discord.ui.View):
 
     def __init__(self, bot, radio_id):
-        super().__init__()
+        super().__init__(timeout=None)
         self.radio_id = radio_id
         self.bot = bot
 
@@ -59,7 +59,7 @@ class AddTrackModal(discord.ui.Modal, title='Add song'):
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer(ephemeral=True, thinking=True)
         link = self.linkInput.value
         song = Song(link, False)
         await asyncio.create_task(song.updateFromWeb())
@@ -69,11 +69,11 @@ class AddTrackModal(discord.ui.Modal, title='Add song'):
             return
         retStatus = radioService.createTrack(name, self.radio_id, link, interaction.user.id, duration)
         if retStatus is None:
-            await interaction.followup.send(getLocale("url-exist", interaction.user.id))
+            await interaction.followup.send(getLocale("url-exist", interaction.user.id), ephemeral=True)
         elif retStatus:
-            await interaction.followup.send(getLocale("ready", interaction.user.id))
+            await interaction.followup.send(getLocale("ready", interaction.user.id), ephemeral=True)
         else:
-            await interaction.followup.send(getLocale('no-playlist', interaction.user.id))
+            await interaction.followup.send(getLocale('no-playlist', interaction.user.id), ephemeral=True)
 
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:

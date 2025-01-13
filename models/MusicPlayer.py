@@ -1,7 +1,9 @@
+import asyncio
 import random
 from datetime import datetime, timedelta
 from enum import Enum
 
+from service import downloadSongService
 from service.localeService import getLocale, getUserLang, getLocaleByLang
 
 HISTORY_SIZE = 5
@@ -159,3 +161,7 @@ class MusicPlayer:
                     description += f'({self.history[i].getDurationToStr()})'
                 description += "\n"
         return description
+
+    async def tryPredownload(self):
+        if len(self.songs) > 0 and self.songs[0] is not None:
+            await asyncio.create_task(downloadSongService.get_file_by_url(self.songs[0].original_url))
