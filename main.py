@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 
 import config
@@ -29,6 +30,8 @@ import discord
 from discord import HTTPException
 from discord.ext import commands, tasks
 from discord.ext.commands import CommandNotFound, MissingRequiredArgument, MissingPermissions
+
+from webpage.WebHandler import start_aiohttp_server
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -158,5 +161,10 @@ async def on_message(message):
             LogCog.logInfo(f'{str(message.author)}:{text}', message.author.name)
             await bot.process_commands(message)
 
+async def start_app():
+    await asyncio.gather(
+        start_aiohttp_server(bot),
+        bot.start(config.token, reconnect=True)
+    )
 
-bot.run(config.token, reconnect=True)
+asyncio.run(start_app())
