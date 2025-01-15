@@ -1,0 +1,69 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" media="all" href="/webpage/style.css" />
+    <title>Bifur</title>
+</head>
+<body>
+    <div>
+        <div class="nav-panel">
+            <img class="ava" alt="bifur - ava" src="/webpage/images/bifur_ava.jpg">
+            <a class="nav-links" href="https://discord.com/api/oauth2/authorize?client_id=802546295906107423&permissions=1644372164209&scope=bot">Invite</a>
+            <a class="nav-links" href="https://discord.gg/2EGkGzDTK5">Discord</a>
+            <a class="nav-links" href="https://www.patreon.com/Bifur">Patreon</a>
+            <a class="nav-links" href="https://github.com/Kostia1507/Bifur">GitHub</a>
+            <a class="nav-links" href="https://github.com/Kostia1507/Bifur">Terms</a>
+        </div>
+        <div class="center-div">
+            <div class="side-div">
+            <button onclick="previousPage()" class="side-btn"><</button>
+            </div>
+            <div class="container" id="container">
+                Here you will be able to read a lot of important information
+            </div>
+            <div class="side-div">
+                <button onclick="nextPage()" class="side-btn">></button>
+            </div>
+        </div>
+        <div class="copyright">
+            <p class="copyright-text">&copy; Copyright 2023-2025</p>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    let currentPage = 0;
+    const pageCount = 3;
+
+    function renderPage(){
+        container = document.getElementById("container");
+        switch(currentPage){
+            case 0:
+                container.innerHTML = "Music"
+            break;
+            case 1:
+                container.innerHTML = "Pictures"
+            break;
+            case 2:
+                container.innerHTML = "Games"
+            break;
+        }
+    }
+
+    function previousPage(){
+        console.log("previous")
+        if(currentPage == 0){
+            currentPage = pageCount - 1;
+        }else{
+            currentPage = currentPage-1;
+        }
+        renderPage();
+    }
+
+    function nextPage(){
+        console.log("next")
+        currentPage = (currentPage+1)%pageCount;
+        renderPage();
+    }
+</script>
