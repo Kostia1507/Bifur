@@ -1,14 +1,17 @@
 import json
 import os
-from multiprocessing.resource_tracker import register
+from jinja2 import Template
 
 from aiohttp import web
 
 from cogs import LogCog
 
-def html_response(document):
-    s = open(document, "r")
-    return web.Response(text=s.read(), content_type='text/html')
+def html_response(document, **kwargs):
+    with open(document, "r", encoding="utf-8") as file:
+        template = Template(file.read())
+    # Рендеримо шаблон із переданими змінними
+    html_content = template.render(**kwargs)
+    return web.Response(text=html_content, content_type='text/html')
 
 def file_response(file_path):
     """
@@ -32,10 +35,10 @@ def file_response(file_path):
 
 async def handle_main(request):
     bot = request.app["bifur_bot"]
-    ret = f'<h1>Hello! I am Bifur with {len(bot.guilds)} guilds</h1>'
-    for guild in bot.guilds:
-        ret += f"<h2>{guild.name}</h2>"
-    return html_response('webpage/index.html')
+    return html_response('webpage/index.html', guilds_count=len(bot.guilds))
+
+async def handle_terms(request):
+    return html_response('webpage/terms.html')
 
 async def handle_patreon(request):
     try:
@@ -59,6 +62,7 @@ async def start_aiohttp_server(bifur_bot):
     app["bifur_bot"] = bifur_bot
     app.router.add_get('/', handle_main)
     app.router.add_get('/index', handle_main)
+    app.router.add_get('/terms', handle_terms)
     app.router.add_post('/patreon', handle_patreon)
     app.router.add_get('/webpage/{file_path:.*}', handle_static)
     runner = web.AppRunner(app)
@@ -66,4 +70,5 @@ async def start_aiohttp_server(bifur_bot):
     port = int(os.getenv('PORT', 8080))
     site = web.TCPSite(runner, '0.0.0.0', port)
     await site.start()
+    print(f"WEB-SERVER started on port: {port}")
     LogCog.logSystem(f"WEB-SERVER started on port: {port}")

@@ -13,7 +13,7 @@
             <a class="nav-links" href="https://discord.gg/2EGkGzDTK5">Discord</a>
             <a class="nav-links" href="https://www.patreon.com/Bifur">Patreon</a>
             <a class="nav-links" href="https://github.com/Kostia1507/Bifur">GitHub</a>
-            <a class="nav-links" href="https://github.com/Kostia1507/Bifur">Terms</a>
+            <a class="nav-links" href="https://bifur.fly.dev/terms">Terms</a>
         </div>
         <div class="center-div">
             <div class="side-div">
@@ -34,25 +34,86 @@
 </html>
 <script>
     let currentPage = 0;
-    const pageCount = 3;
+    const pageCount = 7;
+    renderPage();
 
     function renderPage(){
         container = document.getElementById("container");
         switch(currentPage){
             case 0:
-                container.innerHTML = "Music"
+                container.innerHTML = "<div class=\"columns-div\">" +
+                                    "<div class=\"column\">" +
+                                    "<img class=\"column-img\" alt=\"bifur - ava\" src=\"/webpage/images/music-preview.png\">" +
+                                    "</div>" +
+                                    "<div class=\"column\">" +
+                                    "<p class=\"column-text\">Play any video from YouTube and listen to music with your friends</p>" +
+                                    "</div>" +
+                                    "</div>"
             break;
             case 1:
-                container.innerHTML = "Pictures"
+            container.innerHTML = "<div class=\"columns-div\">" +
+                                    "<div class=\"column\">" +
+                                    "<img class=\"column-img\" alt=\"bifur - ava\" src=\"/webpage/images/playlists.png\">" +
+                                    "</div>" +
+                                    "<div class=\"column\">" +
+                                    "<p class=\"column-text\">Collect your songs in playlists and start all songs by one command</p>" +
+                                    "</div>" +
+                                    "</div>"
             break;
             case 2:
-                container.innerHTML = "Games"
+            container.innerHTML = "<div class=\"columns-div\">" +
+                                    "<div class=\"column\">" +
+                                    "<img class=\"column-img\" alt=\"bifur - ava\" src=\"/webpage/images/games.png\">" +
+                                    "</div>" +
+                                    "<div class=\"column\">" +
+                                    "<p class=\"column-text\">Play mini-games against Bifur or your friends. Bifur can play Connect4, Reversi and TicTacToe.</p>" +
+                                    "</div>" +
+                                    "</div>"
+            break;
+            case 3:
+            container.innerHTML = "<div class=\"columns-div\">" +
+                                    "<div class=\"column\">" +
+                                    "<img class=\"column-img\" alt=\"bifur - ava\" src=\"/webpage/images/translator.png\">" +
+                                    "</div>" +
+                                    "<div class=\"column\">" +
+                                    "<p class=\"column-text\">Translate any message just by adding emoji!</p>" +
+                                    "</div>" +
+                                    "</div>"
+            break;
+            case 4:
+            container.innerHTML = "<div class=\"columns-div\">" +
+                                    "<div class=\"column\">" +
+                                    "<img class=\"column-img\" alt=\"bifur - ava\" src=\"/webpage/images/pictures.png\">" +
+                                    "</div>" +
+                                    "<div class=\"column\">" +
+                                    "<p class=\"column-text\">Edit your pictures with text commands</p>" +
+                                    "</div>" +
+                                    "</div>"
+            break;
+            case 5:
+            container.innerHTML = "<div class=\"columns-div\">" +
+                                    "<div class=\"column\">" +
+                                    "<img class=\"column-img\" alt=\"bifur - ava\" src=\"/webpage/images/forecast.png\">" +
+                                    "</div>" +
+                                    "<div class=\"column\">" +
+                                    "<p class=\"column-text\">Get weather forecast for your city</p>" +
+                                    "</div>" +
+                                    "</div>"
+            break;
+            case 6:
+            container.innerHTML = "<div class=\"columns-div\">" +
+                                    "<div class=\"column\">" +
+                                    "<img class=\"column-img\" alt=\"bifur - ava\" src=\"/webpage/images/bifur_ava.jpg\">" +
+                                    "</div>" +
+                                    "<div class=\"column\">" +
+                                    "<p class=\"column-text\">Bifur available at {{ guilds_count }} guilds.<a class=\"nav-links\" style=\"text-decoration: underline;\" href=\"https://discord.com/api/oauth2/authorize?client_id=802546295906107423&permissions=1644372164209&scope=bot\">Invite Bifur to your guild</a></p>" +
+                                    "</div>" +
+                                    "</div>"
             break;
         }
     }
 
     function previousPage(){
-        console.log("previous")
         if(currentPage == 0){
             currentPage = pageCount - 1;
         }else{
@@ -62,8 +123,17 @@
     }
 
     function nextPage(){
-        console.log("next")
         currentPage = (currentPage+1)%pageCount;
         renderPage();
     }
+    
+    document.addEventListener("keydown", function(event) {
+        console.log(event.key)
+    if (event.key === "ArrowLeft") {
+        previousPage();
+    } else if (event.key === "ArrowRight" || event.key === " ") {
+        nextPage();
+    }
+});
+
 </script>
