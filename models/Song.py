@@ -31,6 +31,7 @@ class Song:
         self.name = ""
         self.updated = datetime.now()
         self.is_live = False
+        self.forbidden = False
         self.author = None
         self.icon_link = None
         self.duration = None
@@ -57,9 +58,10 @@ class Song:
             ret = ret[1:len(ret)]
         return ret
 
-    async def updateFromWeb(self, count = 0):
+    async def updateFromWeb(self, count=0):
         if count >= 5:
-            return
+            self.forbidden = True
+            return "403 Forbidden"
         with YoutubeDL(options) as ydl:
             try:
                 info = ydl.extract_info(self.original_url, download=False)
@@ -74,7 +76,6 @@ class Song:
                     async with session.get(url=self.stream_url) as response:
                         # Try once again
                         if response.status != 200:
-                            print("fuck 403")
                             await self.updateFromWeb(count + 1)
             except Exception as e:
                 LogCog.logError(f'Помилка при спробі отримати інформацію {self.original_url}: {e}')

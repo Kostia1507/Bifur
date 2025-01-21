@@ -11,7 +11,7 @@ from discord.ext import commands, tasks
 import config
 from utils import commandUtils
 from cogs import LogCog
-from service import cooldownService, pagedMessagesService
+from service import cooldownService, pagedMessagesService, premiumService
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -173,6 +173,8 @@ class AdminCog(commands.Cog):
         status = f'Бот живий вже: {str(seconds // 3600)}h' \
                  f' {str(seconds // 60 % 60)}m {str(seconds % 60)}s\n'
         status += f'Кількість унікальних користувачів: {str(len(cooldownService.cooldownUser))}\n'
+        status += f'Кількість серверів: {len(self.bot.guilds)}\n'
+        status += f'Преміум користувачів: {premiumService.get_premium_count()}\n'
         status += f'Зараз я використовую {currentRAM} МБ\n'
         status += f'Система {currentSystemRam} МБ\n'
         while len(self.RAMHistory) > 12:
@@ -206,3 +208,23 @@ class AdminCog(commands.Cog):
     async def sync(self, ctx):
         count = len(await self.bot.tree.sync())
         await ctx.send(f'Synced {count} commands')
+
+    @commands.command()
+    @commands.check(commandUtils.is_owner)
+    async def tempfiles(self, ctx):
+        try:
+            res = ""
+            files = [f for f in os.listdir("temp") if os.path.isfile(os.path.join("temp", f))]
+            for file in files:
+                res += f"{file}\n"
+
+            if len(res) == 0:
+                res = "There is no files"
+            pagedMsg = pagedMessagesService.initPagedMessage(self.bot, "Temp files", res)
+            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
+            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
+            await ctx.send(embed=embed, view=pagedMsg.view)
+        except FileNotFoundError:
+            LogCog.logError(f"Папка temp не знайдена.")
+        except PermissionError:
+            LogCog.logError(f"Немає доступу до папки temp.")

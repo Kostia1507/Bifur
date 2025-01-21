@@ -445,7 +445,7 @@ class ReversiGame:
                         x, y = random.choice(possible)
                         self.make_move(x, y, self.bot_id)
                     else:
-                        val, best_cord = self.alpha_beta(copy.deepcopy(self.board), 6,
+                        val, best_cord = self.alpha_beta(copy.deepcopy(self.board), 8,
                                                          alpha=float('-inf'), beta=float('inf'), maximizing_player=True,
                                                          ai_color=(self.turn + 1) % 2 + 1, turn=self.turn)
                         if best_cord is not None:

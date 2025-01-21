@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import os
 import traceback
 from datetime import datetime, timedelta
@@ -8,20 +9,20 @@ from discord import app_commands
 from discord.ext import commands, tasks
 from discord.utils import get
 
+import config
 from cogs import LogCog
 from models.MusicPlayer import RepeatType, ColorTheme
 
-from service import musicService, pagedMessagesService, musicViewService, likedSongsService
+from service import musicService, pagedMessagesService, musicViewService, likedSongsService, downloadSongService
 from service.localeService import getLocale, getUserLang, getLocaleByLang
 from utils import commandUtils
 
-ffmpeg_options = {
-    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -user_agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"',
-    'options': '-vn',
-}
-
 searchQueue = {}
 
+ffmpeg_options = {
+                'before_options': '-nostdin ',
+                'options': '-vn',
+                }
 
 async def update_music_view(mp, bot):
     await asyncio.sleep(10)  # асинхронна затримка на 10 секунд
@@ -87,6 +88,7 @@ class MusicCog(commands.Cog):
         self.emptyVoices = []
         self.checkMusicPlayers.start()
         self.checkForEmptyVoices.start()
+        self.deleteOldFiles.start()
         # Bot will skip iteration if previous wasn't finished
         self.canCheckMusicAgain = True
         LogCog.logSystem("MusicCog started")
@@ -120,14 +122,17 @@ class MusicCog(commands.Cog):
                                     await channel.send(embed=embed)
                                     mp.skip(saveIfRepeating=False)
                                 else:
-                                    source = discord.PCMVolumeTransformer(
-                                        discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options),
-                                        volume=mp.volume / 100)
-                                    vc.play(source, after=after_player)
-                                    mp.playCooldown = datetime.now()
-                                    if mp.musicPlayerMessageId is not None:
-                                        await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
-                                        await asyncio.create_task(update_music_view(mp, self.bot))
+                                    file = await downloadSongService.get_file_by_url(song.original_url)
+                                    if file is not None:
+                                        source = discord.PCMVolumeTransformer(
+                                            discord.FFmpegPCMAudio(file.filename, **ffmpeg_options),
+                                            volume=mp.volume / 100)
+                                        vc.play(source, after=after_player)
+                                        mp.playCooldown = datetime.now()
+                                        if mp.musicPlayerMessageId is not None:
+                                            await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+                                            await asyncio.create_task(update_music_view(mp, self.bot))
+                                        await mp.tryPredownload()
                             mp.checked = False
                     else:
                         musicService.delete(guild.id)
@@ -158,6 +163,18 @@ class MusicCog(commands.Cog):
             elif vc.channel.id in self.emptyVoices:
                 self.emptyVoices.remove(vc.channel.id)
 
+    @tasks.loop(minutes=config.delete_songs_after_hours*15)
+    async def deleteOldFiles(self):
+        loopArr = list(downloadSongService.filesArr.keys())
+        for url in loopArr:
+            if downloadSongService.filesArr[url].download_time + timedelta(hours=config.delete_songs_after_hours) < datetime.now():
+                try:
+                    os.remove(downloadSongService.filesArr[url].filename)
+                    del downloadSongService.filesArr[url]
+                except (FileNotFoundError, PermissionError) as e:
+                    LogCog.logError(f'{downloadSongService.filesArr[url].filename} cant delete cause {str(e)}')
+
+
     # need to be tested
     # this function must return bot to voice channel if he was disconnected not by user
     @commands.Cog.listener()
@@ -187,13 +204,14 @@ class MusicCog(commands.Cog):
                             await channel.send(embed=embed)
                             mp.skip(saveIfRepeating=False)
                         else:
-                            LogCog.logDebug(f'Try to play {before.channel.guild.id}')
-                            source = discord.PCMVolumeTransformer(
-                                discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options),
-                                volume=mp.volume / 100)
-                            vc.play(source, after=after_player)
-                            if mp.musicPlayerMessageId is not None:
-                                await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
+                            file = await downloadSongService.get_file_by_url(song.original_url)
+                            if file is not None:
+                                source = discord.PCMVolumeTransformer(
+                                    discord.FFmpegPCMAudio(file.filename),
+                                    volume=mp.volume / 100)
+                                vc.play(source, after=after_player)
+                                if mp.musicPlayerMessageId is not None:
+                                    await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
                     mp.checked = False
             else:
                 # User kicked me so I will delete all his data

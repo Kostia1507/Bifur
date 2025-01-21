@@ -1,0 +1,151 @@
+body {
+    font-family: Arial, sans-serif;
+    color: #D4DCCE;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100%;
+    position: fixed;
+    background-color: #333745;
+}
+.nav-panel {
+    padding: 1vh 20% 1vh 20%;
+    width: 60%;
+    height: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height:100%;
+    color: #D4DCCE;
+    font: 4vh Arial, sans-serif;
+    text-align: center;
+    margin: 0 30px;
+    text-decoration: none;
+}
+
+.ava {
+    height: 100%;
+    border-radius: 10px;
+    box-shadow: 3px 5px 8px rgba(0, 0, 0, 0.3);
+}
+
+.center-div {
+    height: 80%;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.side-div {
+    width: 10%;
+    height: 100%;
+}
+
+.side-btn {
+    width: 100%;
+    height: 100%;
+    background: none;
+    border: none;
+    color: #D4DCCE;
+    font: 8vh Arial, sans-serif;
+}
+
+.container{
+    width: 70%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+
+.copyright {
+    height: 10%;
+    width: 100%;
+}
+
+.copyright-text {
+    font: 2vh Arial, sans-serif;
+    color: #D4DCCE;
+    width: 100%;
+    text-align: center;
+}
+
+.columns-div {
+    width: 100%;
+    height: 70%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.column{
+    width: 40%;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.column-img {
+    width: 90%;
+    border-radius: 10px;
+    box-shadow: 3px 5px 8px rgba(0, 0, 0, 0.3);
+}
+
+.column-text {
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #D4DCCE;
+    font: 4vh Arial, sans-serif;
+}
+
+.terms-container {
+    padding-top: 10vh; 
+    height: 90vh;
+    width: 100%;
+    overflow-y: scroll; 
+    overflow-x: hidden;
+}
+
+.terms-container::-webkit-scrollbar {
+    display: none; /* Приховує повзунок */
+}
+
+.terms-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    padding: 1vh 20% 1vh 20%;
+    width: 60%;
+    height: 10vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.terms-header {
+    padding: 0% 4%;
+    width: 96%;
+    color: #D4DCCE;
+    font: 24px Arial, sans-serif;
+}
+
+.terms {
+    padding: 0% 2%;
+    width: 96%;
+    color: #D4DCCE;
+    font: 18px Arial, sans-serif;
+}

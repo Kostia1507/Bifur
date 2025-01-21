@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 
 import config
@@ -12,6 +13,7 @@ from cogs.HelpCog import HelpCog
 from cogs.LangCog import LangCog
 from cogs.MusicCog import MusicCog
 from cogs.PictureCog import PictureCog
+from cogs.PremiumCog import PremiumCog
 from cogs.RadioCog import RadioCog
 from cogs.ServerAdministrationCog import ServerAdministrationCog
 from cogs.ServerRoleManagerCog import ServerRoleManagerCog
@@ -28,6 +30,8 @@ import discord
 from discord import HTTPException
 from discord.ext import commands, tasks
 from discord.ext.commands import CommandNotFound, MissingRequiredArgument, MissingPermissions
+
+from webpage.WebHandler import start_aiohttp_server
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -81,6 +85,7 @@ async def on_ready():
     await bot.add_cog(MusicCog(bot))
     await bot.add_cog(RadioCog(bot))
     await bot.add_cog(PictureCog(bot))
+    await bot.add_cog(PremiumCog(bot))
     await bot.add_cog(GifCog(bot))
     await bot.add_cog(ServerRoleManagerCog(bot))
     await bot.add_cog(LangCog(bot))
@@ -88,7 +93,7 @@ async def on_ready():
     await bot.add_cog(WeatherCog(bot))
     await bot.add_cog(WarCog(bot))
     await bot.add_cog(ServerAdministrationCog(bot))
-    print("Bot started")
+    print(f"Bot started as {bot.user.name}")
 
 
 @bot.event
@@ -156,5 +161,10 @@ async def on_message(message):
             LogCog.logInfo(f'{str(message.author)}:{text}', message.author.name)
             await bot.process_commands(message)
 
+async def start_app():
+    await asyncio.gather(
+        start_aiohttp_server(bot),
+        bot.start(config.token, reconnect=True)
+    )
 
-bot.run(config.token, reconnect=True)
+asyncio.run(start_app())
