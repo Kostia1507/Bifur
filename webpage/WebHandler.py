@@ -1,10 +1,14 @@
 import json
 import os
+import traceback
+
 from jinja2 import Template
 
 from aiohttp import web
 
 from cogs import LogCog
+from service import premiumService
+
 
 def html_response(document, **kwargs):
     with open(document, "r", encoding="utf-8") as file:
@@ -41,11 +45,28 @@ async def handle_terms(request):
     return html_response('webpage/terms.html')
 
 async def handle_patreon(request):
+    action = request.match_info.get('action')
     try:
         body = await request.json()
-        LogCog.logDebug(str(body))
+        discord_id = None
+        email = None
+        full_name = None
+        patreon_id = None
+        for attr in body["included"]:
+            if "discord_id" in attr["attributes"].keys():
+                discord_id = attr["attributes"]["discord_id"]
+                email = attr["attributes"]["email"]
+                full_name = attr["attributes"]["full_name"]
+                patreon_id = attr["id"]
+        LogCog.logPatreon(f"DS: {discord_id}, Email: {email}, Name: {full_name}, patreon_id: {patreon_id}, action: {action}")
+        if action == "create" and discord_id is not None:
+            premiumService.add_premium(discord_id)
+        elif action == "delete":
+            premiumService.delete_premium(discord_id)
         return web.Response(status=200, text="Success!")
-    except json.decoder.JSONDecodeError:
+    except json.decoder.JSONDecodeError as error:
+        traceback.print_exception(type(error), error, error.__traceback__)
+        LogCog.logError(f"Error in parsing Patreon JSON: {error}")
         return web.Response(status=400, text="JSON Parsing Error")
 
 async def handle_static(request):
@@ -63,7 +84,7 @@ async def start_aiohttp_server(bifur_bot):
     app.router.add_get('/', handle_main)
     app.router.add_get('/index', handle_main)
     app.router.add_get('/terms', handle_terms)
-    app.router.add_post('/patreon', handle_patreon)
+    app.router.add_post('/patreon/{action}', handle_patreon)
     app.router.add_get('/webpage/{file_path:.*}', handle_static)
     runner = web.AppRunner(app)
     await runner.setup()

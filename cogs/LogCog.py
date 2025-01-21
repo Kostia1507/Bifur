@@ -13,7 +13,8 @@ colors = {
     "info": "#00ccff",
     "debug": "#ffcc00",
     "system": "#78fb5c",
-    "error": "#b20000"
+    "error": "#b20000",
+    "patreon": "#c37ee6",
 }
 
 
@@ -47,6 +48,11 @@ def logDebug(text):
 
 def logSystem(text):
     log = MyLog("system", "system", text)
+    delayedLogs.append(log)
+
+
+def logPatreon(text):
+    log = MyLog("patreon", "patreon", text)
     delayedLogs.append(log)
 
 
