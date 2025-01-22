@@ -133,11 +133,6 @@ helpEN = {
                 "description": "add frame to horizontal picture. Use >framev [url] for vertical"
             },
             {
-                "name": ">penguin [text]",
-                "aliases": [],
-                "description": "generate a picture with Kowalski. Use | to start new line"
-            },
-            {
                 "name": ">crop [left] [top] [right] [bottom] [url]",
                 "aliases": [],
                 "description": "crop the picture. >crop 50 0 20 0 [url] - will crop 50% from top and 20% from bottom"
@@ -162,6 +157,46 @@ helpEN = {
                 "name": ">totext [url]",
                 "aliases": [],
                 "description": "draw picture by characters."
+            },
+        ],
+    "Template Commands":
+        [
+            {
+                "name": ">penguin [text]",
+                "aliases": [],
+                "description": "generate a picture with Kowalski. Use | to start new line"
+            },
+            {
+                "name": ">pat [url]",
+                "aliases": [],
+                "description": "create GIF file with your picture. You can attach file to message instead of a link."
+            },
+            {
+                "name": ">vibe [url]",
+                "aliases": [">viber"],
+                "description": "create GIF file with your picture. You can attach file to message instead of a link. >viber will place a cat on a right side"
+            },
+            {
+                "name": ">poster [url] [color]",
+                "aliases": [],
+                "description": "Turns your picture into a poster. The color indicator controls the number of colors in the palette.\n"
+                               "Use a larger color value to display more colors.\n"
+                               "I recommend starting with indicator 12."
+            },
+            {
+                "name": ">oil [url], >pencil [url], >watercolor [url]",
+                "aliases": [],
+                "description": "it tries to create the appearance of a painting painted with oil paints, pencils, or watercolors, respectively."
+            },
+            {
+                "name": ">rip [url or mention]",
+                "aliases": [],
+                "description": "Convert Picture to Black and White mode and add candle to it"
+            },
+            {
+                "name": ">vietnam [url or mention]",
+                "aliases": [],
+                "description": "Add photo from Vietnam War to your picture as background"
             },
         ],
     "Music Commands":
@@ -380,12 +415,12 @@ helpEN = {
                 "name": ">reversi [mention]",
                 "aliases": ['>othello'],
                 "description": "Reversies are played on a board of 8x8 cells. Players take turns placing their pieces (disks)"
-                                " (white on one side, black on the other) so that between your existing disk and that one"
-                                "what was put on the table turned out to be continuous"
-                                " a row of enemy disks. All enemy disks in such rows are turned over.\n"
-                                "If there is no move that will flip at least one enemy disk, the move is skipped."
-                                " If both players cannot move - the game ends\n"
-                                "The one with more disks on the table wins"
+                               " (white on one side, black on the other) so that between your existing disk and that one"
+                               "what was put on the table turned out to be continuous"
+                               " a row of enemy disks. All enemy disks in such rows are turned over.\n"
+                               "If there is no move that will flip at least one enemy disk, the move is skipped."
+                               " If both players cannot move - the game ends\n"
+                               "The one with more disks on the table wins"
             },
         ],
     "Calculator":

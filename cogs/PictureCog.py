@@ -364,9 +364,12 @@ class PictureCog(commands.Cog):
 
     @commands.command()
     async def mix(self, ctx, alpha, image_url1, image_url2):
-        file = await pictureService.mix(image_url1, image_url2, alpha, ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+        try:
+            file = await pictureService.mix(image_url1, image_url2, int(alpha), ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
+        except Exception as e:
+            print(str(e))
 
     @commands.command()
     async def resize(self, ctx, *args):
@@ -404,6 +407,87 @@ class PictureCog(commands.Cog):
             os.remove(file)
 
     @commands.command()
+    async def poster(self, ctx, *args):
+        url = None
+        colors = None
+        if len(ctx.message.attachments) > 0 and len(args) > 0:
+            url = ctx.message.attachments[0].url
+            colors = args[0]
+        elif len(ctx.message.mentions) > 0 and len(args) > 1:
+            url = ctx.message.mentions[0].avatar.url
+            colors = args[1]
+        elif len(args) >= 2 and str(args[0]).startswith("http"):
+            url = args[0]
+            colors = args[1]
+        if url is not None and colors is not None:
+            try:
+                file = await pictureService.poster(url, int(colors), ctx.message.id)
+                await ctx.send(file=discord.File(file))
+                os.remove(file)
+            except FileNotFoundError:
+                await ctx.send(getLocale("file-not-found", ctx.author.id))
+        else:
+            await ctx.send(getLocale("file-not-found", ctx.author.id))
+
+    @commands.command()
+    async def oil(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0 and str(args[0]).startswith("http"):
+            url = args[0]
+        if url is not None:
+            try:
+                file = await pictureService.as_paint(url, ctx.message.id, "oil")
+                await ctx.send(file=discord.File(file))
+                os.remove(file)
+            except FileNotFoundError:
+                await ctx.send(getLocale("file-not-found", ctx.author.id))
+        else:
+            await ctx.send(getLocale("file-not-found", ctx.author.id))
+
+    @commands.command()
+    async def pencil(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0 and str(args[0]).startswith("http"):
+            url = args[0]
+        if url is not None:
+            try:
+                file = await pictureService.as_paint(url, ctx.message.id, "pencil")
+                await ctx.send(file=discord.File(file))
+                os.remove(file)
+            except FileNotFoundError:
+                await ctx.send(getLocale("file-not-found", ctx.author.id))
+        else:
+            await ctx.send(getLocale("file-not-found", ctx.author.id))
+
+    @commands.command()
+    async def watercolor(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0 and str(args[0]).startswith("http"):
+            url = args[0]
+        if url is not None:
+            try:
+                file = await pictureService.as_paint(url, ctx.message.id, "watercolor")
+                await ctx.send(file=discord.File(file))
+                os.remove(file)
+            except FileNotFoundError:
+                await ctx.send(getLocale("file-not-found", ctx.author.id))
+        else:
+            await ctx.send(getLocale("file-not-found", ctx.author.id))
+
+
+    @commands.command()
     async def signtop(self, ctx, *args):
         text = " ".join(args)
         url = None
@@ -419,6 +503,8 @@ class PictureCog(commands.Cog):
             file = await pictureService.sign(text, url, "top", ctx.message.id)
             await ctx.send(file=discord.File(file))
             os.remove(file)
+
+
 
     @commands.command()
     async def card(self, ctx, *args):

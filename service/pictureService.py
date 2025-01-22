@@ -373,6 +373,30 @@ async def resize(image_url, height, width, mode, message_id):
     img.resize((width, height), Image.BILINEAR).save(name_of_file)
     return name_of_file
 
+async def poster(image_url, colors, message_id):
+    name_of_file = f'temp/{message_id}.jpg'
+    await download_image(image_url, name_of_file)
+    img = Image.open(name_of_file).convert("P", palette=Image.ADAPTIVE, colors=colors)
+    img = img.convert("RGB")
+    background = Image.open("assets/background/poster.jpg").resize(img.size)
+    img = Image.blend(img, background, 0.2).convert('RGB')
+    img.save(name_of_file)
+    return name_of_file
+
+async def as_paint(image_url, message_id, mode):
+    name_of_file = f'temp/{message_id}.jpg'
+    await download_image(image_url, name_of_file)
+    image = Image.open(name_of_file).convert("RGB")
+    if mode == "oil":
+        image = image.filter(ImageFilter.SMOOTH_MORE)
+    elif mode == "pencil":
+        image = image.convert("L").filter(ImageFilter.CONTOUR).convert("RGB")
+    else:
+        image = image.filter(ImageFilter.GaussianBlur(radius=4)).filter(ImageFilter.EDGE_ENHANCE)
+    background = Image.open("assets/background/poster.jpg").resize(image.size)
+    image = Image.blend(image, background, 0.15).convert('RGB')
+    image.save(name_of_file)
+    return name_of_file
 
 async def sign(text, image_url, mode, message_id):
     name_of_file = f'temp/{message_id}.png'
