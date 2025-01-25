@@ -8,18 +8,36 @@ from cogs import LogCog
 
 filesArr = {}
 
+
+def extract_video_id(url: str) -> str:
+    parsed_url = urlparse(url)
+
+    # Якщо стандартний формат URL (з параметром 'v')
+    if 'youtube.com' in parsed_url.netloc and parsed_url.path == '/watch':
+        query_params = parse_qs(parsed_url.query)
+        return query_params.get('v', [None])[0]
+
+    # Якщо скорочений формат URL (youtu.be)
+    if 'youtu.be' in parsed_url.netloc:
+        return parsed_url.path.lstrip('/')
+
+    return None
+
+
 class DownloadedSong:
 
     def __init__(self, original_url):
         parsed_url = urlparse(original_url)
         query_params = parse_qs(parsed_url.query)
-        video_id = query_params.get('v', [None])[0]
+        video_id = extract_video_id(original_url)
 
         self.filename = None
         self.download_time = None
         self.original_url = video_id
 
     async def download(self):
+        if self.original_url is None:
+            return
         filename = f'temp/url{self.original_url}.mp3'
         optionsDwnl = {
             'match_filter': utils.match_filter_func("!is_live"),
@@ -37,6 +55,7 @@ class DownloadedSong:
             except Exception as e:
                 LogCog.logError(f'Помилка при загрузці {filename}: {e}')
                 return None
+
 
 async def get_file_by_url(url):
     if url in filesArr.keys():
