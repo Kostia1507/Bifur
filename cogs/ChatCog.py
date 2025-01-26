@@ -247,3 +247,7 @@ class ChatCog(commands.Cog):
         embed.add_field(name="Premium", value=premiumService.is_premium(ctx.author.id), inline=False)
         embed.add_field(name="Language", value=getUserLang(ctx.author.id), inline=False)
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def vote(self, ctx):
+        await ctx.send(f"Vote for bot and get social credits!\n[top.gg]({config.topgg})")
