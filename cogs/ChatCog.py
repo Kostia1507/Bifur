@@ -11,6 +11,7 @@ from cogs import LogCog
 
 import config
 from discordModels.views.ReportView import ReportView
+from service import premiumService, socialCreditsService
 from service.localeService import getLocale, getUserLang, getLocaleByLang
 
 
@@ -235,3 +236,14 @@ class ChatCog(commands.Cog):
             await ctx.send(f'{res} = {suma}')
         else:
             await ctx.send(random.choice(config.cubesEmojis))
+
+    @commands.command(aliases=['me'])
+    async def profile(self, ctx):
+        social_credits = socialCreditsService.get_user_credits(ctx.author.id)
+        embed = discord.Embed()
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
+        embed.set_thumbnail(url=self.bot.user.avatar.url)
+        embed.add_field(name="Social credits", value=social_credits, inline=False)
+        embed.add_field(name="Premium", value=premiumService.is_premium(ctx.author.id), inline=False)
+        embed.add_field(name="Language", value=getUserLang(ctx.author.id), inline=False)
+        await ctx.send(embed=embed)
