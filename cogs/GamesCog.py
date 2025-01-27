@@ -7,9 +7,11 @@ from discord.ext import commands, tasks
 
 from discordModels.views.ReversiView import ReversiView
 from discordModels.views.TicTacToeView import TicTacToeView
+from discordModels.views.WordleView import WordleView
 from discordModels.views.connect4HistoryView import Connect4HistoryView
 from models.ReversiGame import ReversiGame
 from models.TicTacToeGame import TicTacToeGame
+from models.WordleGame import WordleGame
 
 
 class Connect4Difficult(Enum):
@@ -98,6 +100,12 @@ class GamesCog(commands.Cog):
         game.messageId = msg.id
         game.channelId = msg.channel.id
         LogCog.logSystem(f'start reversi at {datetime.now} with messageId {game.messageId}')
+
+    @commands.command(aliases=[])
+    async def wordle(self, ctx):
+        game = WordleGame(ctx.author.id)
+        await ctx.send(content="Here will be normal interface\n", view=WordleView(self.bot, game))
+        LogCog.logSystem(f'start Wordle at {datetime.now} with messageId {ctx.message.id} for {ctx.author.id}')
 
     @app_commands.command(name="connect4", description="Challenge your friends in Connect 4")
     @app_commands.describe(opponent="Friend to play with. Choose Bifur to play against him")

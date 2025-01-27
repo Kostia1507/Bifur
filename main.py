@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from datetime import datetime
 
 import config
@@ -37,6 +38,17 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 intents.reactions = True
+
+# Налаштування логування
+logging.basicConfig(
+    level=logging.INFO,  # Рівень логування (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",  # Формат повідомлень
+    datefmt="%d-%m %H:%M:%S",  # Формат часу
+)
+
+# Логер для discord.py
+discord_logger = logging.getLogger("discord")
+discord_logger.setLevel(logging.INFO)  # Можна змінити на DEBUG для більшої деталізації
 
 
 class BifurBot(commands.Bot):
