@@ -13,7 +13,7 @@ class WordleView(discord.ui.View):
         self.bot = bot
         self.game = game
 
-    @discord.ui.button(label="Move", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="Guess", style=discord.ButtonStyle.primary)
     async def moveCallback(self, interaction, button):
         if interaction.user.id == self.game.user_id:
             await interaction.response.send_modal(WordleModal(self.bot, self.game))
@@ -46,12 +46,14 @@ class WordleModal(discord.ui.Modal, title='Reversi'):
             return
         await interaction.response.defer(thinking=True, ephemeral=True)
         ret = self.game.makeMove(move)
-        print(ret)
         if ret is not None:
-            res = "\n"
-            for entry in ret:
-                res += f"{entry[1].name} {entry[2]} "
-            await interaction.message.edit(content=interaction.message.content + res, view=WordleView(self.bot, self.game))
+            img = discord.File(self.game.generetaPicture(), "wordle.png")
+            embed = discord.Embed(title="Wordle", description=self.game.get_description())
+            embed.set_image(url=f'attachment://wordle.png')
+            if self.game.finished:
+                await interaction.message.edit(content=None, embed=embed, view=None, attachments=[img])
+            else:
+                await interaction.message.edit(content=None, embed=embed, view=WordleView(self.bot, self.game), attachments=[img])
         await interaction.followup.send(localeService.getLocale('ready', interaction.user.id))
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
