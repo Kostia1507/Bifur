@@ -102,9 +102,19 @@ class GamesCog(commands.Cog):
         LogCog.logSystem(f'start reversi at {datetime.now()} with messageId {game.messageId}')
 
     @commands.command(aliases=[])
-    async def wordle(self, ctx):
-        game = WordleGame(ctx.author.id)
-        await ctx.send(content="Write your first guess\n", view=WordleView(self.bot, game))
+    async def wordle(self, ctx, *args):
+        if len(args) > 0:
+            locale = "en" if args[0] not in ["en", "ru", "ua"] else args[0]
+        else:
+            locale = "en"
+        game = WordleGame(ctx.author.id, locale)
+        if locale == "ua":
+            await ctx.send(content="Напишіть вашу першу здогадку\n"
+                                   "Зверніть увагу, що апостроф не рахується за букву!\n"
+                                   "Його не потрібно дописувати, а слова об'єм чи сім'я мають всього 4 букви.",
+                           view=WordleView(self.bot, game))
+        else:
+            await ctx.send(content="Write your first guess", view=WordleView(self.bot, game))
         LogCog.logSystem(f'start Wordle at {datetime.now()} with messageId {ctx.message.id} for {ctx.author.id}')
 
     @app_commands.command(name="connect4", description="Challenge your friends in Connect 4")
