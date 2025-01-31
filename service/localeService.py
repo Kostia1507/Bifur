@@ -526,6 +526,12 @@ locales = {
             'ua': "Щось пішло не так!",
             'ru': "Ошибка!",
         },
+    'wrong-word':
+        {
+            'en': "Word not found",
+            'ua': "Слово не знайдено",
+            'ru': "Слово не найдено",
+        },
     'buy-premium':
         {
             'en': f"To support the bot and get more features, subscribe to [Patreon]({config.patreon})",

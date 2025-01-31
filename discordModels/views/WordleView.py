@@ -54,7 +54,9 @@ class WordleModal(discord.ui.Modal, title='Reversi'):
                 await interaction.message.edit(content=None, embed=embed, view=None, attachments=[img])
             else:
                 await interaction.message.edit(content=None, embed=embed, view=WordleView(self.bot, self.game), attachments=[img])
-        await interaction.followup.send(localeService.getLocale('ready', interaction.user.id))
+            await interaction.followup.send(localeService.getLocale('ready', interaction.user.id))
+        else:
+            await interaction.followup.send(localeService.getLocale('wrong-word', interaction.user.id))
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
         await interaction.response.send_message('Something wrong!', ephemeral=True)

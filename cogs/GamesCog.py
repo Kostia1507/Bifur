@@ -113,6 +113,8 @@ class GamesCog(commands.Cog):
                                    "Зверніть увагу, що апостроф не рахується за букву!\n"
                                    "Його не потрібно дописувати, а слова об'єм чи сім'я мають всього 4 букви.",
                            view=WordleView(self.bot, game))
+        elif locale == "ru":
+            await ctx.send(content="Напишите ваше первое слово\n", view=WordleView(self.bot, game))
         else:
             await ctx.send(content="Write your first guess", view=WordleView(self.bot, game))
         LogCog.logSystem(f'start Wordle at {datetime.now()} with messageId {ctx.message.id} for {ctx.author.id}')

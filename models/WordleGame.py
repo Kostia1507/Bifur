@@ -17,6 +17,12 @@ with io.open("assets/wordle/valid-words-ua.txt", mode="r", encoding="utf-8") as 
 with io.open("assets/wordle/possible-words-ua.txt", mode="r", encoding="utf-8") as file:
     possible_words_ua = [line.rstrip() for line in file]
 
+with io.open("assets/wordle/valid-words-ru.txt", mode="r", encoding="utf-8") as file:
+    words_ru = [line.rstrip() for line in file]
+
+with io.open("assets/wordle/possible-words-ru.txt", mode="r", encoding="utf-8") as file:
+    possible_words_ru = [line.rstrip() for line in file]
+
 
 def draw_rounded_rectangle(draw, xy, radius, fill, outline=None, width=1):
     x1, y1, x2, y2 = xy
@@ -67,6 +73,10 @@ class WordleGame:
             self.answer = random.choice(possible_words_ua)
             self.possible_letters = ["й", "ц", "у", "к", "е", "н", "г", "ґ", "ш", "щ", "з", "х", "ї", "ф", "і", "в",
                                      "а", "п", "р", "о", "л", "д", "ж", "є", "я", "ч", "с", "м", "и", "т", "ь", "б", "ю"]
+        elif locale == "ru":
+            self.answer = random.choice(possible_words_ru)
+            self.possible_letters = ["а","б","в","г","д","е","ё","ж","з","и","й","к","л","м","н","о","п","р","с","т",
+                                     "у","ф","х","ц","ч","ш","щ","ъ","ы","ь","э","ю","я"]
         else:
             self.answer = random.choice(possible_words)
             self.possible_letters = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h",
@@ -81,6 +91,9 @@ class WordleGame:
             self.finished = True
         if self.locale == "ua":
             if prompt not in words_ua:
+                return None
+        elif self.locale == "ru":
+            if prompt not in words_ru:
                 return None
         else:
             if prompt not in words:
