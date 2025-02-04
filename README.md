@@ -18,6 +18,7 @@
 - Translator
 - Connect 4
 - Reversi
+- Wordle (single player)
 - TicTacToe (5x5 field)
 - ChatGPT Integration
 - Calculator

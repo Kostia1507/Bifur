@@ -1,7 +1,6 @@
 import traceback
 
 import discord
-from numpy.lib.function_base import place
 
 from models.ReversiGame import ReversiGame, convert_str_to_cords, count_marks
 from service import localeService

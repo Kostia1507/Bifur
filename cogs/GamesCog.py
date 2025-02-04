@@ -7,9 +7,11 @@ from discord.ext import commands, tasks
 
 from discordModels.views.ReversiView import ReversiView
 from discordModels.views.TicTacToeView import TicTacToeView
+from discordModels.views.WordleView import WordleView
 from discordModels.views.connect4HistoryView import Connect4HistoryView
 from models.ReversiGame import ReversiGame
 from models.TicTacToeGame import TicTacToeGame
+from models.WordleGame import WordleGame
 
 
 class Connect4Difficult(Enum):
@@ -97,7 +99,25 @@ class GamesCog(commands.Cog):
         msg = await ctx.send(embed=embed, view=ReversiView(self.bot, game), file=img)
         game.messageId = msg.id
         game.channelId = msg.channel.id
-        LogCog.logSystem(f'start reversi at {datetime.now} with messageId {game.messageId}')
+        LogCog.logSystem(f'start reversi at {datetime.now()} with messageId {game.messageId}')
+
+    @commands.command(aliases=[])
+    async def wordle(self, ctx, *args):
+        if len(args) > 0:
+            locale = "en" if args[0] not in ["en", "ru", "ua"] else args[0]
+        else:
+            locale = "en"
+        game = WordleGame(ctx.author.id, locale)
+        if locale == "ua":
+            await ctx.send(content="Напишіть вашу першу здогадку\n"
+                                   "Зверніть увагу, що апостроф не рахується за букву!\n"
+                                   "Його не потрібно дописувати, а слова об'єм чи сім'я мають всього 4 букви.",
+                           view=WordleView(self.bot, game))
+        elif locale == "ru":
+            await ctx.send(content="Напишите ваше первое слово\n", view=WordleView(self.bot, game))
+        else:
+            await ctx.send(content="Write your first guess", view=WordleView(self.bot, game))
+        LogCog.logSystem(f'start Wordle at {datetime.now()} with messageId {ctx.message.id} for {ctx.author.id}')
 
     @app_commands.command(name="connect4", description="Challenge your friends in Connect 4")
     @app_commands.describe(opponent="Friend to play with. Choose Bifur to play against him")
