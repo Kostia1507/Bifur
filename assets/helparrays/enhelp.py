@@ -422,6 +422,13 @@ helpEN = {
                                " If both players cannot move - the game ends\n"
                                "The one with more disks on the table wins"
             },
+            {
+                "name": ">wordle",
+                "aliases": [],
+                "description": "get 6 chances to guess a 5-letter word\n"
+                               "green indicates that the letter is correct and in the correct position\n"
+                               "yellow means it is in the answer but not in the right position\n"
+            },
         ],
     "Calculator":
         [
