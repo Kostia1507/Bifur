@@ -19,7 +19,6 @@ from cogs.RadioCog import RadioCog
 from cogs.ServerAdministrationCog import ServerAdministrationCog
 from cogs.ServerRoleManagerCog import ServerRoleManagerCog
 from cogs.TranslatorCog import TranslatorCog
-from cogs.WarCog import WarCog
 from cogs.WeatherCog import WeatherCog
 from cogs.chatGPTCog import ChatGPTCog
 from discordModels.views.ReportView import ReportView
@@ -103,7 +102,6 @@ async def on_ready():
     await bot.add_cog(LangCog(bot))
     await bot.add_cog(CurrencyCog(bot))
     await bot.add_cog(WeatherCog(bot))
-    await bot.add_cog(WarCog(bot))
     await bot.add_cog(ServerAdministrationCog(bot))
     print(f"Bot started as {bot.user.name}")
 
