@@ -1,5 +1,6 @@
 import asyncio
 import random
+import traceback
 
 from yt_dlp import utils, YoutubeDL
 
@@ -126,7 +127,7 @@ async def searchByLink(name):
                 return [song]
         except Exception as e:
             LogCog.logError(f'Помилка при пошуку за посиланням {name}: {e}')
-            return None
+            traceback.print_exception(type(e), e, e.__traceback__)
 
 
 async def searchOne(name):
@@ -140,7 +141,7 @@ async def searchOne(name):
             return [song]
         except Exception as e:
             LogCog.logError(f'Помилка при пошуку {name}: {e}')
-            return None
+            traceback.print_exception(type(e), e, e.__traceback__)
 
 
 async def searchFive(name):
@@ -157,7 +158,7 @@ async def searchFive(name):
             return ret
         except Exception as e:
             LogCog.logError(f'Помилка при пошуку 5 відео {name}: {e}')
-            return None
+            traceback.print_exception(type(e), e, e.__traceback__)
 
 
 def delete(guild_id):

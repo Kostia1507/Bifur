@@ -378,7 +378,7 @@ async def poster(image_url, colors, message_id):
     await download_image(image_url, name_of_file)
     img = Image.open(name_of_file).convert("P", palette=Image.ADAPTIVE, colors=colors)
     img = img.convert("RGB")
-    background = Image.open("assets/background/poster.jpg").resize(img.size)
+    background = Image.open(f"assets/background/poster{random.randint(0,2)}.jpg").resize(img.size)
     img = Image.blend(img, background, 0.2).convert('RGB')
     img.save(name_of_file)
     return name_of_file
@@ -393,7 +393,7 @@ async def as_paint(image_url, message_id, mode):
         image = image.convert("L").filter(ImageFilter.CONTOUR).convert("RGB")
     else:
         image = image.filter(ImageFilter.GaussianBlur(radius=4)).filter(ImageFilter.EDGE_ENHANCE)
-    background = Image.open("assets/background/poster.jpg").resize(image.size)
+    background = Image.open(f"assets/background/poster{random.randint(0,2)}.jpg").resize(image.size)
     image = Image.blend(image, background, 0.15).convert('RGB')
     image.save(name_of_file)
     return name_of_file
