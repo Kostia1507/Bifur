@@ -5,6 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 
+from discordModels.views.LobbyView import LobbyView
 from discordModels.views.ReversiView import ReversiView
 from discordModels.views.TicTacToeView import TicTacToeView
 from discordModels.views.WordleView import WordleView
@@ -118,6 +119,12 @@ class GamesCog(commands.Cog):
         else:
             await ctx.send(content="Write your first guess", view=WordleView(self.bot, game))
         LogCog.logSystem(f'start Wordle at {datetime.now()} with messageId {ctx.message.id} for {ctx.author.id}')
+
+    @commands.command(aliases=["bj"])
+    async def blackjack(self, ctx, *args):
+        await ctx.send(content=f"{ctx.author.display_name} started the game of Blackjack",
+                       view=LobbyView(self.bot, "Blackjack", 4, ctx.author.id))
+        LogCog.logSystem(f'start Lobby BJ at {datetime.now()} with messageId {ctx.message.id} for {ctx.author.id}')
 
     @app_commands.command(name="connect4", description="Challenge your friends in Connect 4")
     @app_commands.describe(opponent="Friend to play with. Choose Bifur to play against him")
