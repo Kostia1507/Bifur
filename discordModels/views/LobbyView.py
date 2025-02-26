@@ -34,6 +34,7 @@ class LobbyView(discord.ui.View):
             await interaction.response.send_message("Admin can't leave the lobby", ephemeral=True)
         else:
             if interaction.user.id in self.players:
+                self.players.remove(interaction.user.id)
                 await interaction.response.send_message("Ok, you left from the lobby!", ephemeral=True)
                 await self.updateMessage(interaction)
             else:
@@ -41,6 +42,9 @@ class LobbyView(discord.ui.View):
 
     @discord.ui.button(label="Start", style=discord.ButtonStyle.green, row=1)
     async def startCallback(self, interaction, button):
+        if self.admin != interaction.user.id:
+            await interaction.response.send_message("Only creator can start the game!", ephemeral=True)
+            return
         if self.gameType == "Blackjack":
             playersNicknames = []
             players = []
