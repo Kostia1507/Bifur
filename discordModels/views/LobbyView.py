@@ -2,6 +2,7 @@ import discord
 
 from cogs import LogCog
 from discordModels.views.BlackjackView import BlackjackView
+from discord.utils import remove_markdown
 
 from models.BlackjackGame import BlackjackGame
 
@@ -80,6 +81,6 @@ class LobbyView(discord.ui.View):
             self.players.remove(i)
         text = f"Players: {len(users)}/{self.count}\n"
         for user in users:
-            text += f"{user.display_name}\n"
+            text += f"{remove_markdown(user.display_name)}\n"
         embed = discord.Embed(title=self.gameType, description=text)
         await interaction.message.edit(content=None, embed=embed, view=LobbyView(self.bot, self.gameType, self.count, self.admin, self.players))

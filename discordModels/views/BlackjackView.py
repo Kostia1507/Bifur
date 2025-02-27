@@ -49,4 +49,27 @@ class BlackjackView(discord.ui.View):
 
     async def updateMessage(self, interaction):
         embed = discord.Embed(title="Blackjack", description=self.game.get_description())
-        await interaction.message.edit(content=None, embed=embed, view=BlackjackView(self.bot, self.game))
+        if self.game.isEnd:
+            await interaction.message.edit(content=None, embed=embed, view=PlayAgainView(self.bot, self.game.players[0], self.game))
+        else:
+            await interaction.message.edit(content=None, embed=embed, view=BlackjackView(self.bot, self.game))
+
+
+class PlayAgainView(discord.ui.View):
+
+    def __init__(self, bot, admin, game):
+        super().__init__(timeout=None)
+        self.bot = bot
+        self.admin = admin
+        self.game = game
+
+    @discord.ui.button(label="Play again", style=discord.ButtonStyle.green)
+    async def playCallback(self, interaction, button):
+        if self.admin != interaction.user.id:
+            await interaction.response.send_message("Only creator can start the game!", ephemeral=True)
+            return
+        game = BlackjackGame(self.game.players, self.game.playersNicknames)
+        embed = discord.Embed(title="Blackjack", description=game.get_description())
+        await interaction.message.edit(content=None, embed=embed, view=BlackjackView(self.bot, game))
+        await interaction.response.send_message("New game started. Good Luck!", ephemeral=True)
+

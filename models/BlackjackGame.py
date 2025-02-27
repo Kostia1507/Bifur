@@ -1,8 +1,10 @@
 import random
+from discord.utils import remove_markdown
 
 class BlackjackGame:
 
     def __init__(self, players, players_nicknames):
+        self.isEnd = False
         self.turn = 0
         # 2 decks from 2 to 11
         if len(players) > 2:
@@ -26,9 +28,9 @@ class BlackjackGame:
 
     def get_description(self):
         if len(self.passed) < len(self.players):
-            res = f"Turn of {self.playersNicknames[self.turn%len(self.players)]}\n\n"
+            res = f"Turn of {remove_markdown(self.playersNicknames[self.turn%len(self.players)])}\n\n"
             for i in range(len(self.players)):
-                line = f"{self.playersNicknames[i]}: ? "
+                line = f"{remove_markdown(self.playersNicknames[i])}: ? "
                 for j in range(1, len(self.board[self.players[i]])):
                     line += f"{self.board[self.players[i]][j]} "
                 if self.players[i] in self.passed:
@@ -36,12 +38,13 @@ class BlackjackGame:
                 res += line + "\n"
             return res
         else:
+            self.isEnd = True
             maxCount = 0
             winners = []
             res = "Game finished\n\n"
 
             for i in range(len(self.players)):
-                line = f"{self.playersNicknames[i]}: "
+                line = f"{remove_markdown(self.playersNicknames[i])}: "
                 for j in range(0, len(self.board[self.players[i]])):
                     line += f"{self.board[self.players[i]][j]} "
                 res += line + "\n"
@@ -49,7 +52,7 @@ class BlackjackGame:
                 if points == maxCount:
                     winners.append(self.playersNicknames[i])
                 elif 21 >= points > maxCount:
-                    winners = [self.playersNicknames[i]]
+                    winners = [remove_markdown(self.playersNicknames[i])]
                     maxCount = points
             res += " ".join(winners) + " scored " + str(maxCount)
             return res
