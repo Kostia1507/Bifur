@@ -62,24 +62,28 @@ class Song:
         if count >= 5:
             self.forbidden = True
             return "403 Forbidden"
-        with YoutubeDL(options) as ydl:
-            try:
-                info = ydl.extract_info(self.original_url, download=False)
-                self.is_live = info['is_live']
-                self.name = info['title']
-                self.duration = info['duration']
-                self.icon_link = info['thumbnail']
-                self.stream_url = info['url']
-                self.updated = datetime.now()
-                await asyncio.sleep(count)
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url=self.stream_url) as response:
-                        # Try once again
-                        if response.status != 200:
-                            await self.updateFromWeb(count + 1)
-            except Exception as e:
-                LogCog.logError(f'Помилка при спробі отримати інформацію {self.original_url}: {e}')
-                return e
+
+        def extract_info():
+            with YoutubeDL(options) as ydl:
+                return ydl.extract_info(self.original_url, download=False)
+
+        try:
+            info = await asyncio.to_thread(extract_info)
+            self.is_live = info['is_live']
+            self.name = info['title']
+            self.duration = info['duration']
+            self.icon_link = info['thumbnail']
+            self.stream_url = info['url']
+            self.updated = datetime.now()
+            await asyncio.sleep(count)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url=self.stream_url) as response:
+                    # Try once again
+                    if response.status != 200:
+                        return await self.updateFromWeb(count + 1)
+        except Exception as e:
+            LogCog.logError(f'Помилка при спробі отримати інформацію {self.original_url}: {e}')
+            return e
 
     def download(self, filename):
         if self.is_live:
