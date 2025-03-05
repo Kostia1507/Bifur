@@ -16,34 +16,15 @@ from service.currencyService import currency
 from service.prefixService import setPrefix
 from cogs.WeatherCog import getCoordinates, getWeather
 from service import pagedMessagesService, autoReactionService, ignoreService
-from models.PendingCommand import PendingCommand, get_pending_command
+from models.PendingCommand import PendingCommand, get_pending_command, get_pending_commands_by_channel
 
 
 class ServerAdministrationCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.pcs = []
-        conn = psycopg2.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password,
-            port=config.port
-        )
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM autocommands")
-        cmds = cur.fetchall()
-        for cmd in cmds:
-            new_pc = PendingCommand(cmd[1], cmd[2], cmd[3], cmd[4])
-            new_pc.id = cmd[0]
-            new_pc.counter = cmd[5]
-            self.pcs.append(new_pc)
-        cur.close()
-        conn.close()
         ignoreService.initFromDB()
-        self.checkForCommands.start()
-        LogCog.logSystem('Auto reaction cog loaded')
+        LogCog.logSystem('Server Administration cog loaded')
 
     @commands.command()
     @has_permissions(manage_messages=True)
@@ -59,43 +40,41 @@ class ServerAdministrationCog(commands.Cog):
 
     @commands.command()
     @has_permissions(manage_guild=True)
-    async def setcmd(self, ctx, interval, *args):
-        if interval.isdigit():
-            cmdArgs = ''
-            for i in range(1, len(args)):
-                cmdArgs += f'{args[i]} '
-            pc = PendingCommand(int(ctx.channel.id), int(interval), args[0], cmdArgs.strip())
-            pc.insert()
-            self.pcs.append(pc)
-            await ctx.message.add_reaction('✅')
-        else:
+    async def setcmd(self, ctx, channel: discord.TextChannel):
+        try:
+            chnl = await ctx.guild.fetch_channel(channel.id)
+            if chnl is not None:
+                pc = PendingCommand(chnl.id, 1, datetime.now().hour, None, "")
+                pc.insert()
+                await ctx.message.add_reaction('✅')
+            else:
+                await ctx.message.add_reaction('❌')
+        except discord.errors.NotFound or discord.errors.DiscordServerError:
             await ctx.message.add_reaction('❌')
 
     @commands.command()
     @has_permissions(manage_guild=True)
-    async def getcmds(self, ctx):
-        conn = psycopg2.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password,
-            port=config.port
-        )
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM autocommands WHERE channel_id=%s", (ctx.channel.id,))
-        cmds = cur.fetchall()
+    async def getcmds(self, ctx, channel: discord.TextChannel):
+        cmds = get_pending_commands_by_channel(channel.id)
         res = ""
         for cmd in cmds:
-            res += f'ID: {cmd[0]}; Interval: {cmd[2]} -- {cmd[3]}:{cmd[4]}\n'
-        cur.close()
-        conn.close()
+            res += f'ID: {cmd.id}; {cmd.cmdType}:{cmd.args}\n'
         if len(res) < 0:
             res = "List is empty. There is no auto-commands."
         await ctx.send(res)
 
     @commands.command()
     @has_permissions(manage_guild=True)
-    async def delcmd(self, ctx, cmdId: int):
+    async def editcmd(self, ctx, channel: discord.TextChannel, cmdId: int):
+        cmd = get_pending_command(cmdId)
+        if cmd.channelId != channel.id:
+            await ctx.message.add_reaction('❌')
+        else:
+            pass
+
+    @commands.command()
+    @has_permissions(manage_guild=True)
+    async def delcmd(self, ctx, channel: discord.TextChannel, cmdId: int):
         conn = psycopg2.connect(
             host=config.host,
             database=config.database,
@@ -104,27 +83,11 @@ class ServerAdministrationCog(commands.Cog):
             port=config.port
         )
         cur = conn.cursor()
-        cur.execute('DELETE FROM autocommands WHERE channel_id = %s and id = %s', (ctx.channel.id, cmdId))
+        cur.execute('DELETE FROM autocmds WHERE channel_id = %s and id = %s', (channel.id, cmdId))
         conn.commit()
         cur.close()
         conn.close()
-        for cmd in self.pcs:
-            if cmd.id == cmdId:
-                self.pcs.remove(cmd)
         await ctx.message.add_reaction('✅')
-
-    @commands.command()
-    @has_permissions(manage_guild=True)
-    async def initcmd(self, ctx, cmdId: int):
-        pc = get_pending_command(cmdId)
-        if pc is not None and ctx.channel.id == pc.channelId:
-            pc.init_counter()
-            for cmd in self.pcs:
-                if cmd.id == pc.id:
-                    cmd.counter = 0
-            await ctx.message.add_reaction('✅')
-        else:
-            await ctx.message.add_reaction('❌')
 
     @commands.command()
     @has_permissions(manage_guild=True)
