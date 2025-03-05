@@ -23,7 +23,7 @@ class WordleView(discord.ui.View):
     @discord.ui.button(label="Surrender", style=discord.ButtonStyle.gray)
     async def surrenderCallback(self, interaction, button):
         if interaction.user.id == self.game.user_id:
-            await interaction.response.send_modal(SurrenderConfirmModal(self.bot, self.game))
+            await interaction.response.send_modal(SurrenderConfirmModal(self.bot, self.game, interaction.message))
         else:
             await interaction.response.send_message(content="It's not your game!", ephemeral=True)
 
@@ -65,10 +65,11 @@ class WordleModal(discord.ui.Modal, title='Reversi'):
 
 class SurrenderConfirmModal(discord.ui.Modal, title='Surrender'):
 
-    def __init__(self, bot, game: WordleGame):
+    def __init__(self, bot, game: WordleGame, message):
         super().__init__()
         self.bot = bot
         self.game = game
+        self.message = message
 
     messageInput = discord.ui.TextInput(
         label='Leave your message if you want',
@@ -81,3 +82,7 @@ class SurrenderConfirmModal(discord.ui.Modal, title='Surrender'):
             await interaction.response.send_message(f"Word was: {self.game.answer}\nComment: {self.messageInput.value}")
         else:
             await interaction.response.send_message(f"The word was: {self.game.answer}")
+        img = discord.File(self.game.generetaPicture(), "wordle.png")
+        embed = discord.Embed(title="Wordle", description=self.game.get_description())
+        embed.set_image(url=f'attachment://wordle.png')
+        await interaction.message.edit(content=None, embed=embed, view=None, attachments=[img])

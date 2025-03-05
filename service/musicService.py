@@ -19,7 +19,7 @@ settings = {
     'source_address': '0.0.0.0',
     'prefferedcodec': 'mp3',
     'live_from_start': False,
-    'playlist_items': '1:20',
+    'playlist_items': '1:5',
     'ignoreerrors': True,
 }
 players = {}
@@ -39,7 +39,7 @@ def findMusicPlayerByGuildId(guild_id):
 
 async def addTrack(name, guild_id, author, channel_id):
     if str(name).startswith('http'):
-        ret = await asyncio.create_task(searchByLink(name))
+        ret = await searchByLink(name)
     else:
         ret = await searchOne(name)
     if ret is not None:
@@ -105,60 +105,66 @@ async def searchByLink(name):
     new_settings["forceurl"] = True
     new_settings["simulate"] = True
     new_settings["quiet"] = True
-    with YoutubeDL(new_settings) as ydl:
-        try:
-            info = ydl.extract_info(name, download=False)
-            if "entries" in info:
-                entries = info['entries']
-                ret = []
-                count = 0
-                for entry in entries:
-                    count += 1
-                    song = Song(entry["webpage_url"], False)
-                    if count < 5:
-                        await song.updateFromWeb()
-                    ret.append(song)
-                return ret
-            else:
-                if info['is_live']:
-                    return None
-                song = Song(info['webpage_url'], False)
-                await asyncio.create_task(song.updateFromWeb())
-                return [song]
-        except Exception as e:
-            LogCog.logError(f'Помилка при пошуку за посиланням {name}: {e}')
-            traceback.print_exception(type(e), e, e.__traceback__)
 
+    def extract_info():
+        with YoutubeDL(new_settings) as ydl:
+            return ydl.extract_info(name, download=False)
 
-async def searchOne(name):
-    with YoutubeDL(settings) as ydl:
-        try:
-            info = ydl.extract_info("ytsearch:%s" % name, download=False)['entries'][0]
-            if info['is_live']:
+    try:
+        info = await asyncio.to_thread(extract_info)
+        if "entries" in info:
+            entries = info['entries']
+            ret = []
+            for entry in entries:
+                song = Song(entry["webpage_url"], False)
+                await song.updateFromWeb()
+                ret.append(song)
+            return ret
+        else:
+            if info.get('is_live', True):
                 return None
             song = Song(info['webpage_url'], False)
             await asyncio.create_task(song.updateFromWeb())
             return [song]
-        except Exception as e:
-            LogCog.logError(f'Помилка при пошуку {name}: {e}')
-            traceback.print_exception(type(e), e, e.__traceback__)
+    except Exception as e:
+        LogCog.logError(f'Помилка при пошуку за посиланням {name}: {e}')
+        traceback.print_exception(type(e), e, e.__traceback__)
+
+
+async def searchOne(name):
+    def extract_info():
+        with YoutubeDL(settings) as ydl:
+            return ydl.extract_info("ytsearch:%s" % name, download=False)['entries'][0]
+    try:
+        info = await asyncio.to_thread(extract_info)
+        if info.get('is_live', True):
+            return None
+        song = Song(info['webpage_url'], False)
+        await asyncio.create_task(song.updateFromWeb())
+        return [song]
+    except Exception as e:
+        LogCog.logError(f'Помилка при пошуку {name}: {e}')
+        traceback.print_exception(type(e), e, e.__traceback__)
 
 
 async def searchFive(name):
-    with YoutubeDL(settings) as ydl:
-        try:
-            info = ydl.extract_info(f"ytsearch5:{name}", download=False)['entries'][0:5]
-            ret = []
-            for e in info:
-                if e['is_live']:
-                    continue
-                t = Song(e['webpage_url'], False)
-                await asyncio.create_task(t.updateFromWeb())
-                ret.append(t)
-            return ret
-        except Exception as e:
-            LogCog.logError(f'Помилка при пошуку 5 відео {name}: {e}')
-            traceback.print_exception(type(e), e, e.__traceback__)
+    def extract_info():
+        with YoutubeDL(settings) as ydl:
+            return ydl.extract_info(f"ytsearch5:{name}", download=False)['entries'][0:5]
+
+    try:
+        info = await asyncio.to_thread(extract_info)
+        ret = []
+        for e in info:
+            if e.get('is_live', True):
+                continue
+            t = Song(e['webpage_url'], False)
+            await asyncio.create_task(t.updateFromWeb())
+            ret.append(t)
+        return ret
+    except Exception as e:
+        LogCog.logError(f'Помилка при пошуку 5 відео {name}: {e}')
+        traceback.print_exception(type(e), e, e.__traceback__)
 
 
 def delete(guild_id):
