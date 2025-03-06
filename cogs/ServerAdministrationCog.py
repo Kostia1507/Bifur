@@ -9,6 +9,7 @@ from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions
 
 import config
+from discordModels.views.AutoCmdView import AutoCmdView
 from service.localeService import getLocale
 from utils import commandUtils
 from cogs import LogCog
@@ -63,6 +64,7 @@ class ServerAdministrationCog(commands.Cog):
             res = "List is empty. There is no auto-commands."
         await ctx.send(res)
 
+
     @commands.command()
     @has_permissions(manage_guild=True)
     async def editcmd(self, ctx, channel: discord.TextChannel, cmdId: int):
@@ -70,7 +72,7 @@ class ServerAdministrationCog(commands.Cog):
         if cmd.channelId != channel.id:
             await ctx.message.add_reaction('❌')
         else:
-            pass
+            await ctx.channel.send(content="pohui", view=AutoCmdView(self.bot, cmd))
 
     @commands.command()
     @has_permissions(manage_guild=True)
@@ -156,50 +158,7 @@ class ServerAdministrationCog(commands.Cog):
                 channel = self.bot.get_channel(cmd.channelId)
                 if cmd.counter >= cmd.interval:
                     await commandUtils.run_blocking(cmd.init_counter)
-                    if cmd.cmdType == 'rule34' and channel.is_nsfw():
-                        limit = 1000
-                        link = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&pid=1&tags='
-                        for tag in cmd.args.split(' '):
-                            link += f'{tag}*+'
-                        answer = ""
-                        async with aiohttp.ClientSession() as session:
-                            async with session.get(link) as response:
-                                if response.status == 200:
-                                    answer = await response.json()
-                        async with aiohttp.ClientSession() as session:
-                            while len(answer) <= 0 < limit:
-                                limit = limit // 2
-                                link = f'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={limit}&json=1&pid=1&tags='
-                                async with session.get(link) as response:
-                                    if response.status == 200:
-                                        answer = await response.json()
-                        try:
-                            res = random.choice(answer)
-                            fileLink = res['sample_url']
-                            async with aiohttp.ClientSession() as session:
-                                async with session.get(fileLink) as response:
-                                    if response.status == 200:
-                                        content_type = response.headers['Content-Type']
-                                        img_data = await response.read()
-                            fileName = f'temp/{cmd.channelId}.jpg'
-                            if content_type == 'image/png':
-                                fileName = f'temp/{cmd.channelId}.png'
-                            elif content_type == 'image/tiff':
-                                fileName = f'temp/{cmd.channelId}.tiff'
-                            elif content_type == 'image/gif':
-                                fileName = f'temp/{cmd.channelId}.gif'
-                            with open(fileName, 'wb') as handler:
-                                handler.write(img_data)
-                            embed = discord.Embed(
-                                title=cmd.args
-                            )
-                            embed.set_image(url=f'attachment://{fileName[5:len(fileName)]}')
-                            embed.set_footer(text=res['tags'])
-                            os.remove(fileName)
-                        except Exception as e:
-                            LogCog.logDebug(f'Exception on rule: {e}')
-                            await channel.send(getLocale("nothing", 0))
-                    elif cmd.cmdType == 'time':
+                    if cmd.cmdType == 'time':
                         await channel.send(f'<t:{str(int(datetime.now().timestamp()))}>')
                     elif cmd.cmdType == 'weather':
                         nameOfCity = " ".join(cmd.args.split(" "))
