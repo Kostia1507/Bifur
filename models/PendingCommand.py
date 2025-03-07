@@ -40,6 +40,26 @@ def get_pending_commands_by_channel(channel_id):
         cmds.append(pc)
     return cmds
 
+def get_all_pending_commands():
+    conn = psycopg2.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT id, channel_id, interval, start_hour_utc, cmd_type, args FROM autocmds")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    cmds = []
+    for row in rows:
+        pc = PendingCommand(row[1], row[2], row[3], row[4], row[5])
+        pc.id = row[0]
+        cmds.append(pc)
+    return cmds
+
 class PendingCommand:
 
     def __init__(self, channelId, interval, startHour, cmdType, args):
@@ -76,7 +96,7 @@ class PendingCommand:
             port=config.port
         )
         cur = conn.cursor()
-        cur.execute("UPDATE autocommands SET startHour = %s, cmdType = %s, args = %s, interval = %s where id = %s",
+        cur.execute("UPDATE autocmds SET start_hour_utc = %s, cmd_type = %s, args = %s, interval = %s where id = %s",
                     (self.startHour, self.cmdType, self.args, self.interval, self.id))
         conn.commit()
         cur.close()

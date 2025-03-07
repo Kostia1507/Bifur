@@ -1,6 +1,5 @@
 import discord
 from discord.ui import ChannelSelect
-from numpy.lib.function_base import place
 
 from models import PendingCommand
 
@@ -22,7 +21,7 @@ commandsOptions = [discord.SelectOption(label="Weather", value="weather"),
 
 class AutoCmdView(discord.ui.View):
 
-    def __init__(self, bot, cmd):
+    def __init__(self, bot, cmd: PendingCommand):
         self.bot = bot
         self.cmd = cmd
         super().__init__(timeout=None)
@@ -33,19 +32,24 @@ class AutoCmdView(discord.ui.View):
 
     @discord.ui.button(label="Save", style=discord.ButtonStyle.green, custom_id='persistent_view:save_cmd')
     async def saveCallback(self, interaction, button):
-        await interaction.response.send_message("Ok")
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        self.cmd.update()
+        await interaction.followup.send("Saved", ephemeral=True)
 
     @discord.ui.select(cls=ChannelSelect, channel_types=[discord.ChannelType.text], custom_id="persistent_view:autocmd_channel")
     async def select_channels(self, interaction: discord.Interaction, select: ChannelSelect):
-        return await interaction.response.send_message(f'You selected {select.values[0].mention}')
+        self.cmd.channelId = select.values[0].id
+        await interaction.response.defer()
 
     @discord.ui.select(options=commandsOptions, placeholder="Select command", custom_id="persistent_view:autocmd_command")
     async def select_command(self, interaction: discord.Interaction, select: ChannelSelect):
-        return await interaction.response.send_message(f'You selected {select.values[0]}')
+        self.cmd.cmdType = select.values[0]
+        await interaction.response.defer()
 
     @discord.ui.select(options=intervalOptions, placeholder="Select interval", custom_id="persistent_view:autocmd_interval")
     async def select_interval(self, interaction: discord.Interaction, select: ChannelSelect):
-        return await interaction.response.send_message(f'You selected {select.values[0]}')
+        self.cmd.interval = select.values[0]
+        await interaction.response.defer()
 
 
 class EditCmdModal(discord.ui.Modal, title='AutoCommand'):
@@ -57,7 +61,8 @@ class EditCmdModal(discord.ui.Modal, title='AutoCommand'):
         self.message = message
 
     arguments = discord.ui.TextInput(
-        label='Arguments'
+        label='Arguments',
+        required=False
     )
 
     startHour = discord.ui.TextInput(
@@ -66,5 +71,18 @@ class EditCmdModal(discord.ui.Modal, title='AutoCommand'):
 
     async def on_submit(self, interaction: discord.Interaction):
         arguments = self.arguments.value
-        description = self.startHour.value
-        pass
+        startHour = self.startHour.value
+        if startHour.isnumeric() and 0 <= int(startHour) <= 24:
+            self.cmd.startHour = int(startHour)%24
+            self.cmd.args = arguments
+            await interaction.response.send_message("Ok. Updated!\n"
+                                                    "**Don't forget to save your command**", ephemeral=True)
+            embed = discord.Embed(title="AutoCommand", description=f"Command: {self.cmd.cmdType}\n"
+                                                                   f"Arguments: {self.cmd.args}\n"
+                                                                   f"All autocommands is similar to usual cmds.\n"
+                                                                   f"So if you need args, use it like any usual command in Bifur or read the docs\n"
+                                                                   f"Start hour (UTC): {self.cmd.startHour}\n"
+                                                                   f"Interval: {self.cmd.interval} hours\n")
+            await self.message.edit(embed=embed, view=AutoCmdView(self.bot, self.cmd))
+        else:
+            await interaction.response.send_message("Start hour must be an Integer from 0 to 24", ephemeral=True)

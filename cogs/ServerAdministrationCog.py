@@ -1,6 +1,6 @@
 import os
 import random
-from datetime import datetime
+from datetime import datetime, time, timezone
 
 import aiohttp
 import discord
@@ -17,14 +17,66 @@ from service.currencyService import currency
 from service.prefixService import setPrefix
 from cogs.WeatherCog import getCoordinates, getWeather
 from service import pagedMessagesService, autoReactionService, ignoreService
-from models.PendingCommand import PendingCommand, get_pending_command, get_pending_commands_by_channel
+from models.PendingCommand import PendingCommand, get_pending_command, get_pending_commands_by_channel, \
+    get_all_pending_commands
 
+taskTimeConfig = [
+    time(hour=0, minute=0, tzinfo=timezone.utc),
+    time(hour=0, minute=30, tzinfo=timezone.utc),
+    time(hour=1, minute=0, tzinfo=timezone.utc),
+    time(hour=1, minute=30, tzinfo=timezone.utc),
+    time(hour=2, minute=0, tzinfo=timezone.utc),
+    time(hour=2, minute=30, tzinfo=timezone.utc),
+    time(hour=3, minute=0, tzinfo=timezone.utc),
+    time(hour=3, minute=30, tzinfo=timezone.utc),
+    time(hour=4, minute=0, tzinfo=timezone.utc),
+    time(hour=4, minute=30, tzinfo=timezone.utc),
+    time(hour=5, minute=0, tzinfo=timezone.utc),
+    time(hour=5, minute=30, tzinfo=timezone.utc),
+    time(hour=6, minute=0, tzinfo=timezone.utc),
+    time(hour=6, minute=30, tzinfo=timezone.utc),
+    time(hour=7, minute=0, tzinfo=timezone.utc),
+    time(hour=7, minute=30, tzinfo=timezone.utc),
+    time(hour=8, minute=0, tzinfo=timezone.utc),
+    time(hour=8, minute=30, tzinfo=timezone.utc),
+    time(hour=9, minute=0, tzinfo=timezone.utc),
+    time(hour=9, minute=30, tzinfo=timezone.utc),
+    time(hour=10, minute=0, tzinfo=timezone.utc),
+    time(hour=10, minute=30, tzinfo=timezone.utc),
+    time(hour=11, minute=0, tzinfo=timezone.utc),
+    time(hour=11, minute=30, tzinfo=timezone.utc),
+    time(hour=12, minute=0, tzinfo=timezone.utc),
+    time(hour=12, minute=30, tzinfo=timezone.utc),
+    time(hour=13, minute=0, tzinfo=timezone.utc),
+    time(hour=13, minute=30, tzinfo=timezone.utc),
+    time(hour=14, minute=0, tzinfo=timezone.utc),
+    time(hour=14, minute=30, tzinfo=timezone.utc),
+    time(hour=15, minute=0, tzinfo=timezone.utc),
+    time(hour=15, minute=30, tzinfo=timezone.utc),
+    time(hour=16, minute=0, tzinfo=timezone.utc),
+    time(hour=16, minute=30, tzinfo=timezone.utc),
+    time(hour=17, minute=0, tzinfo=timezone.utc),
+    time(hour=17, minute=30, tzinfo=timezone.utc),
+    time(hour=18, minute=0, tzinfo=timezone.utc),
+    time(hour=18, minute=30, tzinfo=timezone.utc),
+    time(hour=19, minute=0, tzinfo=timezone.utc),
+    time(hour=19, minute=30, tzinfo=timezone.utc),
+    time(hour=20, minute=0, tzinfo=timezone.utc),
+    time(hour=20, minute=30, tzinfo=timezone.utc),
+    time(hour=21, minute=0, tzinfo=timezone.utc),
+    time(hour=21, minute=30, tzinfo=timezone.utc),
+    time(hour=22, minute=0, tzinfo=timezone.utc),
+    time(hour=22, minute=30, tzinfo=timezone.utc),
+    time(hour=23, minute=0, tzinfo=timezone.utc),
+    time(hour=23, minute=30, tzinfo=timezone.utc),
+]
 
 class ServerAdministrationCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
         ignoreService.initFromDB()
+        self.checkForCommands.start()
         LogCog.logSystem('Server Administration cog loaded')
 
     @commands.command()
@@ -72,7 +124,13 @@ class ServerAdministrationCog(commands.Cog):
         if cmd.channelId != channel.id:
             await ctx.message.add_reaction('❌')
         else:
-            await ctx.channel.send(content="pohui", view=AutoCmdView(self.bot, cmd))
+            embed = discord.Embed(title="AutoCommand", description=f"Command: {cmd.cmdType}\n"
+                                                                   f"Arguments: {cmd.args}\n"
+                                                                   f"All autocommands is similar to usual cmds.\n"
+                                                                   f"So if you need args, use it like any usual command in Bifur or read the docs\n"
+                                                                   f"Start hour (UTC): {cmd.startHour}\n"
+                                                                   f"Interval: {cmd.interval} hours\n")
+            await ctx.channel.send(embed=embed, view=AutoCmdView(self.bot, cmd))
 
     @commands.command()
     @has_permissions(manage_guild=True)
@@ -130,7 +188,7 @@ class ServerAdministrationCog(commands.Cog):
             embed.set_image(url=guild.icon.url)
         await ctx.send(embed=embed, view=pagedMsg.view)
 
-    @tasks.loop(minutes=13)
+    @tasks.loop(time=taskTimeConfig)
     async def checkForCommands(self):
         conn = psycopg2.connect(
             host=config.host,
@@ -142,7 +200,8 @@ class ServerAdministrationCog(commands.Cog):
         cur = conn.cursor()
         cur.execute("SELECT value from settings WHERE name='executed-auto-cmds'")
         value = cur.fetchone()[0]
-        if int(value) == int(datetime.utcnow().hour):
+        currentHour = int(datetime.utcnow().hour)
+        if int(value) == currentHour:
             cur.close()
             conn.close()
             return
@@ -152,12 +211,11 @@ class ServerAdministrationCog(commands.Cog):
         conn.commit()
         cur.close()
         conn.close()
-        for cmd in self.pcs:
+        pcs = get_all_pending_commands()
+        for cmd in pcs:
             try:
-                await commandUtils.run_blocking(cmd.update_counter)
                 channel = self.bot.get_channel(cmd.channelId)
-                if cmd.counter >= cmd.interval:
-                    await commandUtils.run_blocking(cmd.init_counter)
+                if (currentHour-cmd.startHour)%cmd.interval == 0:
                     if cmd.cmdType == 'time':
                         await channel.send(f'<t:{str(int(datetime.now().timestamp()))}>')
                     elif cmd.cmdType == 'weather':
