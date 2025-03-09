@@ -82,8 +82,8 @@ def startRadio(radioName, guildId, author, channelId, userId, isClearPlaylist):
     return True
 
 
-def startLiked(guildId, author, channelId, userId, isClearPlaylist):
-    tracks = likedSongsService.getAllLikedSongs(userId)
+async def startLiked(guildId, author, channelId, userId, isClearPlaylist):
+    tracks = await likedSongsService.getAllLikedSongs(userId)
     if tracks is None or len(tracks) == 0:
         return False
     # clear all songs

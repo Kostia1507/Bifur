@@ -28,7 +28,7 @@ from utils import commandUtils, botUtils
 
 import discord
 from discord import HTTPException
-from discord.ext import commands, tasks
+from discord.ext import commands
 from discord.ext.commands import CommandNotFound, MissingRequiredArgument, MissingPermissions
 
 from webpage.WebHandler import start_aiohttp_server
@@ -38,16 +38,14 @@ intents.message_content = True
 intents.members = True
 intents.reactions = True
 
-# Налаштування логування
 logging.basicConfig(
-    level=logging.INFO,  # Рівень логування (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",  # Формат повідомлень
-    datefmt="%d-%m %H:%M:%S",  # Формат часу
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    datefmt="%d-%m %H:%M:%S",
 )
 
-# Логер для discord.py
 discord_logger = logging.getLogger("discord")
-discord_logger.setLevel(logging.INFO)  # Можна змінити на DEBUG для більшої деталізації
+discord_logger.setLevel(logging.INFO)
 
 
 class BifurBot(commands.Bot):
@@ -104,6 +102,7 @@ async def on_ready():
     await bot.add_cog(WeatherCog(bot))
     await bot.add_cog(ServerAdministrationCog(bot))
     print(f"Bot started as {bot.user.name}")
+    await customPrefixService.init()
 
 
 @bot.event
@@ -119,8 +118,6 @@ async def on_message(message):
     if message.author == bot.user:
         return
     text = message.content.strip()
-    if message.channel.id in ignoreService.ignoredChannels and not text.startswith(f'{bot.command_prefix}ignore'):
-        return
 
     # ChatGPT
     if text.startswith(f'<@{bot.user.id}>'):
@@ -143,15 +140,18 @@ async def on_message(message):
                 await message.channel.send(embed=embed, view=pagedMsg.view)
                 cooldownService.removeCooldown(message.author.id)
 
-        # custom prefixes
-        if message.channel.guild is not None:
-            customPrefix = customPrefixService.getPrefix(message.channel.guild.id)
-            if customPrefix is not None:
-                if text.startswith(customPrefix):
-                    text = f'{config.prefix}{text[len(customPrefix):len(text)]}'
-                    message.content = text
-                elif text.startswith(config.prefix):
-                    return
+    # custom prefixes
+    if message.channel.guild is not None:
+        customPrefix = customPrefixService.getPrefix(message.channel.guild.id)
+        if customPrefix is not None:
+            if text.startswith(customPrefix):
+                text = f'{config.prefix}{text[len(customPrefix):len(text)]}'
+                message.content = text
+            elif text.startswith(config.prefix):
+                return
+
+    if message.channel.id in ignoreService.ignoredChannels and not text.startswith(f'{bot.command_prefix}ignore'):
+        return
 
     # check command
     if text.startswith(bot.command_prefix):

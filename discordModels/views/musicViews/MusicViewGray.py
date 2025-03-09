@@ -101,7 +101,8 @@ class MusicViewGray(discord.ui.View):
     async def likeCallback(self, interaction, button):
         await interaction.response.defer(ephemeral=True, thinking=True)
         mp = musicService.findMusicPlayerByGuildId(guild_id=interaction.guild.id)
-        if mp.playing is not None and likedSongsService.likeSong(interaction.user.id, mp.playing.original_url):
+        flag = await likedSongsService.likeSong(interaction.user.id, mp.playing.original_url)
+        if mp.playing is not None and flag:
             await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)
         else:
             await interaction.followup.send(getLocale('something-wrong', interaction.user.id), ephemeral=True)

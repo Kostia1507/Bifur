@@ -450,21 +450,21 @@ class MusicCog(commands.Cog):
 
     @commands.command()
     async def like(self, ctx, url):
-        if likedSongsService.likeSong(ctx.author.id, url):
+        if await likedSongsService.likeSong(ctx.author.id, url):
             await ctx.message.add_reaction('✅')
         else:
             await ctx.message.add_reaction('❌')
 
     @commands.command()
     async def unlike(self, ctx, song_id: int):
-        if likedSongsService.unlikeSong(ctx.author.id, song_id):
+        if await likedSongsService.unlikeSong(ctx.author.id, song_id):
             await ctx.message.add_reaction('✅')
         else:
             await ctx.message.add_reaction('❌')
 
     @commands.command(aliases=["likedsongs", "likedlist"])
     async def liked(self, ctx):
-        songs = likedSongsService.getAllLikedSongs(ctx.author.id)
+        songs = await likedSongsService.getAllLikedSongs(ctx.author.id)
         ret = ""
         for song in songs:
             ret += f'{song.trackId} - {song.name}\n'
@@ -475,7 +475,7 @@ class MusicCog(commands.Cog):
 
     @commands.command()
     async def linfo(self, ctx, track_id: int):
-        song = likedSongsService.getLikedSongById(ctx.author.id, track_id)
+        song = await likedSongsService.getLikedSongById(ctx.author.id, track_id)
         if song is not None:
             await song.updateFromWeb()
             embed = discord.Embed(

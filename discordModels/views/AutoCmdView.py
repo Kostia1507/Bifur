@@ -33,7 +33,7 @@ class AutoCmdView(discord.ui.View):
     @discord.ui.button(label="Save", style=discord.ButtonStyle.green, custom_id='persistent_view:save_cmd')
     async def saveCallback(self, interaction, button):
         await interaction.response.defer(ephemeral=True, thinking=True)
-        self.cmd.update()
+        await self.cmd.update()
         await interaction.followup.send("Saved", ephemeral=True)
 
     @discord.ui.select(cls=ChannelSelect, channel_types=[discord.ChannelType.text], custom_id="persistent_view:autocmd_channel")

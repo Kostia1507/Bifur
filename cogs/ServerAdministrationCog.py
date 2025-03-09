@@ -1,8 +1,6 @@
-import os
-import random
+import asyncio
 from datetime import datetime, time, timezone
 
-import aiohttp
 import discord
 import psycopg2
 from discord.ext import commands, tasks
@@ -11,10 +9,9 @@ from discord.ext.commands import has_permissions
 import config
 from discordModels.views.AutoCmdView import AutoCmdView
 from service.localeService import getLocale
-from utils import commandUtils
 from cogs import LogCog
 from service.currencyService import currency
-from service.prefixService import setPrefix
+from service.customPrefixService import setPrefix
 from cogs.WeatherCog import getCoordinates, getWeather
 from service import pagedMessagesService, autoReactionService, ignoreService
 from models.PendingCommand import PendingCommand, get_pending_command, get_pending_commands_by_channel, \
@@ -71,24 +68,26 @@ taskTimeConfig = [
     time(hour=23, minute=30, tzinfo=timezone.utc),
 ]
 
+
 class ServerAdministrationCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        ignoreService.initFromDB()
+        asyncio.create_task(autoReactionService.init())
+        asyncio.create_task(ignoreService.initFromDB())
         self.checkForCommands.start()
         LogCog.logSystem('Server Administration cog loaded')
 
     @commands.command()
     @has_permissions(manage_messages=True)
     async def autoreaction(self, ctx, emoji):
-        autoReactionService.add(ctx.channel.id, emoji)
+        await autoReactionService.add(ctx.channel.id, emoji)
         await ctx.message.add_reaction('✅')
 
     @commands.command()
     @has_permissions(manage_messages=True)
     async def removereactions(self, ctx):
-        autoReactionService.remove(ctx.channel.id)
+        await autoReactionService.remove(ctx.channel.id)
         await ctx.message.add_reaction('✅')
 
     @commands.command()
@@ -98,7 +97,7 @@ class ServerAdministrationCog(commands.Cog):
             chnl = await ctx.guild.fetch_channel(channel.id)
             if chnl is not None:
                 pc = PendingCommand(chnl.id, 1, datetime.now().hour, None, "")
-                pc.insert()
+                await pc.insert()
                 await ctx.message.add_reaction('✅')
             else:
                 await ctx.message.add_reaction('❌')
@@ -108,7 +107,7 @@ class ServerAdministrationCog(commands.Cog):
     @commands.command()
     @has_permissions(manage_guild=True)
     async def getcmds(self, ctx, channel: discord.TextChannel):
-        cmds = get_pending_commands_by_channel(channel.id)
+        cmds = await get_pending_commands_by_channel(channel.id)
         res = ""
         for cmd in cmds:
             res += f'ID: {cmd.id}; {cmd.cmdType}:{cmd.args}\n'
@@ -116,11 +115,10 @@ class ServerAdministrationCog(commands.Cog):
             res = "List is empty. There is no auto-commands."
         await ctx.send(res)
 
-
     @commands.command()
     @has_permissions(manage_guild=True)
     async def editcmd(self, ctx, channel: discord.TextChannel, cmdId: int):
-        cmd = get_pending_command(cmdId)
+        cmd = await get_pending_command(cmdId)
         if cmd.channelId != channel.id:
             await ctx.message.add_reaction('❌')
         else:
@@ -157,7 +155,7 @@ class ServerAdministrationCog(commands.Cog):
     @commands.command()
     @has_permissions(manage_guild=True)
     async def setprefix(self, ctx, prefix):
-        setPrefix(ctx.guild.id, prefix)
+        await setPrefix(ctx.guild.id, prefix)
         await ctx.send(f'{getLocale("set-prefix", ctx.author.id)} {prefix}')
 
     @ignore.error
@@ -211,11 +209,11 @@ class ServerAdministrationCog(commands.Cog):
         conn.commit()
         cur.close()
         conn.close()
-        pcs = get_all_pending_commands()
+        pcs = await get_all_pending_commands()
         for cmd in pcs:
             try:
                 channel = self.bot.get_channel(cmd.channelId)
-                if (currentHour-cmd.startHour)%cmd.interval == 0:
+                if (currentHour - cmd.startHour) % cmd.interval == 0:
                     if cmd.cmdType == 'time':
                         await channel.send(f'<t:{str(int(datetime.now().timestamp()))}>')
                     elif cmd.cmdType == 'weather':
