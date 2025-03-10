@@ -58,14 +58,14 @@ def addSong(song, guild_id, author, channel_id):
     mp.addSong(song)
 
 
-def startRadio(radioName, guildId, author, channelId, userId, isClearPlaylist):
+async def startRadio(radioName, guildId, author, channelId, userId, isClearPlaylist):
     if radioName[0].isdigit():
-        radio = radioService.getRadioById(radioName)
+        radio = await radioService.getRadioById(radioName)
     else:
-        radio = radioService.getRadioByName(radioName, userId)
+        radio = await radioService.getRadioByName(radioName, userId)
     if radio is None:
         return False
-    tracks = radio.getTracks(userId)
+    tracks = await radio.getTracks(userId)
     if tracks is None or len(tracks) == 0:
         return False
     # clear all songs

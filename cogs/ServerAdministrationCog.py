@@ -2,7 +2,6 @@ import asyncio
 from datetime import datetime, time, timezone
 
 import discord
-import psycopg2
 from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions
 
@@ -11,11 +10,11 @@ from discordModels.views.AutoCmdView import AutoCmdView
 from service.localeService import getLocale
 from cogs import LogCog
 from service.currencyService import currency
-from service.customPrefixService import setPrefix
+from service.customPrefixService import setPrefix, delPrefix
 from cogs.WeatherCog import getCoordinates, getWeather
 from service import pagedMessagesService, autoReactionService, ignoreService
 from models.PendingCommand import PendingCommand, get_pending_command, get_pending_commands_by_channel, \
-    get_all_pending_commands
+    get_all_pending_commands, delete_pending_command, check_execute
 
 taskTimeConfig = [
     time(hour=0, minute=0, tzinfo=timezone.utc),
@@ -133,18 +132,7 @@ class ServerAdministrationCog(commands.Cog):
     @commands.command()
     @has_permissions(manage_guild=True)
     async def delcmd(self, ctx, channel: discord.TextChannel, cmdId: int):
-        conn = psycopg2.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password,
-            port=config.port
-        )
-        cur = conn.cursor()
-        cur.execute('DELETE FROM autocmds WHERE channel_id = %s and id = %s', (channel.id, cmdId))
-        conn.commit()
-        cur.close()
-        conn.close()
+        await delete_pending_command(channel.id, cmdId)
         await ctx.message.add_reaction('✅')
 
     @commands.command()
@@ -157,6 +145,12 @@ class ServerAdministrationCog(commands.Cog):
     async def setprefix(self, ctx, prefix):
         await setPrefix(ctx.guild.id, prefix)
         await ctx.send(f'{getLocale("set-prefix", ctx.author.id)} {prefix}')
+
+    @commands.command(aliases=['defaultprefix', 'delprefix'])
+    @has_permissions(manage_guild=True)
+    async def defprefix(self, ctx):
+        await delPrefix(ctx.guild.id)
+        await ctx.send(f'{getLocale("set-prefix", ctx.author.id)} {config.prefix}')
 
     @ignore.error
     async def missing_channel(self, ctx, error):
@@ -188,28 +182,12 @@ class ServerAdministrationCog(commands.Cog):
 
     @tasks.loop(time=taskTimeConfig)
     async def checkForCommands(self):
-        conn = psycopg2.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password,
-            port=config.port
-        )
-        cur = conn.cursor()
-        cur.execute("SELECT value from settings WHERE name='executed-auto-cmds'")
-        value = cur.fetchone()[0]
-        currentHour = int(datetime.utcnow().hour)
-        if int(value) == currentHour:
-            cur.close()
-            conn.close()
+        is_execute = await check_execute()
+        if not is_execute:
             return
         LogCog.logSystem('execute checkForCommands in ServerAdministrationCog')
-        cur.execute("UPDATE public.settings SET value= %s WHERE name='executed-auto-cmds'",
-                    (datetime.utcnow().hour,))
-        conn.commit()
-        cur.close()
-        conn.close()
         pcs = await get_all_pending_commands()
+        currentHour = int(datetime.utcnow().hour)
         for cmd in pcs:
             try:
                 channel = self.bot.get_channel(cmd.channelId)

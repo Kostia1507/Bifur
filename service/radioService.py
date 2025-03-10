@@ -1,4 +1,4 @@
-import psycopg2
+import asyncpg
 from yt_dlp import YoutubeDL, utils
 
 import config
@@ -7,133 +7,110 @@ from models.Radio import Radio
 from models.Song import Song
 
 
-def getRadioById(radio_id):
-    conn = psycopg2.connect(
+async def getRadioById(radio_id):
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM radios where id = '" + str(radio_id) + "'")
-    radio = cur.fetchone()
-    cur.close()
-    conn.close()
+    radio = await conn.fetchrow("SELECT * FROM radios where id = '" + str(radio_id) + "'")
+    await conn.close()
     return Radio(radio[0], radio[1], radio[2], radio[3])
 
 
-def getRadioByName(playlist, owner_id):
-    conn = psycopg2.connect(
+async def getRadioByName(playlist, owner_id):
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM radios where name = %s and owner = %s", (playlist, owner_id))
-    radio = cur.fetchone()
-    cur.close()
-    conn.close()
+    radio = await conn.fetchrow("SELECT * FROM radios where name = $1 and owner = $2", playlist, owner_id)
+    await conn.close()
     return Radio(radio[0], radio[1], radio[2], radio[3])
 
 
-def getPlayLists(user_id):
-    conn = psycopg2.connect(
+async def getPlayLists(user_id):
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("SELECT id,name,shared FROM radios WHERE owner = '" + str(user_id) + "'")
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
+    rows = await conn.fetch("SELECT id,name,shared FROM radios WHERE owner = '" + str(user_id) + "'")
+    await conn.close()
     radios = []
     for entry in rows:
         radios.append(Radio(entry[0], entry[1], user_id, entry[2]))
     return radios
 
 
-def getSharedPlayLists(user_id):
-    conn = psycopg2.connect(
+async def getSharedPlayLists(user_id):
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("SELECT id,name FROM radios WHERE owner = '" + str(user_id) + "' and shared = true")
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
+    rows = await conn.fetch("SELECT id,name FROM radios WHERE owner = '" + str(user_id) + "' and shared = true")
+    await conn.close()
     radios = []
     for entry in rows:
         radios.append(Radio(entry[0], entry[1], user_id, True))
     return radios
 
 
-def createRadio(name, user_id):
-    conn = psycopg2.connect(
+async def createRadio(name, user_id):
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("INSERT INTO radios(name, owner) VALUES (%s, %s);", (name, user_id))
-    cur.execute("SELECT id FROM radios WHERE name = %s and owner = %s", (name, user_id))
-    conn.commit()
-    radio_id = cur.fetchall()
+    await conn.execute("INSERT INTO radios(name, owner) VALUES ($1, $2);", name, user_id)
+    radio_id = await conn.fetch("SELECT id FROM radios WHERE name = $1 and owner = $2", name, user_id)
     radio_id = radio_id[::-1]
     radio_id = radio_id[0]
-    cur.close()
-    conn.close()
+    await conn.close()
     return radio_id[0]
 
 
-def shareRadio(name, user_id):
+async def shareRadio(name, user_id):
     if name.isdigit():
-        radio = getRadioById(name)
+        radio = await getRadioById(name)
         name = radio.name
-    conn = psycopg2.connect(
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM radios where name = %s and owner = %s", (name, user_id))
-    radio = cur.fetchone()
+    radio = await conn.fetchrow("SELECT * FROM radios where name = $1 and owner = $2", name, user_id)
     if radio is None:
         return None
     status = not radio[3]
-    cur.execute("UPDATE radios SET shared = %s where name = %s and owner = %s", (status, name, user_id))
-    conn.commit()
-    cur.close()
-    conn.close()
+    await conn.execute("UPDATE radios SET shared = $1 where name = $2 and owner = $3", status, name, user_id)
+    await conn.close()
     return status
 
 
-def getAllSharedRadios():
-    conn = psycopg2.connect(
+async def getAllSharedRadios():
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM radios where shared = true")
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
+    rows = await conn.fetch("SELECT * FROM radios where shared = true")
+    await conn.close()
     radios = []
     for entry in rows:
         radios.append(Radio(entry[0], entry[1], entry[2], entry[3]))
@@ -141,7 +118,7 @@ def getAllSharedRadios():
 
 
 # pass radio_id as 0 if you need to create one new
-def importYouTubePlayList(user_id, link, radio_id):
+async def importYouTubePlayList(user_id, link, radio_id):
     settings = {
         'match_filter': utils.match_filter_func("!is_live"),
         'nocheckcertificate': True,
@@ -164,115 +141,95 @@ def importYouTubePlayList(user_id, link, radio_id):
             LogCog.logError(f'Exception during import of youtube playlist {e}')
             return e
         if radio_id == 0:
-            radio_id = createRadio(info['title'], user_id)
+            radio_id = await createRadio(info['title'], user_id)
         entries = info['entries']
-        conn = psycopg2.connect(
+        conn = await asyncpg.connect(
             host=config.host,
             database=config.database,
             user=config.user,
             password=config.password,
             port=config.port
         )
-        cur = conn.cursor()
         for entry in entries:
             LogCog.logDebug(str(entry))
             if entry is not None:
-                cur.execute("INSERT INTO tracks(name, list, link, duration) VALUES (%s, %s, %s, %s);",
-                            (entry["title"], radio_id, entry["webpage_url"], entry['duration']))
-        conn.commit()
-        cur.close()
-        conn.close()
+                await conn.execute("INSERT INTO tracks(name, list, link, duration) VALUES (%s, %s, %s, %s);",
+                                  (entry["title"], radio_id, entry["webpage_url"], entry['duration']))
+        await conn.close()
         return radio_id
 
 
-def createTrack(name, playlist_id, link, user_id, duration):
-    radio = getRadioById(playlist_id)
-    if user_id == radio.owner or user_id in radio.getEditors():
-        conn = psycopg2.connect(
+async def createTrack(name, playlist_id, link, user_id, duration):
+    radio = await getRadioById(playlist_id)
+    if user_id == radio.owner or user_id in await radio.getEditors():
+        conn = await asyncpg.connect(
             host=config.host,
             database=config.database,
             user=config.user,
             password=config.password,
             port=config.port
         )
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM radios where id = %s", (playlist_id,))
-        radioId = cur.fetchone()
+        radioId = await conn.fetchrow("SELECT * FROM radios where id = $1", playlist_id)
         if radioId is None:
             return False
-        cur.execute("SELECT * from tracks where link = %s and list = %s", (link, radioId[0]))
-        check = cur.fetchone()
+        check = await conn.fetchrow("SELECT * from tracks where link = $1 and list = $2", link, radioId[0])
         if check is not None:
             return None
-        cur.execute("INSERT INTO tracks(name, list, link, duration) VALUES (%s, %s, %s, %s);",
-                    (name, playlist_id, link, duration))
-        conn.commit()
-        cur.close()
-        conn.close()
+        await conn.execute("INSERT INTO tracks(name, list, link, duration) VALUES ($1, $2, $3, $4);",
+                    name, playlist_id, link, duration)
+        await conn.close()
         return True
 
 
-def forceCreateTrack(name, playlist_id, link, user_id, duration):
-    radio = getRadioById(playlist_id)
-    if user_id == radio.owner or user_id in radio.getEditors():
-        conn = psycopg2.connect(
+async def forceCreateTrack(name, playlist_id, link, user_id, duration):
+    radio = await getRadioById(playlist_id)
+    if user_id == radio.owner or user_id in await radio.getEditors():
+        conn = await asyncpg.connect(
             host=config.host,
             database=config.database,
             user=config.user,
             password=config.password,
             port=config.port
         )
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM radios where id = %s", (playlist_id,))
-        radioId = cur.fetchone()
+        radioId = await conn.fetchrow("SELECT * FROM radios where id = $1", playlist_id)
         if radioId is None:
             return False
-        cur.execute("INSERT INTO tracks(name, list, link, duration) VALUES (%s, %s, %s, %s);",
-                    (name, playlist_id, link, duration))
-        conn.commit()
-        cur.close()
-        conn.close()
+        await conn.execute("INSERT INTO tracks(name, list, link, duration) VALUES ($1, $2, $3, $4);",
+                           name, playlist_id, link, duration)
+        await conn.close()
         return True
 
 
-def deleteTrack(track_id, userId):
-    conn = psycopg2.connect(
+async def deleteTrack(track_id, userId):
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM tracks where id = %s", (track_id,))
-    track = cur.fetchone()
+    track = await conn.fetchrow("SELECT * FROM tracks where id = $1", track_id)
     if track is None:
         return False
     radioId = track[3]
-    cur.execute("SELECT * FROM radios where id = %s and owner = %s", (radioId, userId))
-    radioId = cur.fetchone()
+    radioId = await conn.fetchrow("SELECT * FROM radios where id = $1 and owner = $2", radioId, userId)
     if radioId is None:
         return False
-    cur.execute("DELETE FROM tracks WHERE id='" + str(track_id) + "'")
-    conn.commit()
-    cur.close()
-    conn.close()
+    await conn.execute("DELETE FROM tracks WHERE id='" + str(track_id) + "'")
+    await conn.close()
     return True
 
 
-def getTrackById(track_id):
-    conn = psycopg2.connect(
+async def getTrackById(track_id):
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM tracks where id = %s", (track_id,))
-    track = cur.fetchone()
-    cur.close()
-    conn.close()
+    track = await conn.fetchrow("SELECT * FROM tracks where id = $1", track_id)
+    await conn.close()
     song = Song(track[2], False)
     song.name = track[1]
     song.duration = track[4]

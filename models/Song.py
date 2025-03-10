@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime
 
 import aiohttp
-import psycopg2
+import asyncpg
 from yt_dlp import YoutubeDL, utils
 
 import config
@@ -103,9 +103,9 @@ class Song:
                 LogCog.logError(f'Помилка при загрузці {filename}: {e}')
                 return e
 
-    def updateInDB(self):
+    async def updateInDB(self):
         if self.trackId is not None:
-            conn = psycopg2.connect(
+            conn = await asyncpg.connect(
                 host=config.host,
                 database=config.database,
                 user=config.user,
@@ -113,8 +113,8 @@ class Song:
                 port=config.port
             )
             cur = conn.cursor()
-            cur.execute("UPDATE tracks SET name = %s, duration = %s WHERE id = %s",
-                        (self.name, self.duration, self.trackId))
+            cur.execute("UPDATE tracks SET name = $1, duration = $2 WHERE id = $3",
+                        self.name, self.duration, self.trackId)
             conn.commit()
             cur.close()
             conn.close()

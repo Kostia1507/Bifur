@@ -49,7 +49,7 @@ class RadioCog(commands.Cog):
         if res == 0:
             return 0
         await musicViewService.createPlayer(ctx, self.bot)
-        retStatus = musicService.startRadio(radio_name, ctx.guild.id, ctx.author.name,
+        retStatus = await musicService.startRadio(radio_name, ctx.guild.id, ctx.author.name,
                                             ctx.channel.id, ctx.author.id, True)
         if retStatus:
             await ctx.message.add_reaction('✅')
@@ -61,7 +61,7 @@ class RadioCog(commands.Cog):
         res = await connect_to_user_voice(ctx)
         if res == 0:
             return 0
-        retStatus = musicService.startRadio(radio_name, ctx.guild.id, ctx.author.name,
+        retStatus = await musicService.startRadio(radio_name, ctx.guild.id, ctx.author.name,
                                             ctx.channel.id, ctx.author.id, False)
         if retStatus:
             await ctx.message.add_reaction('✅')
@@ -72,7 +72,7 @@ class RadioCog(commands.Cog):
     async def radios(self, ctx, *args):
         if len(args) > 0:
             user_id = commandUtils.deleteNotNumbers(args[0])
-            radios = radioService.getSharedPlayLists(user_id)
+            radios = await radioService.getSharedPlayLists(user_id)
             user = await self.bot.fetch_user(user_id)
             if user is None:
                 await ctx.send(getLocale('user-not-found', ctx.author.id))
@@ -80,7 +80,7 @@ class RadioCog(commands.Cog):
             else:
                 title = getLocale('user-playlists', ctx.author.id).replace("%p", user.name)
         else:
-            radios = radioService.getPlayLists(ctx.author.id)
+            radios = await radioService.getPlayLists(ctx.author.id)
             title = getLocale('playlists-list', ctx.author.id)
         if len(radios) == 0:
             await ctx.send(getLocale('no-playlists', ctx.author.id))
@@ -97,9 +97,9 @@ class RadioCog(commands.Cog):
     @commands.command(aliases=["rlist", "rl"])
     async def radiolist(self, ctx, radio_name):
         if radio_name[0].isdigit():
-            radio = radioService.getRadioById(radio_name)
+            radio = await radioService.getRadioById(radio_name)
         else:
-            radio = radioService.getRadioByName(radio_name, ctx.author.id)
+            radio = await radioService.getRadioByName(radio_name, ctx.author.id)
         ret = await radio.getInfo(ctx.author.id)
         if isinstance(ret, tuple):
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
@@ -112,12 +112,12 @@ class RadioCog(commands.Cog):
     @commands.command(aliases=['at'])
     async def addtrack(self, ctx, radio_id, url):
         song = Song(url, False)
-        await asyncio.create_task(song.updateFromWeb())
+        await song.updateFromWeb()
         name, duration = song.name, song.duration
         if name is None or duration is None:
             await ctx.message.add_reaction('❌')
             return
-        retStatus = radioService.createTrack(name, radio_id, url, ctx.author.id, duration)
+        retStatus = await radioService.createTrack(name, radio_id, url, ctx.author.id, duration)
         if retStatus is None:
             await ctx.reply(getLocale('url-exist', ctx.author.id))
         elif retStatus:
@@ -129,7 +129,7 @@ class RadioCog(commands.Cog):
     async def forceaddtrack(self, ctx, radio_id, url):
         song = Song(url, True)
         name, duration = song.name, song.duration
-        retStatus = radioService.forceCreateTrack(name, radio_id, url, ctx.author.id, duration)
+        retStatus = await radioService.forceCreateTrack(name, radio_id, url, ctx.author.id, duration)
         if retStatus:
             await ctx.message.add_reaction('✅')
         else:
@@ -137,7 +137,7 @@ class RadioCog(commands.Cog):
 
     @commands.command()
     async def deltrack(self, ctx, n: int):
-        retStatus = radioService.deleteTrack(n, ctx.author.id)
+        retStatus = await radioService.deleteTrack(n, ctx.author.id)
         if retStatus:
             await ctx.message.add_reaction('✅')
         else:
@@ -146,27 +146,28 @@ class RadioCog(commands.Cog):
     @commands.command()
     async def createradio(self, ctx, name):
         if not name[0].isdigit():
-            radio_id = radioService.createRadio(name, ctx.author.id)
+            radio_id = await radioService.createRadio(name, ctx.author.id)
             await ctx.send(f'{getLocale("new-playlist", ctx.author.id)} {radio_id}')
         else:
             await ctx.send(getLocale("first-not-number", ctx.author.id))
 
     @commands.command()
     async def share(self, ctx, name):
-        shared_status = radioService.shareRadio(name, ctx.author.id)
+        shared_status = await radioService.shareRadio(name, ctx.author.id)
         await ctx.send(f'{getLocale("shared", ctx.author.id)} {shared_status}')
 
     @commands.command()
     async def rename(self, ctx, radio_id, newname):
         if not newname[0].isdigit():
-            radioService.getRadioById(radio_id).rename(newname, ctx.author.id)
+            radio = await radioService.getRadioById(radio_id)
+            await radio.rename(newname, ctx.author.id)
             await ctx.message.add_reaction('✅')
         else:
             await ctx.send(getLocale("first-not-number", ctx.author.id))
 
     @commands.command()
     async def allradios(self, ctx):
-        radios = radioService.getAllSharedRadios()
+        radios = await radioService.getAllSharedRadios()
         ret = ''
         for radio in radios:
             ret += f'ID: {radio.radio_id} -- {radio.name}\n'
@@ -177,7 +178,8 @@ class RadioCog(commands.Cog):
 
     @commands.command()
     async def delradio(self, ctx, radio_id: int):
-        retStatus = radioService.getRadioById(radio_id).delete(ctx.author.id)
+        radio = await radioService.getRadioById(radio_id)
+        retStatus = await radio.delete()
         if retStatus:
             await ctx.message.add_reaction('✅')
         else:
@@ -185,11 +187,12 @@ class RadioCog(commands.Cog):
 
     @commands.command()
     async def tinfo(self, ctx, track_id: int):
-        track = radioService.getTrackById(track_id)
-        radio = radioService.getRadioById(track.radioId)
+        track = await radioService.getTrackById(track_id)
+        radio = await radioService.getRadioById(track.radioId)
         userLang = getUserLang(ctx.author.id)
-        if radio.owner == ctx.author.id or radio.is_shared or ctx.author.id in radio.getEditors():
-            track = Song(track.original_url, True)
+        if radio.owner == ctx.author.id or radio.is_shared or ctx.author.id in await radio.getEditors():
+            track = Song(track.original_url, False)
+            await track.updateFromWeb()
             embed = discord.Embed(
                 title=f'{track.name} {getLocaleByLang("from-list", userLang)} ID:{radio.radio_id}:{radio.name}',
                 description=f'URL: {track.original_url}\n{getLocaleByLang("duration", userLang)} {track.getDurationToStr()}'
@@ -200,17 +203,17 @@ class RadioCog(commands.Cog):
     @commands.command()
     async def rinfo(self, ctx, radio_name):
         if radio_name[0].isdigit():
-            radio = radioService.getRadioById(radio_name)
+            radio = await radioService.getRadioById(radio_name)
         else:
-            radio = radioService.getRadioByName(radio_name, ctx.author.id)
-        if radio.owner == ctx.author.id or radio.is_shared or ctx.author.id in radio.getEditors():
+            radio = await radioService.getRadioByName(radio_name, ctx.author.id)
+        if radio.owner == ctx.author.id or radio.is_shared or ctx.author.id in await radio.getEditors():
             owner = await self.bot.fetch_user(radio.owner)
-            editors = radio.getEditors()
+            editors = await radio.getEditors()
             EditorsList = ""
             for entry in editors:
                 user = await self.bot.fetch_user(entry)
                 EditorsList += user.name + "\n"
-            tracks = radio.getTracks(ctx.author.id)
+            tracks = await radio.getTracks(ctx.author.id)
             seconds = 0
             for t in tracks:
                 if t.duration is not None:
@@ -231,12 +234,12 @@ class RadioCog(commands.Cog):
 
     @commands.command(aliases=['rradio', 'randomradio'])
     async def randradio(self, ctx):
-        radios = radioService.getAllSharedRadios()
+        radios = await radioService.getAllSharedRadios()
         res = await connect_to_user_voice(ctx)
         if res == 0:
             return 0
         radio = random.choice(radios)
-        retStatus = musicService.startRadio(str(radio.radio_id), ctx.guild.id,
+        retStatus = await musicService.startRadio(str(radio.radio_id), ctx.guild.id,
                                             ctx.author.name, ctx.channel.id, ctx.author.id, True)
         if retStatus:
             await ctx.message.add_reaction('✅')
@@ -254,12 +257,12 @@ class RadioCog(commands.Cog):
 
     @commands.command(aliases=['roradio', 'randomownradio'])
     async def randownradio(self, ctx):
-        radios = radioService.getPlayLists(ctx.author.id)
+        radios = await radioService.getPlayLists(ctx.author.id)
         res = await connect_to_user_voice(ctx)
         if res == 0:
             return 0
         radio = random.choice(radios)
-        retStatus = musicService.startRadio(str(radio.radio_id), ctx.guild.id,
+        retStatus = await musicService.startRadio(str(radio.radio_id), ctx.guild.id,
                                             ctx.author.name, ctx.channel.id, ctx.author.id, True)
         if retStatus:
             await ctx.message.add_reaction('✅')
@@ -277,21 +280,21 @@ class RadioCog(commands.Cog):
 
     @commands.command(aliases=["edit"])
     async def allowedit(self, ctx, radio_id, *args):
-        radio = radioService.getRadioById(radio_id)
+        radio = await radioService.getRadioById(radio_id)
         if radio.owner == ctx.author.id:
             count = 0
             for entry in ctx.message.mentions:
-                count += radio.addEditor(entry.id)
+                count += await radio.addEditor(entry.id)
             await ctx.send(f'Added {count} editors')
         else:
             await ctx.message.add_reaction('❌')
 
     @commands.command(aliases=["disedit"])
     async def disallowedit(self, ctx, radio_id, *args):
-        radio = radioService.getRadioById(radio_id)
+        radio = await radioService.getRadioById(radio_id)
         if radio.owner == ctx.author.id:
             for entry in ctx.message.mentions:
-                radio.removeEditor(entry.id)
+                await radio.removeEditor(entry.id)
             await ctx.message.add_reaction('✅')
         else:
             await ctx.message.add_reaction('❌')
@@ -305,7 +308,7 @@ class RadioCog(commands.Cog):
             embed = discord.Embed(title="Exception!", description=str(radio_id), colour=Colour.red())
             await ctx.reply(embed=embed)
         else:
-            radio = radioService.getRadioById(radio_id)
+            radio = await radioService.getRadioById(radio_id)
             owner = await self.bot.fetch_user(radio.owner)
             userLang = getUserLang(ctx.author.id)
             embed = discord.Embed(
@@ -319,8 +322,8 @@ class RadioCog(commands.Cog):
 
     @commands.command(aliases=['addlist'])
     async def addplaylist(self, ctx, radio_id, link):
-        radio = radioService.getRadioById(radio_id)
-        if radio.owner == ctx.author.id or ctx.author.id in radio.getEditors():
+        radio = await radioService.getRadioById(radio_id)
+        if radio.owner == ctx.author.id or ctx.author.id in await radio.getEditors():
             await ctx.message.add_reaction('👋')
             cooldownService.setSpecialCooldown(ctx.author.id)
             radio_id = await commandUtils.run_blocking(radioService.importYouTubePlayList, ctx.author.id, link,
@@ -329,7 +332,7 @@ class RadioCog(commands.Cog):
                 embed = discord.Embed(title="Exception!", description=str(radio_id), colour=Colour.red())
                 await ctx.reply(embed=embed)
             else:
-                radio = radioService.getRadioById(radio_id)
+                radio = await radioService.getRadioById(radio_id)
                 owner = await self.bot.fetch_user(radio.owner)
                 userLang = getUserLang(ctx.author.id)
                 embed = discord.Embed(
@@ -350,7 +353,7 @@ class RadioCog(commands.Cog):
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
             return 0
-        retStatus = musicService.startRadio(radio_name, interaction.guild_id, interaction.user.name,
+        retStatus = await musicService.startRadio(radio_name, interaction.guild_id, interaction.user.name,
                                             interaction.channel_id, interaction.user.id, True)
         if retStatus:
             await interaction.followup.send(getLocale('ready', interaction.user.id),
@@ -363,7 +366,7 @@ class RadioCog(commands.Cog):
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
             return 0
-        retStatus = musicService.startRadio(radio_name, interaction.guild_id, interaction.user.name,
+        retStatus = await musicService.startRadio(radio_name, interaction.guild_id, interaction.user.name,
                                             interaction.channel_id, interaction.user.id, False)
         if retStatus:
             await interaction.response.send_message(getLocale('ready', interaction.user.id),
@@ -374,10 +377,10 @@ class RadioCog(commands.Cog):
     @app_commands.describe(user="Shows user's playlists if user defined")
     async def radiosSlash(self, interaction: discord.Interaction, user: discord.Member = None):
         if user is not None:
-            radios = radioService.getSharedPlayLists(user.id)
+            radios = await radioService.getSharedPlayLists(user.id)
             title = getLocale('user-playlists', interaction.user.id).replace("%p", user.name)
         else:
-            radios = radioService.getPlayLists(interaction.user.id)
+            radios = await radioService.getPlayLists(interaction.user.id)
             title = getLocale('playlists-list', interaction.user.id)
         if len(radios) == 0:
             await interaction.response.send_message(getLocale('no-playlists', interaction.user.id))
@@ -393,7 +396,7 @@ class RadioCog(commands.Cog):
 
     @app_commands.command(name="allradios", description="Show all shared playlists")
     async def allradiosSlash(self, interaction: discord.Interaction):
-        radios = radioService.getAllSharedRadios()
+        radios = await radioService.getAllSharedRadios()
         ret = ''
         for radio in radios:
             ret += f'ID: {radio[0]} -- {radio[1]}\n'
@@ -406,9 +409,9 @@ class RadioCog(commands.Cog):
     @app_commands.describe(radio_name="playlist name or ID")
     async def radiolistSlash(self, interaction: discord.Interaction, radio_name: str):
         if radio_name[0].isdigit():
-            radio = radioService.getRadioById(radio_name)
+            radio = await radioService.getRadioById(radio_name)
         else:
-            radio = radioService.getRadioByName(radio_name, interaction.user.id)
+            radio = await radioService.getRadioByName(radio_name, interaction.user.id)
         ret = await radio.getInfo(interaction.user.id)
         if isinstance(ret, tuple):
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])

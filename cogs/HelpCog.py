@@ -3,7 +3,6 @@ from discord import app_commands
 from discord.ext import commands
 
 from assets.helparrays import enhelp, uahelp, ruhelp
-from discordModels.views.PagedMessageView import PagedMessageView
 from service import localeService, pagedMessagesService
 from cogs import LogCog
 

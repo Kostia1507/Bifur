@@ -23,7 +23,7 @@ from cogs.WeatherCog import WeatherCog
 from cogs.chatGPTCog import ChatGPTCog
 from discordModels.views.ReportView import ReportView
 from service import cooldownService, chatGPTService, pagedMessagesService, customPrefixService, autoReactionService, \
-    ignoreService
+    ignoreService, autoRolesService
 from utils import commandUtils, botUtils
 
 import discord
@@ -82,7 +82,9 @@ async def on_ready():
     await bot.change_presence(activity=discord.CustomActivity(name=">langs || >help"))
     bot.remove_command("help")
     LogCog.logSystem("Bot started")
+    # Create necessary packages
     botUtils.prepareAtStart()
+    # Add cogs here
     await bot.add_cog(HelpCog(bot))
     await bot.add_cog(AdminCog(bot))
     await bot.add_cog(CalcCog(bot))
@@ -101,8 +103,11 @@ async def on_ready():
     await bot.add_cog(CurrencyCog(bot))
     await bot.add_cog(WeatherCog(bot))
     await bot.add_cog(ServerAdministrationCog(bot))
-    print(f"Bot started as {bot.user.name}")
+
+    # Initialize services here
     await customPrefixService.init()
+    await autoRolesService.init()
+    print(f"Bot started as {bot.user.name}")
 
 
 @bot.event

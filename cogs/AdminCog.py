@@ -5,7 +5,7 @@ import psutil
 from datetime import datetime
 
 import discord
-import psycopg2
+import asyncpg
 from discord.ext import commands, tasks
 
 import config
@@ -126,17 +126,20 @@ class AdminCog(commands.Cog):
     @commands.command()
     @commands.check(commandUtils.is_owner)
     async def sql(self, ctx, *args):
-        conn = psycopg2.connect(
+        conn = await asyncpg.connect(
             host=config.host,
             database=config.database,
             user=config.user,
             password=config.password,
             port=config.port
         )
-        cur = conn.cursor()
-        cur.execute((" ".join(args)).strip())
-        conn.commit()
-        outputrows = cur.fetchall()
+        loop = " ".join(args)
+        if loop.lower().find("select") == -1:
+            await conn.execute((" ".join(args)).strip())
+            await conn.close()
+            return
+        outputrows = await conn.fetch((" ".join(args)).strip())
+        await conn.close()
         output = ""
         for row in outputrows:
             output += str(row) + "\n"
@@ -174,7 +177,7 @@ class AdminCog(commands.Cog):
                  f' {str(seconds // 60 % 60)}m {str(seconds % 60)}s\n'
         status += f'Кількість унікальних користувачів: {str(len(cooldownService.cooldownUser))}\n'
         status += f'Кількість серверів: {len(self.bot.guilds)}\n'
-        status += f'Преміум користувачів: {premiumService.get_premium_count()}\n'
+        status += f'Преміум користувачів: {await premiumService.get_premium_count()}\n'
         status += f'Зараз я використовую {currentRAM} МБ\n'
         status += f'Система {currentSystemRam} МБ\n'
         while len(self.RAMHistory) > 12:

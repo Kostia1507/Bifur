@@ -239,12 +239,12 @@ class ChatCog(commands.Cog):
 
     @commands.command(aliases=['me'])
     async def profile(self, ctx):
-        social_credits = socialCreditsService.get_user_credits(ctx.author.id)
+        social_credits = await socialCreditsService.get_user_credits(ctx.author.id)
         embed = discord.Embed()
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
         embed.set_thumbnail(url=self.bot.user.avatar.url)
         embed.add_field(name="Social credits", value=social_credits, inline=False)
-        embed.add_field(name="Premium", value=premiumService.is_premium(ctx.author.id), inline=False)
+        embed.add_field(name="Premium", value=await premiumService.is_premium(ctx.author.id), inline=False)
         embed.add_field(name="Language", value=getUserLang(ctx.author.id), inline=False)
         await ctx.send(embed=embed)
 

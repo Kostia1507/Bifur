@@ -1,4 +1,5 @@
-import psycopg2
+from datetime import datetime
+
 import asyncpg
 
 import config
@@ -59,6 +60,35 @@ async def get_all_pending_commands():
         cmds.append(pc)
     return cmds
 
+async def delete_pending_command(channel_id, cmd_id):
+    conn = await asyncpg.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    await conn.execute('DELETE FROM autocmds WHERE channel_id = $1 and id = $2', channel_id, cmd_id)
+    await conn.close()
+    return True
+
+async def check_execute():
+    conn = await asyncpg.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    value = await conn.fetchrow("SELECT value from settings WHERE name='executed-auto-cmds'")
+    currentHour = int(datetime.utcnow().hour)
+    if int(value[0]) == currentHour:
+        await conn.close()
+        return False
+    # await conn.execute("UPDATE public.settings SET value= %s WHERE name='executed-auto-cmds'",
+    #            (datetime.utcnow().hour,))
+    await conn.close()
+    return True
 
 class PendingCommand:
 

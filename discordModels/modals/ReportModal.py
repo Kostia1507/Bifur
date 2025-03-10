@@ -1,10 +1,5 @@
 import traceback
-from datetime import datetime, timedelta
-
 import discord
-
-import config
-from cogs import LogCog
 from service import pagedMessagesService
 
 
