@@ -27,7 +27,7 @@ class GifCog(commands.Cog):
                 patpat_gif = discord.File(patpat_buffer, filename=f'temp/{ctx.message.id}pat.gif')
                 await ctx.send(file=patpat_gif)
             except FileNotFoundError:
-                await ctx.send(getLocale("file-not-found", ctx.author.id))
+                await ctx.send(await getLocale("file-not-found", ctx.author.id))
 
     @commands.command(aliases=['vibel'])
     async def vibe(self, ctx, *args):
@@ -44,7 +44,7 @@ class GifCog(commands.Cog):
                 vibe_gif = discord.File(vibe_buffer, filename=f'temp/{ctx.message.id}vibe.gif')
                 await ctx.send(file=vibe_gif)
             except FileNotFoundError:
-                await ctx.send(getLocale("file-not-found", ctx.author.id))
+                await ctx.send(await getLocale("file-not-found", ctx.author.id))
 
     @commands.command()
     async def viber(self, ctx, *args):
@@ -61,7 +61,7 @@ class GifCog(commands.Cog):
                 vibe_gif = discord.File(vibe_buffer, filename=f'temp/{ctx.message.id}vibe.gif')
                 await ctx.send(file=vibe_gif)
             except FileNotFoundError:
-                await ctx.send(getLocale("file-not-found", ctx.author.id))
+                await ctx.send(await getLocale("file-not-found", ctx.author.id))
 
     # This code needs a lot of RAM for some gifs, REST IN PEACE
     """"@commands.command()
@@ -76,5 +76,5 @@ class GifCog(commands.Cog):
                 gifSigned = discord.File(sign_buffer, filename=f'temp/{ctx.message.id}signed.gif')
                 await ctx.send(file=gifSigned)
             except FileNotFoundError:
-                await ctx.send(getLocale("file-not-found", ctx.author.id))
+                await ctx.send(await getLocale("file-not-found", ctx.author.id))
     """

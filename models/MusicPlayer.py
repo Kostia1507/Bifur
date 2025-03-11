@@ -127,8 +127,8 @@ class MusicPlayer:
         random.shuffle(self.songs)
         return True
 
-    def formatList(self, user_id):
-        userLang = getUserLang(user_id)
+    async def formatList(self, user_id):
+        userLang = await getUserLang(user_id)
         if len(self.songs) == 0 and self.playing is None:
             return getLocaleByLang("list-empty", userLang), ""
 
@@ -149,9 +149,9 @@ class MusicPlayer:
                 description += "\n"
         return title, description
 
-    def formatHistory(self, user_id):
+    async def formatHistory(self, user_id):
         if len(self.history) == 0 and self.playing is None:
-            return getLocale("list-empty", user_id), ""
+            return await getLocale("list-empty", user_id), ""
 
         description = ''
         for i in range(0, len(self.history)):

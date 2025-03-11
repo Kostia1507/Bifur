@@ -144,13 +144,13 @@ class ServerAdministrationCog(commands.Cog):
     @has_permissions(manage_guild=True)
     async def setprefix(self, ctx, prefix):
         await setPrefix(ctx.guild.id, prefix)
-        await ctx.send(f'{getLocale("set-prefix", ctx.author.id)} {prefix}')
+        await ctx.send(f'{await getLocale("set-prefix", ctx.author.id)} {prefix}')
 
     @commands.command(aliases=['defaultprefix', 'delprefix'])
     @has_permissions(manage_guild=True)
     async def defprefix(self, ctx):
         await delPrefix(ctx.guild.id)
-        await ctx.send(f'{getLocale("set-prefix", ctx.author.id)} {config.prefix}')
+        await ctx.send(f'{await getLocale("set-prefix", ctx.author.id)} {config.prefix}')
 
     @ignore.error
     async def missing_channel(self, ctx, error):

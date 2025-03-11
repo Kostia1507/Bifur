@@ -163,12 +163,12 @@ class HelpCog(commands.Cog):
 
     @commands.command()
     async def help(self, ctx, *args):
-        lang = localeService.getLocale("lang", ctx.author.id)
+        lang = await localeService.getUserLang(ctx.author.id)
         await ctx.send(helpLocales['docs'][lang], view=HelpView(lang, self.bot))
 
     @app_commands.command(name="help", description="Shows help message")
     async def helpSlash(self, interaction: discord.Interaction):
-        lang = localeService.getLocale("lang", interaction.user.id)
+        lang = await localeService.getUserLang(ctx.author.id)
         await interaction.response.send_message(helpLocales['docs'][lang], view=HelpView(lang, self.bot))
 
     @commands.command()

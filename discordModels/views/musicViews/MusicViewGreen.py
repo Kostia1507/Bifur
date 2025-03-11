@@ -16,7 +16,7 @@ async def is_in_vcInteraction(interaction):
             if member.id == interaction.user.id:
                 return True
     await interaction.response.send_message(
-        getLocale('not-in-voice', interaction.user.id), ephemeral=True, delete_after=15)
+        await getLocale('not-in-voice', interaction.user.id), ephemeral=True, delete_after=15)
     return False
 
 
@@ -89,13 +89,13 @@ class MusicViewGreen(discord.ui.View):
             mp.repeating = RepeatType(repeatN)
             if mp.repeating == RepeatType.NOT_REPEATING:
                 await interaction.response.send_message(
-                    getLocale('repeat-off', interaction.user.id), ephemeral=True, delete_after=15)
+                    await getLocale('repeat-off', interaction.user.id), ephemeral=True, delete_after=15)
             elif mp.repeating == RepeatType.REPEAT_ONE:
                 await interaction.response.send_message(
-                    getLocale('repeat-one', interaction.user.id), ephemeral=True, delete_after=15)
+                    await getLocale('repeat-one', interaction.user.id), ephemeral=True, delete_after=15)
             else:
                 await interaction.response.send_message(
-                    getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
+                    await getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
 
     @discord.ui.button(label="", style=discord.ButtonStyle.green, emoji=config.likeEmoji, row=1)
     async def likeCallback(self, interaction, button):

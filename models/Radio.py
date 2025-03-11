@@ -48,7 +48,7 @@ class Radio:
                 result += f'{t.trackId} - {t.name}\n'
             return f'ID: {self.radio_id} Name: {self.name}', result
         else:
-            return getLocale("list-not-found", user_id)
+            return await getLocale("list-not-found", user_id)
 
     async def getEditors(self):
         conn = await asyncpg.connect(

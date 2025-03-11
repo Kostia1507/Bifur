@@ -21,7 +21,7 @@ async def connect_to_user_voice(ctx):
             await channel.connect()
             return 1
         else:
-            await ctx.send(getLocale('not-connected-to-voice', ctx.author.id))
+            await ctx.send(await getLocale('not-connected-to-voice', ctx.author.id))
             return 0
 
 
@@ -33,7 +33,7 @@ async def connect_to_user_voiceInteraction(interaction):
             return 1
         else:
             await interaction.response.send_message(
-                getLocale('not-connected-to-voice', interaction.user.id), ephemeral=True, delete_after=15)
+                await getLocale('not-connected-to-voice', interaction.user.id), ephemeral=True, delete_after=15)
             return 0
 
 
@@ -75,15 +75,15 @@ class RadioCog(commands.Cog):
             radios = await radioService.getSharedPlayLists(user_id)
             user = await self.bot.fetch_user(user_id)
             if user is None:
-                await ctx.send(getLocale('user-not-found', ctx.author.id))
+                await ctx.send(await getLocale('user-not-found', ctx.author.id))
                 return
             else:
-                title = getLocale('user-playlists', ctx.author.id).replace("%p", user.name)
+                title = await getLocale('user-playlists', ctx.author.id).replace("%p", user.name)
         else:
             radios = await radioService.getPlayLists(ctx.author.id)
-            title = getLocale('playlists-list', ctx.author.id)
+            title = await getLocale('playlists-list', ctx.author.id)
         if len(radios) == 0:
-            await ctx.send(getLocale('no-playlists', ctx.author.id))
+            await ctx.send(await getLocale('no-playlists', ctx.author.id))
         else:
             res = ''
             radios.sort(key=lambda radioEntry: radioEntry.radio_id)
@@ -119,11 +119,11 @@ class RadioCog(commands.Cog):
             return
         retStatus = await radioService.createTrack(name, radio_id, url, ctx.author.id, duration)
         if retStatus is None:
-            await ctx.reply(getLocale('url-exist', ctx.author.id))
+            await ctx.reply(await getLocale('url-exist', ctx.author.id))
         elif retStatus:
             await ctx.message.add_reaction('✅')
         else:
-            await ctx.reply(getLocale('no-playlist', ctx.author.id))
+            await ctx.reply(await getLocale('no-playlist', ctx.author.id))
 
     @commands.command(aliases=['fat'])
     async def forceaddtrack(self, ctx, radio_id, url):
@@ -133,7 +133,7 @@ class RadioCog(commands.Cog):
         if retStatus:
             await ctx.message.add_reaction('✅')
         else:
-            await ctx.reply(getLocale('no-playlist', ctx.author.id))
+            await ctx.reply(await getLocale('no-playlist', ctx.author.id))
 
     @commands.command()
     async def deltrack(self, ctx, n: int):
@@ -147,14 +147,14 @@ class RadioCog(commands.Cog):
     async def createradio(self, ctx, name):
         if not name[0].isdigit():
             radio_id = await radioService.createRadio(name, ctx.author.id)
-            await ctx.send(f'{getLocale("new-playlist", ctx.author.id)} {radio_id}')
+            await ctx.send(f'{await getLocale("new-playlist", ctx.author.id)} {radio_id}')
         else:
-            await ctx.send(getLocale("first-not-number", ctx.author.id))
+            await ctx.send(await getLocale("first-not-number", ctx.author.id))
 
     @commands.command()
     async def share(self, ctx, name):
         shared_status = await radioService.shareRadio(name, ctx.author.id)
-        await ctx.send(f'{getLocale("shared", ctx.author.id)} {shared_status}')
+        await ctx.send(f'{await getLocale("shared", ctx.author.id)} {shared_status}')
 
     @commands.command()
     async def rename(self, ctx, radio_id, newname):
@@ -163,7 +163,7 @@ class RadioCog(commands.Cog):
             await radio.rename(newname, ctx.author.id)
             await ctx.message.add_reaction('✅')
         else:
-            await ctx.send(getLocale("first-not-number", ctx.author.id))
+            await ctx.send(await getLocale("first-not-number", ctx.author.id))
 
     @commands.command()
     async def allradios(self, ctx):
@@ -171,7 +171,7 @@ class RadioCog(commands.Cog):
         ret = ''
         for radio in radios:
             ret += f'ID: {radio.radio_id} -- {radio.name}\n'
-        pagedMsg = pagedMessagesService.initPagedMessage(self.bot, getLocale("shared-list", ctx.author.id), ret)
+        pagedMsg = pagedMessagesService.initPagedMessage(self.bot, await getLocale("shared-list", ctx.author.id), ret)
         embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
         embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
         await ctx.send(embed=embed, view=pagedMsg.view)
@@ -189,7 +189,7 @@ class RadioCog(commands.Cog):
     async def tinfo(self, ctx, track_id: int):
         track = await radioService.getTrackById(track_id)
         radio = await radioService.getRadioById(track.radioId)
-        userLang = getUserLang(ctx.author.id)
+        userLang = await getUserLang(ctx.author.id)
         if radio.owner == ctx.author.id or radio.is_shared or ctx.author.id in await radio.getEditors():
             track = Song(track.original_url, False)
             await track.updateFromWeb()
@@ -221,7 +221,7 @@ class RadioCog(commands.Cog):
             durationStr = f'{seconds // 3600}:{seconds % 3600 // 60}:{seconds % 60 // 10}{seconds % 60 % 10}'
             while durationStr.startswith('0') or durationStr.startswith(':'):
                 durationStr = durationStr[1:len(durationStr)]
-            userLang = getUserLang(ctx.author.id)
+            userLang = await getUserLang(ctx.author.id)
             embed = discord.Embed(
                 title=f'ID:{radio.radio_id}:{radio.name}',
                 description=f'{getLocaleByLang("owner", userLang)} {owner.name}\n'
@@ -244,7 +244,7 @@ class RadioCog(commands.Cog):
         if retStatus:
             await ctx.message.add_reaction('✅')
             owner = await self.bot.fetch_user(radio.owner)
-            userLang = getUserLang(ctx.author.id)
+            userLang = await getUserLang(ctx.author.id)
             embed = discord.Embed(
                 title=f'ID:{radio.radio_id}:{radio.name}',
                 description=f'{getLocaleByLang("owner", userLang)} {owner.name}\n'
@@ -267,7 +267,7 @@ class RadioCog(commands.Cog):
         if retStatus:
             await ctx.message.add_reaction('✅')
             owner = await self.bot.fetch_user(radio.owner)
-            userLang = getUserLang(ctx.author.id)
+            userLang = await getUserLang(ctx.author.id)
             embed = discord.Embed(
                 title=f'ID:{radio.radio_id}:{radio.name}',
                 description=f'{getLocaleByLang("owner", userLang)} {owner.name}\n'
@@ -310,7 +310,7 @@ class RadioCog(commands.Cog):
         else:
             radio = await radioService.getRadioById(radio_id)
             owner = await self.bot.fetch_user(radio.owner)
-            userLang = getUserLang(ctx.author.id)
+            userLang = await getUserLang(ctx.author.id)
             embed = discord.Embed(
                 title=f'ID:{radio.radio_id}:{radio.name}',
                 description=f'{getLocaleByLang("owner", userLang)} {owner.name}\n'
@@ -334,7 +334,7 @@ class RadioCog(commands.Cog):
             else:
                 radio = await radioService.getRadioById(radio_id)
                 owner = await self.bot.fetch_user(radio.owner)
-                userLang = getUserLang(ctx.author.id)
+                userLang = await getUserLang(ctx.author.id)
                 embed = discord.Embed(
                     title=f'ID:{radio.radio_id}:{radio.name}',
                     description=f'{getLocaleByLang("owner", userLang)} {owner.name}\n'

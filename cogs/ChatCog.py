@@ -28,7 +28,7 @@ class ChatCog(commands.Cog):
 
     @commands.command()
     async def animal(self, ctx):
-        userLang = getUserLang(ctx.author.id)
+        userLang = await getUserLang(ctx.author.id)
         a = await ctx.send(f'{getLocaleByLang("random-animal", userLang)}'
                            f' {str(random.choice(getLocaleByLang("animals", userLang)))}')
         await a.add_reaction('\N{THUMBS UP SIGN}')
@@ -36,7 +36,7 @@ class ChatCog(commands.Cog):
 
     @commands.command()
     async def ball(self, ctx):
-        userLang = getUserLang(ctx.author.id)
+        userLang = await getUserLang(ctx.author.id)
         response = random.choice(getLocaleByLang('8ball', userLang))
         await ctx.send(f'{getLocaleByLang("8ball-answer", userLang)} {response}')
 
@@ -54,31 +54,31 @@ class ChatCog(commands.Cog):
                 result.append(str(choice))
             result = " ".join(result)
             await ctx.send(
-                getLocale('random-number', ctx.author.id).replace('%1', str(start)).replace('%2', str(end))
+                await getLocale('random-number', ctx.author.id).replace('%1', str(start)).replace('%2', str(end))
                 .replace('%3', result))
         else:
             if len(args) > 1:
                 start, end = min(int(args[0]), int(args[1])), max(int(args[0]), int(args[1]))
             elif len(args) > 0:
                 end = int(args[0])
-            await ctx.send(getLocale('random-number', ctx.author.id).replace('%1', str(start)).replace('%2', str(end))
+            await ctx.send(await getLocale('random-number', ctx.author.id).replace('%1', str(start)).replace('%2', str(end))
                            .replace('%3', str(random.randint(start, end))))
 
     @commands.command()
     async def randp(self, ctx):
         if len(ctx.message.mentions) > 0:
-            await ctx.send(f'{getLocale("chose", ctx.author.id)} {random.choice(ctx.message.mentions).mention}')
+            await ctx.send(f'{await getLocale("chose", ctx.author.id)} {random.choice(ctx.message.mentions).mention}')
 
     @commands.command()
     async def randw(self, ctx, *args):
-        await ctx.send(f'{getLocale("chose", ctx.author.id)} {random.choice(args)}')
+        await ctx.send(f'{await getLocale("chose", ctx.author.id)} {random.choice(args)}')
 
     @commands.command()
     async def randm(self, ctx):
         messages = [msg async for msg in ctx.channel.history(limit=200)]
         choose = random.choice(messages)
         await ctx.message.delete()
-        await ctx.send(f'**{getLocale("quote", ctx.author.id)} {str(choose.author)}**:\n{choose.content}')
+        await ctx.send(f'**{await getLocale("quote", ctx.author.id)} {str(choose.author)}**:\n{choose.content}')
         if choose.attachments:
             await choose.channel.send(content=choose.attachments[0].url)
 
@@ -190,7 +190,7 @@ class ChatCog(commands.Cog):
             os.remove(fileName)
         except Exception as e:
             LogCog.logDebug(f'Exception on rule: {e}')
-            await ctx.send(getLocale("nothing", ctx.author.id))
+            await ctx.send(await getLocale("nothing", ctx.author.id))
 
     @commands.command()
     async def reply(self, ctx, *args):
@@ -245,7 +245,7 @@ class ChatCog(commands.Cog):
         embed.set_thumbnail(url=self.bot.user.avatar.url)
         embed.add_field(name="Social credits", value=social_credits, inline=False)
         embed.add_field(name="Premium", value=await premiumService.is_premium(ctx.author.id), inline=False)
-        embed.add_field(name="Language", value=getUserLang(ctx.author.id), inline=False)
+        embed.add_field(name="Language", value=await getUserLang(ctx.author.id), inline=False)
         await ctx.send(embed=embed)
 
     @commands.command()

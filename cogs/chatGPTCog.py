@@ -31,9 +31,9 @@ class ChatGPTCog(commands.Cog):
             chatGPTService.createChatWithSystemMessage(ctx.author.id, " ".join(args))
             await ctx.message.add_reaction('✅')
         elif cmd == 'system':
-            await ctx.send(chatGPTService.getSystemMessage(ctx.author.id))
+            await ctx.send(await chatGPTService.getSystemMessage(ctx.author.id))
         elif cmd == 'history':
-            history = chatGPTService.getHistory(ctx.author.id)
+            history = await chatGPTService.getHistory(ctx.author.id)
             res = ''
             for i in history:
                 res += f'{i}\n'
@@ -42,16 +42,16 @@ class ChatGPTCog(commands.Cog):
             await ctx.send('Ваша історія', file=discord.File('history.txt'))
             os.remove('history.txt')
         elif cmd == 'userhistory' and commandUtils.is_owner(ctx):
-            history = chatGPTService.getHistory(int(args[0]))
+            history = await chatGPTService.getHistory(int(args[0]))
             res = ''
             for i in history:
                 res += f'{i}\n'
             with codecs.open("history.txt", 'w', "utf-8") as file:
                 file.write(res)
-            await ctx.send(getLocale('your-history', ctx.author.id), file=discord.File('history.txt'))
+            await ctx.send(await getLocale('your-history', ctx.author.id), file=discord.File('history.txt'))
             os.remove('history.txt')
         else:
-            locale = localeService.getUserLang(ctx.author.id)
+            locale = await localeService.getUserLang(ctx.author.id)
             if locale == "en":
                 pagedMsg = pagedMessagesService.setPagedMessage(self.bot, "Communication", ENhelpPages["Communication"])
                 embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])

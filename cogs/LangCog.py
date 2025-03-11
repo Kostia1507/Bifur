@@ -12,7 +12,7 @@ class LangCog(commands.Cog):
 
     @commands.command()
     async def lang(self, ctx, lang):
-        ret = localeService.setLang(lang=lang, user_id=ctx.author.id)
+        ret = await localeService.setLang(lang=lang, user_id=ctx.author.id)
         await ctx.send(ret)
 
     @commands.command()
@@ -27,4 +27,4 @@ class LangCog(commands.Cog):
 
     @commands.command()
     async def mylang(self, ctx):
-        await ctx.send(localeService.getLocale("lang", ctx.author.id))
+        await ctx.send(await localeService.getLocale("lang", ctx.author.id))

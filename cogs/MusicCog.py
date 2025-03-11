@@ -65,7 +65,7 @@ async def connect_to_user_voice(ctx):
             await channel.connect()
             return 1
         else:
-            await ctx.send(getLocale('not-connected-to-voice', ctx.author.id))
+            await ctx.send(await getLocale('not-connected-to-voice', ctx.author.id))
             return 0
 
 
@@ -77,7 +77,7 @@ async def connect_to_user_voiceInteraction(interaction):
             return 1
         else:
             await interaction.response.send_message(
-                getLocale('not-connected-to-voice', interaction.user.id), ephemeral=True, delete_after=15)
+                await getLocale('not-connected-to-voice', interaction.user.id), ephemeral=True, delete_after=15)
             return 0
 
 
@@ -235,7 +235,7 @@ class MusicCog(commands.Cog):
     async def list(self, ctx):
         mp = musicService.findMusicPlayerByGuildId(ctx.guild.id)
         if mp is not None:
-            ret = mp.formatList(ctx.author.id)
+            ret = await mp.formatList(ctx.author.id)
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
             embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
             embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
@@ -245,7 +245,7 @@ class MusicCog(commands.Cog):
     async def history(self, ctx):
         mp = musicService.findMusicPlayerByGuildId(ctx.guild.id)
         if mp is not None:
-            ret = mp.formatHistory(ctx.author.id)
+            ret = await mp.formatHistory(ctx.author.id)
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, "History", ret)
             embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
             embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
@@ -313,16 +313,16 @@ class MusicCog(commands.Cog):
             else:
                 musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).repeating = RepeatType.REPEAT_ALL
         if musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).repeating == RepeatType.NOT_REPEATING:
-            await ctx.send(getLocale('repeat-off', ctx.author.id))
+            await ctx.send(await getLocale('repeat-off', ctx.author.id))
         elif musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).repeating == RepeatType.REPEAT_ONE:
-            await ctx.send(getLocale('repeat-one', ctx.author.id))
+            await ctx.send(await getLocale('repeat-one', ctx.author.id))
         else:
-            await ctx.send(getLocale('repeat-on', ctx.author.id))
+            await ctx.send(await getLocale('repeat-on', ctx.author.id))
 
     @commands.command()
     async def current(self, ctx):
         t = musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).getPlaying()
-        userLang = getUserLang(ctx.author.id)
+        userLang = await getUserLang(ctx.author.id)
         if t is not None:
             embed = discord.Embed(
                 title=f'{getLocaleByLang("playing", userLang)} {t.name}',
@@ -535,7 +535,7 @@ class MusicCog(commands.Cog):
     async def listSlash(self, interaction: discord.Interaction):
         mp = musicService.findMusicPlayerByGuildId(interaction.guild.id)
         if mp is not None:
-            ret = mp.formatList(interaction.user.id)
+            ret = await mp.formatList(interaction.user.id)
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
             embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
             embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')

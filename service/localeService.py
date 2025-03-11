@@ -1,4 +1,4 @@
-import psycopg2
+import asyncpg
 
 import config
 from cogs import LogCog
@@ -7,19 +7,17 @@ langs = ['en', 'ua', 'ru']
 
 
 # return language code
-def getUserLang(user_id):
+async def getUserLang(user_id):
     if user_id == 0:
         return "en"
-    conn = psycopg2.connect(
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM language WHERE user_id=%s", (user_id,))
-    lang = cur.fetchone()
+    lang = conn.fetchrow("SELECT * FROM language WHERE user_id=$1", user_id)
     lang = 'en' if lang is None else lang[1]
     return lang
 
@@ -35,19 +33,17 @@ def getLocaleByLang(locale, lang):
 
 # shortcut for getLocaleByLang(locale, getUserLang(user_id))
 # can be useful if you have only one request to localeService
-def getLocale(locale, user_id):
+async def getLocale(locale, user_id):
     if user_id == 0:
         return locales[locale]['en']
-    conn = psycopg2.connect(
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM language WHERE user_id=%s", (user_id,))
-    lang = cur.fetchone()
+    lang = await conn.fetchrow("SELECT * FROM language WHERE user_id=$1", user_id)
     lang = 'en' if lang is None else lang[1]
     try:
         return locales[locale][lang]
@@ -56,25 +52,21 @@ def getLocale(locale, user_id):
         return locales[locale]['en']
 
 
-def setLang(user_id, lang):
+async def setLang(user_id, lang):
     if lang in langs:
-        conn = psycopg2.connect(
+        conn = await asyncpg.connect(
             host=config.host,
             database=config.database,
             user=config.user,
             password=config.password,
             port=config.port
         )
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM language WHERE user_id=%s", (user_id,))
-        locale = cur.fetchone()
+        locale = await conn.fetchrow("SELECT * FROM language WHERE user_id=%s", (user_id,))
         if locale is None:
-            cur.execute("INSERT INTO language(user_id, language) VALUES (%s, %s);", (user_id, lang))
+            await conn.execute("INSERT INTO language(user_id, language) VALUES (%s, %s);", (user_id, lang))
         else:
-            cur.execute("UPDATE language SET language=(%s) WHERE user_id=(%s)", (lang, user_id))
-        conn.commit()
-        cur.close()
-        conn.close()
+            await conn.execute("UPDATE language SET language=(%s) WHERE user_id=(%s)", (lang, user_id))
+        await conn.close()
         return locales['lang-changed'][lang]
     else:
         return "Can't find this language!"

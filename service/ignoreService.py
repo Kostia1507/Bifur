@@ -33,7 +33,7 @@ async def manageIgnoredChannels(ctx, channel_id):
         await conn.execute('DELETE FROM ignored_channels WHERE channel_id = %s', (ctx.channel.id,))
         conn.commit()
         await conn.close()
-        await ctx.send(getLocale("ignore-off", ctx.author.id))
+        await ctx.send(await getLocale("ignore-off", ctx.author.id))
     else:
         ignoredChannels.append(channel_id)
         conn = await asyncpg.connect(
@@ -45,4 +45,4 @@ async def manageIgnoredChannels(ctx, channel_id):
         )
         await conn.execute("INSERT INTO ignored_channels(channel_id) VALUES (%s);", (channel_id,))
         await conn.close()
-        await ctx.send(getLocale("ignore-on", ctx.author.id))
+        await ctx.send(await getLocale("ignore-on", ctx.author.id))
