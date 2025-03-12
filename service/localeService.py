@@ -17,7 +17,7 @@ async def getUserLang(user_id):
         password=config.password,
         port=config.port
     )
-    lang = conn.fetchrow("SELECT * FROM language WHERE user_id=$1", user_id)
+    lang = await conn.fetchrow("SELECT * FROM language WHERE user_id=$1", user_id)
     lang = 'en' if lang is None else lang[1]
     return lang
 

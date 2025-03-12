@@ -12,7 +12,7 @@ async def init():
         password=config.password,
         port=config.port
     )
-    rows = conn.fetch("SELECT * from autoroles")
+    rows = await conn.fetch("SELECT * from autoroles")
     for row in rows:
         autoroles[row[0]] = row[1]
     await conn.close()

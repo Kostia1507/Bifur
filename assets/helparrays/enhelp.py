@@ -493,6 +493,11 @@ helpEN = {
                 "description": "set new commands prefix for your guild"
             },
             {
+                "name": ">defprefix",
+                "aliases": ['defaultprefix', 'delprefix'],
+                "description": "set prefix to default"
+            },
+            {
                 "name": ">ignore [?text channel]",
                 "aliases": [],
                 "description": "make bot ignore mentioned channel"
@@ -508,43 +513,22 @@ helpEN = {
                 "description": "remove all auto-reactions in this channel"
             },
             {
-                "name": ">setcmd [interval] [cmd] [args]",
+                "name": ">setcmd [channel]",
                 "aliases": [],
-                "description": "add auto commands to this channel. Set interval in hours, 24 if you need once at day"
+                "description": "add auto commands to mentioned channel"
             },
             {
-                "name": ">setcmd [interval] weather [args]",
+                "name": ">editcmd [channel] [id]",
                 "aliases": [],
-                "description": "send weather with interval"
+                "description": "edit command with [id] in mentioned channel. You can found ID witn >getcmds"
             },
             {
-                "name": ">setcmd [interval] time",
+                "name": ">getcmds [channel]",
                 "aliases": [],
-                "description": "send time"
+                "description": "list of all commands in mentioned channel"
             },
             {
-                "name": ">setcmd [interval] say [args]",
-                "aliases": [],
-                "description": "send message"
-            },
-            {
-                "name": ">setcmd [interval] currency [валюта1] [валюта2]",
-                "aliases": [],
-                "description": "sends the exchange rate of currency2 relative to currency1"
-            },
-            {
-                "name": ">getcmds",
-                "aliases": [],
-                "description": "list of all commands in this channel"
-            },
-            {
-                "name": ">initcmd [id]",
-                "aliases": [],
-                "description": "set cmd interval counter to 0.\n"
-                               "All commands are executed when counter is equal to setter interval"
-            },
-            {
-                "name": ">delcmd [id]",
+                "name": ">delcmd [channe] [id]",
                 "aliases": [],
                 "description": "delete cmd by ID. Look for ID in >getcmds"
             },

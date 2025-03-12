@@ -492,6 +492,11 @@ helpUA = {
                 "description": "встановити новий префікс команд для вашого серверу"
             },
             {
+                "name": ">defprefix",
+                "aliases": ['defaultprefix', 'delprefix'],
+                "description": "вернути префікс за замовчанням"
+            },
+            {
                 "name": ">ignore [?текстовий канал]",
                 "aliases": [],
                 "description": "заборонити боту відповідати в згаданому каналі"
@@ -507,46 +512,24 @@ helpUA = {
                 "description": "прибрати всі автоматичні реакції"
             },
             {
-                "name": ">setcmd [interval] [cmd] [args]",
+                "name": ">setcmd [channel]",
                 "aliases": [],
-                "description": "добавити авто-команду до цього каналу. Встановіть інтервал в годинах, 24 якщо треба "
-                               "раз в день"
+                "description": "створює нову команду в вибранному каналі"
             },
             {
-                "name": ">setcmd [interval] weather [args]",
+                "name": ">editcmd [channel] [id]",
                 "aliases": [],
-                "description": "відправляти прогноз погоди раз в день"
+                "description": "редагує команду з вказаним [id] у вибраному каналі. Шукайте ID завдяки >getcmds"
             },
             {
-                "name": ">setcmd [interval] time",
+                "name": ">getcmds [channel]",
                 "aliases": [],
-                "description": "відправляти час"
+                "description": "список всіх команд в вибранному каналі"
             },
             {
-                "name": ">setcmd [interval] say [args]",
+                "name": ">delcmd [channe] [id]",
                 "aliases": [],
-                "description": "відправляти вказане повідомлення"
-            },
-            {
-                "name": ">setcmd [interval] currency [валюта1] [валюта2]",
-                "aliases": [],
-                "description": "відправляє курс валюти2 відносно валюти1"
-            },
-            {
-                "name": ">getcmds",
-                "aliases": [],
-                "description": "список всіх команд в цьому каналі"
-            },
-            {
-                "name": ">initcmd [id]",
-                "aliases": [],
-                "description": "скидує значення лічильника до нуля.\n"
-                               "Бот виконає команду коли цей лічильник буде рівним вказаному інтервалу"
-            },
-            {
-                "name": ">delcmd [id]",
-                "aliases": [],
-                "description": "видалити автоматичну команду за її ID. ID можна глянути в >getcmds"
+                "description": "видаляє команду за ID. Взнати ID можна завдяки >getcmds"
             },
         ],
     "Налаштування ролей серверу":
