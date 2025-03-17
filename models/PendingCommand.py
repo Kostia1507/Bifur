@@ -85,8 +85,8 @@ async def check_execute():
     if int(value[0]) == currentHour:
         await conn.close()
         return False
-    # await conn.execute("UPDATE public.settings SET value= %s WHERE name='executed-auto-cmds'",
-    #            (datetime.utcnow().hour,))
+    await conn.execute("UPDATE public.settings SET value = $1 WHERE name='executed-auto-cmds'",
+            str(datetime.utcnow().hour))
     await conn.close()
     return True
 

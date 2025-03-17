@@ -15,7 +15,7 @@ intervalOptions = [discord.SelectOption(label="1 hour", value="1"),
 commandsOptions = [discord.SelectOption(label="Weather", value="weather"),
                    discord.SelectOption(label="Weather detailed", value="weatherd"),
                    discord.SelectOption(label="Say something", value="say"),
-                   discord.SelectOption(label="Time UTC", value="time"),
+                   discord.SelectOption(label="Time", value="time"),
                    discord.SelectOption(label="Currency", value="currency")]
 
 

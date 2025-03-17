@@ -108,10 +108,11 @@ class ServerAdministrationCog(commands.Cog):
     async def getcmds(self, ctx, channel: discord.TextChannel):
         cmds = await get_pending_commands_by_channel(channel.id)
         res = ""
-        for cmd in cmds:
-            res += f'ID: {cmd.id}; {cmd.cmdType}:{cmd.args}\n'
-        if len(res) < 0:
+        if len(cmds) < 0:
             res = "List is empty. There is no auto-commands."
+        else:
+            for cmd in cmds:
+                res += f'ID: {cmd.id}; {cmd.cmdType}:{cmd.args}\n'
         await ctx.send(res)
 
     @commands.command()
