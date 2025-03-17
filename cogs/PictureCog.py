@@ -41,7 +41,7 @@ class PictureCog(commands.Cog):
             embed.set_author(url=ret['photographer_url'], name=ret['photographer'])
             await ctx.send(embed=embed)
         else:
-            await ctx.send(getLocale('nothing-found', ctx.author.id))
+            await ctx.send(await getLocale('nothing-found', ctx.author.id))
 
     @commands.command()
     async def totext(self, ctx, *args):
@@ -425,9 +425,9 @@ class PictureCog(commands.Cog):
                 await ctx.send(file=discord.File(file))
                 os.remove(file)
             except FileNotFoundError:
-                await ctx.send(getLocale("file-not-found", ctx.author.id))
+                await ctx.send(await getLocale("file-not-found", ctx.author.id))
         else:
-            await ctx.send(getLocale("file-not-found", ctx.author.id))
+            await ctx.send(await getLocale("file-not-found", ctx.author.id))
 
     @commands.command()
     async def oil(self, ctx, *args):
@@ -444,9 +444,9 @@ class PictureCog(commands.Cog):
                 await ctx.send(file=discord.File(file))
                 os.remove(file)
             except FileNotFoundError:
-                await ctx.send(getLocale("file-not-found", ctx.author.id))
+                await ctx.send(await getLocale("file-not-found", ctx.author.id))
         else:
-            await ctx.send(getLocale("file-not-found", ctx.author.id))
+            await ctx.send(await getLocale("file-not-found", ctx.author.id))
 
     @commands.command()
     async def pencil(self, ctx, *args):

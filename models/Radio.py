@@ -1,4 +1,4 @@
-import psycopg2
+import asyncpg
 
 import config
 from cogs import LogCog
@@ -14,20 +14,17 @@ class Radio:
         self.owner = owner
         self.is_shared = is_shared
 
-    def getTracks(self, user_id):
-        if self.is_shared or user_id == self.owner or user_id in self.getEditors():
-            conn = psycopg2.connect(
+    async def getTracks(self, user_id):
+        if self.is_shared or user_id == self.owner or user_id in await self.getEditors():
+            conn = await asyncpg.connect(
                 host=config.host,
                 database=config.database,
                 user=config.user,
                 password=config.password,
                 port=config.port
             )
-            cur = conn.cursor()
-            cur.execute("SELECT * FROM tracks where list = '" + str(self.radio_id) + "'")
-            rows = cur.fetchall()
-            cur.close()
-            conn.close()
+            rows = await conn.fetch("SELECT * FROM tracks where list = '" + str(self.radio_id) + "'")
+            await conn.close()
 
             songs = []
             for entry in rows:
@@ -40,103 +37,88 @@ class Radio:
             return songs
 
     async def getInfo(self, user_id):
-        if self.is_shared or user_id == self.owner or user_id in self.getEditors():
-            tracks = self.getTracks(user_id)
+        if self.is_shared or user_id == self.owner or user_id in await self.getEditors():
+            tracks = await self.getTracks(user_id)
             tracks.sort(key=lambda radioEntry: radioEntry.trackId)
             result = ""
             for t in tracks:
                 if t.name is None or len(str(t.name)) == 0:
                     await t.updateFromWeb()
-                    t.updateInDB()
+                    await t.updateInDB()
                 result += f'{t.trackId} - {t.name}\n'
             return f'ID: {self.radio_id} Name: {self.name}', result
         else:
-            return getLocale("list-not-found", user_id)
+            return await getLocale("list-not-found", user_id)
 
-    def getEditors(self):
-        conn = psycopg2.connect(
+    async def getEditors(self):
+        conn = await asyncpg.connect(
             host=config.host,
             database=config.database,
             user=config.user,
             password=config.password,
             port=config.port
         )
-        cur = conn.cursor()
-        cur.execute("SELECT user_id FROM radioeditors where radio_id = '" + str(self.radio_id) + "'")
-        rows = cur.fetchall()
-        cur.close()
-        conn.close()
+        rows = await conn.fetch("SELECT user_id FROM radioeditors where radio_id = '" + str(self.radio_id) + "'")
+        await conn.close()
         editors = []
         for i in rows:
             editors.append(i[0])
         return editors
 
-    def addEditor(self, user_id):
-        rows = self.getEditors()
+    async def addEditor(self, user_id):
+        rows = await self.getEditors()
         if user_id in rows:
             LogCog.logDebug(f'{user_id} already is an editor of radio {self.radio_id}')
             return 0
         else:
-            conn = psycopg2.connect(
+            conn = await asyncpg.connect(
                 host=config.host,
                 database=config.database,
                 user=config.user,
                 password=config.password,
                 port=config.port
             )
-            cur = conn.cursor()
-            cur.execute("INSERT INTO radioeditors(radio_id, user_id) VALUES (%s, %s);", (self.radio_id, user_id))
-            conn.commit()
-            cur.close()
-            conn.close()
+            await conn.execute("INSERT INTO radioeditors(radio_id, user_id) VALUES ($1, $2);", self.radio_id, user_id)
+            await conn.close()
             return 1
 
-    def removeEditor(self, user_id):
-        conn = psycopg2.connect(
+    async def removeEditor(self, user_id):
+        conn = await asyncpg.connect(
             host=config.host,
             database=config.database,
             user=config.user,
             password=config.password,
             port=config.port
         )
-        cur = conn.cursor()
-        cur.execute("DELETE FROM radioeditors WHERE radio_id = %s and user_id = %s", (self.radio_id, user_id))
-        conn.commit()
-        cur.close()
-        conn.close()
+        await conn.execute("DELETE FROM radioeditors WHERE radio_id = $1 and user_id = $2", self.radio_id, user_id)
+        await conn.close()
 
-    def rename(self, newname, user_id):
+    async def rename(self, newname, user_id):
         if user_id == self.owner:
-            conn = psycopg2.connect(
+            conn = await asyncpg.connect(
                 host=config.host,
                 database=config.database,
                 user=config.user,
                 password=config.password,
                 port=config.port
             )
-            cur = conn.cursor()
-            cur.execute("UPDATE radios SET name = %s where id = %s", (newname, self.radio_id))
-            conn.commit()
-            cur.close()
-            conn.close()
+            await conn.execute("UPDATE radios SET name = $1 where id = $2", newname, self.radio_id)
+            await conn.close()
 
-    def delete(self, user_id):
+    async def delete(self, user_id):
         if user_id == self.owner:
-            tracks = self.getTracks(user_id)
-            conn = psycopg2.connect(
+            tracks = await self.getTracks(user_id)
+            conn = await asyncpg.connect(
                 host=config.host,
                 database=config.database,
                 user=config.user,
                 password=config.password,
                 port=config.port
             )
-            cur = conn.cursor()
             for i in tracks:
-                cur.execute("DELETE FROM tracks WHERE id='" + str(i.trackId) + "'")
-            cur.execute("DELETE FROM radios WHERE id='" + str(self.radio_id) + "'")
-            conn.commit()
-            cur.close()
-            conn.close()
+                await conn.execute("DELETE FROM tracks WHERE id='" + str(i.trackId) + "'")
+            await conn.execute("DELETE FROM radios WHERE id='" + str(self.radio_id) + "'")
+            await conn.close()
             return True
         else:
             return False

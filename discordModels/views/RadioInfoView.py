@@ -38,7 +38,8 @@ class RenameModal(discord.ui.Modal, title='Rename'):
     async def on_submit(self, interaction: discord.Interaction):
         newname = self.nameInput.value
         if not newname[0].isdigit():
-            radioService.getRadioById(self.radio_id).rename(newname, interaction.user.id)
+            radio = await radioService.getRadioById(self.radio_id)
+            await radio.rename(newname, interaction.user.id)
             await interaction.response.send_message(getLocale("ready", interaction.user.id))
         else:
             await interaction.response.send_message(getLocale("first-not-number", interaction.user.id))
@@ -62,12 +63,12 @@ class AddTrackModal(discord.ui.Modal, title='Add song'):
         await interaction.response.defer(ephemeral=True, thinking=True)
         link = self.linkInput.value
         song = Song(link, False)
-        await asyncio.create_task(song.updateFromWeb())
+        await song.updateFromWeb()
         name, duration = song.name, song.duration
         if name is None or duration is None:
             await interaction.followup.send('something-wrong', interaction.user.id)
             return
-        retStatus = radioService.createTrack(name, self.radio_id, link, interaction.user.id, duration)
+        retStatus = await radioService.createTrack(name, self.radio_id, link, interaction.user.id, duration)
         if retStatus is None:
             await interaction.followup.send(getLocale("url-exist", interaction.user.id), ephemeral=True)
         elif retStatus:

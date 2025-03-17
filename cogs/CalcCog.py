@@ -23,12 +23,12 @@ class CalcCog(commands.Cog):
         expression = "".join(args)
         result = RPNCalculator.calculateRPN(RPNCalculator.toPostfix(RPNCalculator.validate(expression)))
         if len(str(result)) < 1980:
-            await ctx.send(f'{getLocale(locale="result", user_id=ctx.author.id)} {result}')
+            await ctx.send(f'{await getLocale(locale="result", user_id=ctx.author.id)} {result}')
         else:
             with open(f'{ctx.message.id}.txt', "w") as file:
                 file.write(str(result))
             with open(f'{ctx.message.id}.txt', "rb") as file:
-                await ctx.send(f'{getLocale(locale="result", user_id=ctx.author.id)} ',
+                await ctx.send(f'{await getLocale(locale="result", user_id=ctx.author.id)} ',
                                file=discord.File(file, f'{ctx.message.id}.txt'))
             os.remove(f'{ctx.message.id}.txt')
 
@@ -40,12 +40,12 @@ class CalcCog(commands.Cog):
         for i in loop:
             result += RPNCalculator.calculateRPN(RPNCalculator.toPostfix(RPNCalculator.validate(i)))
         if len(str(result)) < 1980:
-            await ctx.send(f'{getLocale(locale="result", user_id=ctx.author.id)} {result/len(loop)}')
+            await ctx.send(f'{await getLocale(locale="result", user_id=ctx.author.id)} {result/len(loop)}')
         else:
             with open(f'{ctx.message.id}.txt', "w") as file:
                 file.write(str(result/len(loop)))
             with open(f'{ctx.message.id}.txt', "rb") as file:
-                await ctx.send(f'{getLocale(locale="result", user_id=ctx.author.id)} ',
+                await ctx.send(f'{await getLocale(locale="result", user_id=ctx.author.id)} ',
                                file=discord.File(file, f'{ctx.message.id}.txt'))
             os.remove(f'{ctx.message.id}.txt')
 
@@ -57,11 +57,11 @@ class CalcCog(commands.Cog):
         for i in loop:
             result += float(i)
         if len(str(result)) < 1980:
-            await ctx.send(f'{getLocale(locale="result", user_id=ctx.author.id)} {result}')
+            await ctx.send(f'{await getLocale(locale="result", user_id=ctx.author.id)} {result}')
         else:
             with open(f'{ctx.message.id}.txt', "w") as file:
                 file.write(str(result))
             with open(f'{ctx.message.id}.txt', "rb") as file:
-                await ctx.send(f'{getLocale(locale="result", user_id=ctx.author.id)} ',
+                await ctx.send(f'{await getLocale(locale="result", user_id=ctx.author.id)} ',
                                file=discord.File(file, f'{ctx.message.id}.txt'))
             os.remove(f'{ctx.message.id}.txt')

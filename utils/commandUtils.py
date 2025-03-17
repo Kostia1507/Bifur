@@ -28,7 +28,7 @@ async def is_in_vc(ctx):
         for member in members:
             if member.id == ctx.author.id:
                 return True
-    await ctx.send(getLocale('not-in-voice', ctx.author.id))
+    await ctx.send(await getLocale('not-in-voice', ctx.author.id))
     return False
 
 
@@ -40,7 +40,7 @@ async def is_in_vcInteraction(interaction):
             if member.id == interaction.user.id:
                 return True
     await interaction.response.send_message(
-        getLocale('not-in-voice', interaction.user.id), ephemeral=True, delete_after=15)
+        await getLocale('not-in-voice', interaction.user.id), ephemeral=True, delete_after=15)
     return False
 
 

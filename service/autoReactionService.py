@@ -1,61 +1,54 @@
-import psycopg2
+import asyncpg
 import config
 
 channels = []
 reactions = []
 
 
-def init():
+async def init():
     channels.clear()
     reactions.clear()
-    conn = psycopg2.connect(
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM reactions")
-    rows = cur.fetchall()
+    rows = await conn.fetch("SELECT * FROM reactions")
+    await conn.close()
     for react in rows:
         channels.append(react[0])
         reactions.append(react[1])
-    cur.close()
-    conn.close()
 
 
-def add(channel_id, emoji):
+async def add(channel_id, emoji):
     channels.append(channel_id)
     reactions.append(emoji.strip())
-    conn = psycopg2.connect(
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("INSERT INTO reactions(channel_id, emoji) VALUES (%s, %s);", (channel_id, emoji))
-    conn.commit()
-    cur.close()
-    conn.close()
+    await conn.execute("INSERT INTO reactions(channel_id, emoji) VALUES (%s, %s);", (channel_id, emoji))
+    await conn.commit()
+    await conn.close()
 
 
-def remove(channel_id):
-    conn = psycopg2.connect(
+async def remove(channel_id):
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("DELETE FROM reactions WHERE channel_id='" + str(channel_id) + "'")
+    await conn.execute("DELETE FROM reactions WHERE channel_id='" + str(channel_id) + "'")
     conn.commit()
-    cur.close()
-    conn.close()
-    init()
+    await conn.close()
+    await init()
 
 
 def checkForReaction(channel_id):

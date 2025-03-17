@@ -23,7 +23,7 @@ async def getCoordinates(city):
 # maxDT = rows count to output. Max: 40. Remember that dt = 3 hours
 # pass userId for getting locales
 async def getWeather(lat: str, lon: str, nameOfCity: str, interval, maxDT, userId):
-    userLang = getUserLang(userId)
+    userLang = await getUserLang(userId)
     async with aiohttp.ClientSession() as session:
         async with session.get(f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}'
                                f'&lang={getLocaleByLang("lang", userLang)}&appid={config.weatherKey}') as response:

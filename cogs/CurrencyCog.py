@@ -22,7 +22,7 @@ class CurrencyCog(commands.Cog):
             fromCurrency = fromCurrency.upper()
             res = value / currencyService.currency[fromCurrency]
         except KeyError:
-            await ctx.send(getLocale("wrong", ctx.author.id) + " " + str(fromCurrency))
+            await ctx.send(await getLocale("wrong", ctx.author.id) + " " + str(fromCurrency))
             return 0
         try:
             output = f'{value}{fromCurrency}'
@@ -32,7 +32,7 @@ class CurrencyCog(commands.Cog):
                 output = f'{output}={round(currentRes, 4)}{toCurrency}'
             await ctx.send(output)
         except KeyError:
-            await ctx.send(getLocale("wrong", ctx.author.id) + " " + str(toCurrency))
+            await ctx.send(await getLocale("wrong", ctx.author.id) + " " + str(toCurrency))
             return 0
 
     @tasks.loop(hours=12)

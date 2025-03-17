@@ -55,7 +55,7 @@ async def handle_vote(request):
         user = body["user"]
         LogCog.logSystem(f"User voted for Bifur {user}")
         value = config.social_credits_for_vote*2 if premiumService.is_premium(int(user)) else config.social_credits_for_vote
-        socialCreditsService.updateCounter(user, value)
+        await socialCreditsService.updateCounter(user, value)
         return web.Response(status=200, text="Success! Thanks for voting!")
     except json.decoder.JSONDecodeError as error:
         traceback.print_exception(type(error), error, error.__traceback__)
@@ -80,9 +80,9 @@ async def handle_patreon(request):
         LogCog.logPatreon(
             f"DS: {discord_id}, Email: {email}, Name: {full_name}, patreon_id: {patreon_id}, action: {action}")
         if action == "create" and discord_id is not None:
-            premiumService.add_premium(discord_id)
+            await premiumService.add_premium(discord_id)
         elif action == "delete":
-            premiumService.delete_premium(discord_id)
+            await premiumService.delete_premium(discord_id)
         return web.Response(status=200, text="Success!")
     except json.decoder.JSONDecodeError as error:
         traceback.print_exception(type(error), error, error.__traceback__)

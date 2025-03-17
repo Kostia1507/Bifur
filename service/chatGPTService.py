@@ -13,7 +13,7 @@ async def ask(message, userId):
     body = {'model': 'gpt-3.5-turbo'}
     for i in badWords:
         if message.find(i) >= 0:
-            return getLocale("not-pass-filter", userId)
+            return await getLocale("not-pass-filter", userId)
     if userId not in history.keys():
         history[userId] = [systemMessage]
     messages = history[userId]
@@ -29,11 +29,11 @@ async def ask(message, userId):
                 history[userId] = messages
                 return answer['content']
             else:
-                return getLocale('no-answer', userId)
+                return await getLocale('no-answer', userId)
 
 
 def clean(userId):
-    history[userId] = [{"role": "system", "content": getSystemMessage(userId)}]
+    history[userId] = [systemMessage]
 
 
 def createChatWithSystemMessage(userId, message):
@@ -41,16 +41,16 @@ def createChatWithSystemMessage(userId, message):
     history[userId] = [newSystemMessage]
 
 
-def getSystemMessage(userId):
+async def getSystemMessage(userId):
     if userId not in history.keys():
-        return getLocale('chat-does-not-exist', userId)
+        return await getLocale('chat-does-not-exist', userId)
     else:
         return history[userId][0]['content']
 
 
-def getHistory(userId):
+async def getHistory(userId):
     if userId not in history.keys():
-        return [getLocale('chat-does-not-exist', userId)]
+        return [await getLocale('chat-does-not-exist', userId)]
     else:
         return history[userId]
 
@@ -80,4 +80,4 @@ async def generate(message, userId):
                 body = await response.json()
                 return body['data'][0]
             else:
-                return getLocale('no-answer', userId)
+                return await getLocale('no-answer', userId)

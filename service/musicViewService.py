@@ -16,7 +16,7 @@ async def createPlayer(ctx, bot):
             userId = ctx.author.id
         mp.musicPlayerAuthorId = userId
 
-        userLang = getUserLang(userId)
+        userLang = await getUserLang(userId)
         # format message
         t = mp.playing
         if t is not None:
@@ -45,7 +45,7 @@ async def createPlayer(ctx, bot):
 
 async def updatePlayer(mediaPlayer, bot):
     t = mediaPlayer.playing
-    userLang = getUserLang(mediaPlayer.musicPlayerAuthorId)
+    userLang = await getUserLang(mediaPlayer.musicPlayerAuthorId)
     if t is not None:
         embed = discord.Embed(
             title=f'{getLocaleByLang("playing", userLang)} {t.name}',

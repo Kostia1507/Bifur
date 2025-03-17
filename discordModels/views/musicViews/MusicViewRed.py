@@ -16,7 +16,7 @@ async def is_in_vcInteraction(interaction):
             if member.id == interaction.user.id:
                 return True
     await interaction.response.send_message(
-        getLocale('not-in-voice', interaction.user.id), ephemeral=True, delete_after=15)
+        await getLocale('not-in-voice', interaction.user.id), ephemeral=True, delete_after=15)
     return False
 
 
@@ -89,19 +89,20 @@ class MusicViewRed(discord.ui.View):
             mp.repeating = RepeatType(repeatN)
             if mp.repeating == RepeatType.NOT_REPEATING:
                 await interaction.response.send_message(
-                    getLocale('repeat-off', interaction.user.id), ephemeral=True, delete_after=15)
+                    await getLocale('repeat-off', interaction.user.id), ephemeral=True, delete_after=15)
             elif mp.repeating == RepeatType.REPEAT_ONE:
                 await interaction.response.send_message(
-                    getLocale('repeat-one', interaction.user.id), ephemeral=True, delete_after=15)
+                    await getLocale('repeat-one', interaction.user.id), ephemeral=True, delete_after=15)
             else:
                 await interaction.response.send_message(
-                    getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
+                    await getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
 
     @discord.ui.button(label="", style=discord.ButtonStyle.red, emoji=config.likeEmoji, row=1)
     async def likeCallback(self, interaction, button):
         await interaction.response.defer(ephemeral=True, thinking=True)
         mp = musicService.findMusicPlayerByGuildId(guild_id=interaction.guild.id)
-        if mp.playing is not None and likedSongsService.likeSong(interaction.user.id, mp.playing.original_url):
+        flag = await likedSongsService.likeSong(interaction.user.id, mp.playing.original_url)
+        if mp.playing is not None and flag:
             await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)
         else:
             await interaction.followup.send(getLocale('something-wrong', interaction.user.id), ephemeral=True)

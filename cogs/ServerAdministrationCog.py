@@ -1,130 +1,140 @@
-import os
-import random
-from datetime import datetime
+import asyncio
+from datetime import datetime, time, timezone
 
-import aiohttp
 import discord
-import psycopg2
 from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions
 
 import config
+from discordModels.views.AutoCmdView import AutoCmdView
 from service.localeService import getLocale
-from utils import commandUtils
 from cogs import LogCog
 from service.currencyService import currency
-from service.prefixService import setPrefix
+from service.customPrefixService import setPrefix, delPrefix
 from cogs.WeatherCog import getCoordinates, getWeather
 from service import pagedMessagesService, autoReactionService, ignoreService
-from models.PendingCommand import PendingCommand, get_pending_command
+from models.PendingCommand import PendingCommand, get_pending_command, get_pending_commands_by_channel, \
+    get_all_pending_commands, delete_pending_command, check_execute
+
+taskTimeConfig = [
+    time(hour=0, minute=0, tzinfo=timezone.utc),
+    time(hour=0, minute=30, tzinfo=timezone.utc),
+    time(hour=1, minute=0, tzinfo=timezone.utc),
+    time(hour=1, minute=30, tzinfo=timezone.utc),
+    time(hour=2, minute=0, tzinfo=timezone.utc),
+    time(hour=2, minute=30, tzinfo=timezone.utc),
+    time(hour=3, minute=0, tzinfo=timezone.utc),
+    time(hour=3, minute=30, tzinfo=timezone.utc),
+    time(hour=4, minute=0, tzinfo=timezone.utc),
+    time(hour=4, minute=30, tzinfo=timezone.utc),
+    time(hour=5, minute=0, tzinfo=timezone.utc),
+    time(hour=5, minute=30, tzinfo=timezone.utc),
+    time(hour=6, minute=0, tzinfo=timezone.utc),
+    time(hour=6, minute=30, tzinfo=timezone.utc),
+    time(hour=7, minute=0, tzinfo=timezone.utc),
+    time(hour=7, minute=30, tzinfo=timezone.utc),
+    time(hour=8, minute=0, tzinfo=timezone.utc),
+    time(hour=8, minute=30, tzinfo=timezone.utc),
+    time(hour=9, minute=0, tzinfo=timezone.utc),
+    time(hour=9, minute=30, tzinfo=timezone.utc),
+    time(hour=10, minute=0, tzinfo=timezone.utc),
+    time(hour=10, minute=30, tzinfo=timezone.utc),
+    time(hour=11, minute=0, tzinfo=timezone.utc),
+    time(hour=11, minute=30, tzinfo=timezone.utc),
+    time(hour=12, minute=0, tzinfo=timezone.utc),
+    time(hour=12, minute=30, tzinfo=timezone.utc),
+    time(hour=13, minute=0, tzinfo=timezone.utc),
+    time(hour=13, minute=30, tzinfo=timezone.utc),
+    time(hour=14, minute=0, tzinfo=timezone.utc),
+    time(hour=14, minute=30, tzinfo=timezone.utc),
+    time(hour=15, minute=0, tzinfo=timezone.utc),
+    time(hour=15, minute=30, tzinfo=timezone.utc),
+    time(hour=16, minute=0, tzinfo=timezone.utc),
+    time(hour=16, minute=30, tzinfo=timezone.utc),
+    time(hour=17, minute=0, tzinfo=timezone.utc),
+    time(hour=17, minute=30, tzinfo=timezone.utc),
+    time(hour=18, minute=0, tzinfo=timezone.utc),
+    time(hour=18, minute=30, tzinfo=timezone.utc),
+    time(hour=19, minute=0, tzinfo=timezone.utc),
+    time(hour=19, minute=30, tzinfo=timezone.utc),
+    time(hour=20, minute=0, tzinfo=timezone.utc),
+    time(hour=20, minute=30, tzinfo=timezone.utc),
+    time(hour=21, minute=0, tzinfo=timezone.utc),
+    time(hour=21, minute=30, tzinfo=timezone.utc),
+    time(hour=22, minute=0, tzinfo=timezone.utc),
+    time(hour=22, minute=30, tzinfo=timezone.utc),
+    time(hour=23, minute=0, tzinfo=timezone.utc),
+    time(hour=23, minute=30, tzinfo=timezone.utc),
+]
 
 
 class ServerAdministrationCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.pcs = []
-        conn = psycopg2.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password,
-            port=config.port
-        )
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM autocommands")
-        cmds = cur.fetchall()
-        for cmd in cmds:
-            new_pc = PendingCommand(cmd[1], cmd[2], cmd[3], cmd[4])
-            new_pc.id = cmd[0]
-            new_pc.counter = cmd[5]
-            self.pcs.append(new_pc)
-        cur.close()
-        conn.close()
-        ignoreService.initFromDB()
+        asyncio.create_task(autoReactionService.init())
+        asyncio.create_task(ignoreService.initFromDB())
         self.checkForCommands.start()
-        LogCog.logSystem('Auto reaction cog loaded')
+        LogCog.logSystem('Server Administration cog loaded')
 
     @commands.command()
     @has_permissions(manage_messages=True)
     async def autoreaction(self, ctx, emoji):
-        autoReactionService.add(ctx.channel.id, emoji)
+        await autoReactionService.add(ctx.channel.id, emoji)
         await ctx.message.add_reaction('✅')
 
     @commands.command()
     @has_permissions(manage_messages=True)
     async def removereactions(self, ctx):
-        autoReactionService.remove(ctx.channel.id)
+        await autoReactionService.remove(ctx.channel.id)
         await ctx.message.add_reaction('✅')
 
     @commands.command()
     @has_permissions(manage_guild=True)
-    async def setcmd(self, ctx, interval, *args):
-        if interval.isdigit():
-            cmdArgs = ''
-            for i in range(1, len(args)):
-                cmdArgs += f'{args[i]} '
-            pc = PendingCommand(int(ctx.channel.id), int(interval), args[0], cmdArgs.strip())
-            pc.insert()
-            self.pcs.append(pc)
-            await ctx.message.add_reaction('✅')
-        else:
+    async def setcmd(self, ctx, channel: discord.TextChannel):
+        try:
+            chnl = await ctx.guild.fetch_channel(channel.id)
+            if chnl is not None:
+                pc = PendingCommand(chnl.id, 1, datetime.now().hour, None, "")
+                await pc.insert()
+                await ctx.message.add_reaction('✅')
+            else:
+                await ctx.message.add_reaction('❌')
+        except discord.errors.NotFound or discord.errors.DiscordServerError:
             await ctx.message.add_reaction('❌')
 
     @commands.command()
     @has_permissions(manage_guild=True)
-    async def getcmds(self, ctx):
-        conn = psycopg2.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password,
-            port=config.port
-        )
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM autocommands WHERE channel_id=%s", (ctx.channel.id,))
-        cmds = cur.fetchall()
+    async def getcmds(self, ctx, channel: discord.TextChannel):
+        cmds = await get_pending_commands_by_channel(channel.id)
         res = ""
-        for cmd in cmds:
-            res += f'ID: {cmd[0]}; Interval: {cmd[2]} -- {cmd[3]}:{cmd[4]}\n'
-        cur.close()
-        conn.close()
-        if len(res) < 0:
+        if len(cmds) < 0:
             res = "List is empty. There is no auto-commands."
+        else:
+            for cmd in cmds:
+                res += f'ID: {cmd.id}; {cmd.cmdType}:{cmd.args}\n'
         await ctx.send(res)
 
     @commands.command()
     @has_permissions(manage_guild=True)
-    async def delcmd(self, ctx, cmdId: int):
-        conn = psycopg2.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password,
-            port=config.port
-        )
-        cur = conn.cursor()
-        cur.execute('DELETE FROM autocommands WHERE channel_id = %s and id = %s', (ctx.channel.id, cmdId))
-        conn.commit()
-        cur.close()
-        conn.close()
-        for cmd in self.pcs:
-            if cmd.id == cmdId:
-                self.pcs.remove(cmd)
-        await ctx.message.add_reaction('✅')
+    async def editcmd(self, ctx, channel: discord.TextChannel, cmdId: int):
+        cmd = await get_pending_command(cmdId)
+        if cmd.channelId != channel.id:
+            await ctx.message.add_reaction('❌')
+        else:
+            embed = discord.Embed(title="AutoCommand", description=f"Command: {cmd.cmdType}\n"
+                                                                   f"Arguments: {cmd.args}\n"
+                                                                   f"All autocommands is similar to usual cmds.\n"
+                                                                   f"So if you need args, use it like any usual command in Bifur or read the docs\n"
+                                                                   f"Start hour (UTC): {cmd.startHour}\n"
+                                                                   f"Interval: {cmd.interval} hours\n")
+            await ctx.channel.send(embed=embed, view=AutoCmdView(self.bot, cmd))
 
     @commands.command()
     @has_permissions(manage_guild=True)
-    async def initcmd(self, ctx, cmdId: int):
-        pc = get_pending_command(cmdId)
-        if pc is not None and ctx.channel.id == pc.channelId:
-            pc.init_counter()
-            for cmd in self.pcs:
-                if cmd.id == pc.id:
-                    cmd.counter = 0
-            await ctx.message.add_reaction('✅')
-        else:
-            await ctx.message.add_reaction('❌')
+    async def delcmd(self, ctx, channel: discord.TextChannel, cmdId: int):
+        await delete_pending_command(channel.id, cmdId)
+        await ctx.message.add_reaction('✅')
 
     @commands.command()
     @has_permissions(manage_guild=True)
@@ -134,8 +144,14 @@ class ServerAdministrationCog(commands.Cog):
     @commands.command()
     @has_permissions(manage_guild=True)
     async def setprefix(self, ctx, prefix):
-        setPrefix(ctx.guild.id, prefix)
-        await ctx.send(f'{getLocale("set-prefix", ctx.author.id)} {prefix}')
+        await setPrefix(ctx.guild.id, prefix)
+        await ctx.send(f'{await getLocale("set-prefix", ctx.author.id)} {prefix}')
+
+    @commands.command(aliases=['defaultprefix', 'delprefix'])
+    @has_permissions(manage_guild=True)
+    async def defprefix(self, ctx):
+        await delPrefix(ctx.guild.id)
+        await ctx.send(f'{await getLocale("set-prefix", ctx.author.id)} {config.prefix}')
 
     @ignore.error
     async def missing_channel(self, ctx, error):
@@ -165,78 +181,19 @@ class ServerAdministrationCog(commands.Cog):
             embed.set_image(url=guild.icon.url)
         await ctx.send(embed=embed, view=pagedMsg.view)
 
-    @tasks.loop(minutes=13)
+    @tasks.loop(time=taskTimeConfig)
     async def checkForCommands(self):
-        conn = psycopg2.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password,
-            port=config.port
-        )
-        cur = conn.cursor()
-        cur.execute("SELECT value from settings WHERE name='executed-auto-cmds'")
-        value = cur.fetchone()[0]
-        if int(value) == int(datetime.utcnow().hour):
-            cur.close()
-            conn.close()
+        is_execute = await check_execute()
+        if not is_execute:
             return
         LogCog.logSystem('execute checkForCommands in ServerAdministrationCog')
-        cur.execute("UPDATE public.settings SET value= %s WHERE name='executed-auto-cmds'",
-                    (datetime.utcnow().hour,))
-        conn.commit()
-        cur.close()
-        conn.close()
-        for cmd in self.pcs:
+        pcs = await get_all_pending_commands()
+        currentHour = int(datetime.utcnow().hour)
+        for cmd in pcs:
             try:
-                await commandUtils.run_blocking(cmd.update_counter)
                 channel = self.bot.get_channel(cmd.channelId)
-                if cmd.counter >= cmd.interval:
-                    await commandUtils.run_blocking(cmd.init_counter)
-                    if cmd.cmdType == 'rule34' and channel.is_nsfw():
-                        limit = 1000
-                        link = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&pid=1&tags='
-                        for tag in cmd.args.split(' '):
-                            link += f'{tag}*+'
-                        answer = ""
-                        async with aiohttp.ClientSession() as session:
-                            async with session.get(link) as response:
-                                if response.status == 200:
-                                    answer = await response.json()
-                        async with aiohttp.ClientSession() as session:
-                            while len(answer) <= 0 < limit:
-                                limit = limit // 2
-                                link = f'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={limit}&json=1&pid=1&tags='
-                                async with session.get(link) as response:
-                                    if response.status == 200:
-                                        answer = await response.json()
-                        try:
-                            res = random.choice(answer)
-                            fileLink = res['sample_url']
-                            async with aiohttp.ClientSession() as session:
-                                async with session.get(fileLink) as response:
-                                    if response.status == 200:
-                                        content_type = response.headers['Content-Type']
-                                        img_data = await response.read()
-                            fileName = f'temp/{cmd.channelId}.jpg'
-                            if content_type == 'image/png':
-                                fileName = f'temp/{cmd.channelId}.png'
-                            elif content_type == 'image/tiff':
-                                fileName = f'temp/{cmd.channelId}.tiff'
-                            elif content_type == 'image/gif':
-                                fileName = f'temp/{cmd.channelId}.gif'
-                            with open(fileName, 'wb') as handler:
-                                handler.write(img_data)
-                            embed = discord.Embed(
-                                title=cmd.args
-                            )
-                            embed.set_image(url=f'attachment://{fileName[5:len(fileName)]}')
-                            embed.set_footer(text=res['tags'])
-                            os.remove(fileName)
-                        except Exception as e:
-                            LogCog.logDebug(f'Exception on rule: {e}')
-                            await channel.send(getLocale("nothing", 0))
-                    elif cmd.cmdType == 'time':
+                if (currentHour - cmd.startHour) % cmd.interval == 0:
+                    if cmd.cmdType == 'time':
                         await channel.send(f'<t:{str(int(datetime.now().timestamp()))}>')
                     elif cmd.cmdType == 'weather':
                         nameOfCity = " ".join(cmd.args.split(" "))

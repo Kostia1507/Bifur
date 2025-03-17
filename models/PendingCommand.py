@@ -1,79 +1,129 @@
-import psycopg2
+from datetime import datetime
+
+import asyncpg
 
 import config
 
 
-def get_pending_command(command_id):
-    conn = psycopg2.connect(
+async def get_pending_command(command_id):
+    conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
         user=config.user,
         password=config.password,
         port=config.port
     )
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM autocommands WHERE id=%s", (command_id,))
-    row = cur.fetchone()
-    if row is not None:
-        pc = PendingCommand(row[1], row[2], row[3], row[4])
+    rows = await conn.fetch("SELECT id, channel_id, interval, start_hour_utc, cmd_type, args FROM autocmds WHERE id=$1",
+                            command_id)
+    await conn.close()
+    if rows is not None and len(rows) > 0:
+        row = rows[0]
+        pc = PendingCommand(row[1], row[2], row[3], row[4], row[5])
         pc.id = row[0]
-        pc.counter = row[5]
         return pc
     return None
 
+
+async def get_pending_commands_by_channel(channel_id):
+    conn = await asyncpg.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    rows = await conn.fetch(
+        "SELECT id, channel_id, interval, start_hour_utc, cmd_type, args FROM autocmds WHERE channel_id=$1", channel_id)
+    await conn.close()
+    cmds = []
+    for row in rows:
+        pc = PendingCommand(row[1], row[2], row[3], row[4], row[5])
+        pc.id = row[0]
+        cmds.append(pc)
+    return cmds
+
+
+async def get_all_pending_commands():
+    conn = await asyncpg.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    rows = await conn.fetch("SELECT id, channel_id, interval, start_hour_utc, cmd_type, args FROM autocmds")
+    await conn.close()
+    cmds = []
+    for row in rows:
+        pc = PendingCommand(row[1], row[2], row[3], row[4], row[5])
+        pc.id = row[0]
+        cmds.append(pc)
+    return cmds
+
+async def delete_pending_command(channel_id, cmd_id):
+    conn = await asyncpg.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    await conn.execute('DELETE FROM autocmds WHERE channel_id = $1 and id = $2', channel_id, cmd_id)
+    await conn.close()
+    return True
+
+async def check_execute():
+    conn = await asyncpg.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    value = await conn.fetchrow("SELECT value from settings WHERE name='executed-auto-cmds'")
+    currentHour = int(datetime.utcnow().hour)
+    if int(value[0]) == currentHour:
+        await conn.close()
+        return False
+    await conn.execute("UPDATE public.settings SET value = $1 WHERE name='executed-auto-cmds'",
+            str(datetime.utcnow().hour))
+    await conn.close()
+    return True
+
 class PendingCommand:
 
-    def __init__(self, channelId, interval, cmdType, args):
+    def __init__(self, channelId, interval, startHour, cmdType, args):
         self.channelId = channelId
         self.interval = interval
         self.cmdType = cmdType
+        self.startHour = startHour
         self.args = args
-        self.counter = 0
-        self.id = 0
+        self.id = None
 
-    def insert(self):
-        conn = psycopg2.connect(
+    async def insert(self):
+        conn = await asyncpg.connect(
             host=config.host,
             database=config.database,
             user=config.user,
             password=config.password,
             port=config.port
         )
-        cur = conn.cursor()
-        cur.execute("INSERT INTO autocommands(channel_id, interval, cmd_type, args, counter)"
-                    " VALUES (%s, %s, %s, %s, 0);", (self.channelId, self.interval, self.cmdType, self.args))
-        cur.execute('SELECT LASTVAL()')
-        self.id = cur.fetchone()[0]
-        conn.commit()
-        cur.close()
-        conn.close()
+        await conn.execute("INSERT INTO autocmds(channel_id, interval, cmd_type, args, start_hour_utc)"
+                           " VALUES ($1, $2, $3, $4, $5)",
+                           self.channelId, int(self.interval), self.cmdType, self.args, int(self.startHour))
+        last = await conn.fetchrow('SELECT LASTVAL()')
+        self.id = last[0]
+        await conn.close()
 
-    def update_counter(self):
-        self.counter += 1
-        conn = psycopg2.connect(
+    async def update(self):
+        conn = await asyncpg.connect(
             host=config.host,
             database=config.database,
             user=config.user,
             password=config.password,
             port=config.port
         )
-        cur = conn.cursor()
-        cur.execute("UPDATE autocommands SET counter = %s where id = %s", (self.counter, self.id))
-        conn.commit()
-        cur.close()
-        conn.close()
-
-    def init_counter(self):
-        self.counter = 0
-        conn = psycopg2.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password,
-            port=config.port
-        )
-        cur = conn.cursor()
-        cur.execute("UPDATE autocommands SET counter = %s where id = %s", (self.counter, self.id))
-        conn.commit()
-        cur.close()
-        conn.close()
+        await conn.execute(
+            "UPDATE autocmds SET start_hour_utc = $1, cmd_type = $2, args = $3, interval = $4 where id = $5",
+            int(self.startHour), self.cmdType, self.args, int(self.interval), int(self.id))
+        await conn.close()
