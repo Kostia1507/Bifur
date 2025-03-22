@@ -40,9 +40,9 @@ class RenameModal(discord.ui.Modal, title='Rename'):
         if not newname[0].isdigit():
             radio = await radioService.getRadioById(self.radio_id)
             await radio.rename(newname, interaction.user.id)
-            await interaction.response.send_message(getLocale("ready", interaction.user.id))
+            await interaction.response.send_message(await getLocale("ready", interaction.user.id))
         else:
-            await interaction.response.send_message(getLocale("first-not-number", interaction.user.id))
+            await interaction.response.send_message(await getLocale("first-not-number", interaction.user.id))
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
         await interaction.response.send_message('Error happened. Report it!', ephemeral=True)
@@ -66,15 +66,15 @@ class AddTrackModal(discord.ui.Modal, title='Add song'):
         await song.updateFromWeb()
         name, duration = song.name, song.duration
         if name is None or duration is None:
-            await interaction.followup.send('something-wrong', interaction.user.id)
+            await interaction.followup.send(await getLocale('something-wrong', interaction.user.id))
             return
         retStatus = await radioService.createTrack(name, self.radio_id, link, interaction.user.id, duration)
         if retStatus is None:
-            await interaction.followup.send(getLocale("url-exist", interaction.user.id), ephemeral=True)
+            await interaction.followup.send(await getLocale("url-exist", interaction.user.id), ephemeral=True)
         elif retStatus:
-            await interaction.followup.send(getLocale("ready", interaction.user.id), ephemeral=True)
+            await interaction.followup.send(await getLocale("ready", interaction.user.id), ephemeral=True)
         else:
-            await interaction.followup.send(getLocale('no-playlist', interaction.user.id), ephemeral=True)
+            await interaction.followup.send(await getLocale('no-playlist', interaction.user.id), ephemeral=True)
 
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:

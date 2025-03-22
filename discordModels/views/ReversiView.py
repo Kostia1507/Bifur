@@ -52,9 +52,9 @@ class ReversiModal(discord.ui.Modal, title='Reversi'):
             embed.set_image(url=f'attachment://reversi.jpg')
             await interaction.message.edit(content="", embed=embed, view=ReversiView(self.bot, self.game),
                                            attachments=[img])
-            await interaction.followup.send(localeService.getLocale('ready', interaction.user.id))
+            await interaction.followup.send(await localeService.getLocale('ready', interaction.user.id))
         else:
-            await interaction.followup.send(localeService.getLocale('ready', interaction.user.id))
+            await interaction.followup.send(await localeService.getLocale('ready', interaction.user.id))
             img = discord.File(self.game.generate_picture(), "reversi.jpg")
             embed = discord.Embed(title="Reversi", description=self.game.get_text())
             embed.set_image(url=f'attachment://reversi.jpg')
@@ -107,4 +107,4 @@ class SurrenderConfirmModal(discord.ui.Modal, title='Surrender'):
             else:
                 await interaction.message.edit(content=f"{interaction.user.name} gave up! Black won the game!",
                                                embed=embed, attachments=[img], view=None)
-        await interaction.followup.send(localeService.getLocale('ready', interaction.user.id))
+        await interaction.followup.send(await localeService.getLocale('ready', interaction.user.id))

@@ -16,7 +16,7 @@ async def is_in_vcInteraction(interaction):
             if member.id == interaction.user.id:
                 return True
     await interaction.response.send_message(
-        getLocale('not-in-voice', interaction.user.id), ephemeral=True, delete_after=15)
+        await getLocale('not-in-voice', interaction.user.id), ephemeral=True, delete_after=15)
     return False
 
 
@@ -89,13 +89,13 @@ class MusicViewGray(discord.ui.View):
             mp.repeating = RepeatType(repeatN)
             if mp.repeating == RepeatType.NOT_REPEATING:
                 await interaction.response.send_message(
-                    getLocale('repeat-off', interaction.user.id), ephemeral=True, delete_after=15)
+                    await getLocale('repeat-off', interaction.user.id), ephemeral=True, delete_after=15)
             elif mp.repeating == RepeatType.REPEAT_ONE:
                 await interaction.response.send_message(
-                    getLocale('repeat-one', interaction.user.id), ephemeral=True, delete_after=15)
+                    await getLocale('repeat-one', interaction.user.id), ephemeral=True, delete_after=15)
             else:
                 await interaction.response.send_message(
-                    getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
+                    await getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
 
     @discord.ui.button(label="", style=discord.ButtonStyle.gray, emoji=config.likeEmoji, row=1)
     async def likeCallback(self, interaction, button):
@@ -103,9 +103,9 @@ class MusicViewGray(discord.ui.View):
         mp = musicService.findMusicPlayerByGuildId(guild_id=interaction.guild.id)
         flag = await likedSongsService.likeSong(interaction.user.id, mp.playing.original_url)
         if mp.playing is not None and flag:
-            await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)
+            await interaction.followup.send(await getLocale('ready', interaction.user.id), ephemeral=True)
         else:
-            await interaction.followup.send(getLocale('something-wrong', interaction.user.id), ephemeral=True)
+            await interaction.followup.send(await getLocale('something-wrong', interaction.user.id), ephemeral=True)
 
     @discord.ui.button(label="", style=discord.ButtonStyle.gray, emoji=config.volumeDownEmoji, row=2)
     async def volumeDownCallback(self, interaction, button):
@@ -114,7 +114,7 @@ class MusicViewGray(discord.ui.View):
         if await is_in_vcInteraction(interaction) and vc is not None:
             mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)
             if mp is None:
-                await interaction.followup.send(getLocale('something-wrong', interaction.user.id), ephemeral=True)
+                await interaction.followup.send(await getLocale('something-wrong', interaction.user.id), ephemeral=True)
             else:
                 new_volume = max(0, mp.volume - VOLUME_CHANGE_ON_CLICK)
                 mp.volume = new_volume
@@ -122,7 +122,7 @@ class MusicViewGray(discord.ui.View):
                     vc.source.volume = new_volume / 100
                 if mp.musicPlayerChannelId is not None:
                     await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
-                await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)
+                await interaction.followup.send(await getLocale('ready', interaction.user.id), ephemeral=True)
 
     @discord.ui.button(label="", style=discord.ButtonStyle.danger, emoji=config.stopEmoji, row=2)
     async def stopCallback(self, interaction, button):
@@ -142,7 +142,7 @@ class MusicViewGray(discord.ui.View):
         if await is_in_vcInteraction(interaction) and vc is not None:
             mp = musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id)
             if mp is None:
-                await interaction.followup.send(getLocale('something-wrong', interaction.user.id), ephemeral=True)
+                await interaction.followup.send(await getLocale('something-wrong', interaction.user.id), ephemeral=True)
             else:
                 new_volume = min(200, mp.volume + VOLUME_CHANGE_ON_CLICK)
                 mp.volume = new_volume
@@ -150,4 +150,4 @@ class MusicViewGray(discord.ui.View):
                     vc.source.volume = new_volume / 100
                 if mp.musicPlayerChannelId is not None:
                     await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
-                await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)
+                await interaction.followup.send(await getLocale('ready', interaction.user.id), ephemeral=True)

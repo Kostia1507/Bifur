@@ -463,9 +463,9 @@ class PictureCog(commands.Cog):
                 await ctx.send(file=discord.File(file))
                 os.remove(file)
             except FileNotFoundError:
-                await ctx.send(getLocale("file-not-found", ctx.author.id))
+                await ctx.send(await getLocale("file-not-found", ctx.author.id))
         else:
-            await ctx.send(getLocale("file-not-found", ctx.author.id))
+            await ctx.send(await getLocale("file-not-found", ctx.author.id))
 
     @commands.command()
     async def watercolor(self, ctx, *args):
@@ -482,9 +482,9 @@ class PictureCog(commands.Cog):
                 await ctx.send(file=discord.File(file))
                 os.remove(file)
             except FileNotFoundError:
-                await ctx.send(getLocale("file-not-found", ctx.author.id))
+                await ctx.send(await getLocale("file-not-found", ctx.author.id))
         else:
-            await ctx.send(getLocale("file-not-found", ctx.author.id))
+            await ctx.send(await getLocale("file-not-found", ctx.author.id))
 
 
     @commands.command()

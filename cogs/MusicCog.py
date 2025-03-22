@@ -369,12 +369,12 @@ class MusicCog(commands.Cog):
                                          value=str(i)))
                 text += f'{i + 1}. {tList[i].name} ({tList[i].getDurationToStr()})\n'
             embed = discord.Embed(
-                title=getLocale("result", ctx.author.id),
+                title=await getLocale("result", ctx.author.id),
                 description=text
             )
             await ctx.send(embed=embed, view=MusicSelectView(options, self.bot))
         else:
-            await ctx.send(getLocale("nothing-found", ctx.author.id))
+            await ctx.send(await getLocale("nothing-found", ctx.author.id))
 
     @commands.command()
     @commands.check(commandUtils.is_in_vc)
@@ -468,7 +468,7 @@ class MusicCog(commands.Cog):
         ret = ""
         for song in songs:
             ret += f'{song.trackId} - {song.name}\n'
-        pagedMsg = pagedMessagesService.initPagedMessage(self.bot, getLocale('favourite', ctx.author.id), ret)
+        pagedMsg = pagedMessagesService.initPagedMessage(self.bot, await getLocale('favourite', ctx.author.id), ret)
         embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
         embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
         await ctx.send(embed=embed, view=pagedMsg.view)
@@ -480,7 +480,7 @@ class MusicCog(commands.Cog):
             await song.updateFromWeb()
             embed = discord.Embed(
                 title=f'{song.name}',
-                description=f'URL: {song.original_url}\n{getLocale("duration", ctx.author.id)} {song.getDurationToStr()}'
+                description=f'URL: {song.original_url}\n{await getLocale("duration", ctx.author.id)} {song.getDurationToStr()}'
             )
             embed.set_thumbnail(url=song.icon_link)
             await ctx.send(embed=embed)
@@ -505,7 +505,7 @@ class MusicCog(commands.Cog):
         if res == 0:
             return 0
         await musicService.addTrack(query.strip(), interaction.guild.id, interaction.user.name, interaction.channel.id)
-        await interaction.response.send_message(getLocale('ready', interaction.user.id),
+        await interaction.response.send_message(await getLocale('ready', interaction.user.id),
                                                 ephemeral=True, delete_after=15)
         await musicViewService.createPlayer(interaction, self.bot)
 
@@ -524,12 +524,12 @@ class MusicCog(commands.Cog):
                                          value=str(i)))
                 text += f'{i + 1}. {tList[i].name} ({tList[i].getDurationToStr()})\n'
             embed = discord.Embed(
-                title=getLocale("result", interaction.user.id),
+                title=await getLocale("result", interaction.user.id),
                 description=text
             )
             await interaction.followup.send(embed=embed, view=MusicSelectView(options, self.bot))
         else:
-            await interaction.followup.send(getLocale("nothing-found", interaction.user.id))
+            await interaction.followup.send(await getLocale("nothing-found", interaction.user.id))
 
     @app_commands.command(name="list", description="List of songs in queue")
     async def listSlash(self, interaction: discord.Interaction):
@@ -545,7 +545,7 @@ class MusicCog(commands.Cog):
     async def shuffleSlash(self, interaction: discord.Interaction):
         if commandUtils.is_in_vcInteraction(interaction):
             musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id).shuffle()
-            await interaction.response.send_message(getLocale('ready', interaction.user.id),
+            await interaction.response.send_message(await getLocale('ready', interaction.user.id),
                                                     ephemeral=True, delete_after=15)
 
     @app_commands.command(name="skip", description="Skip current song")
@@ -555,7 +555,7 @@ class MusicCog(commands.Cog):
             if guild.voice_client:
                 vc = guild.voice_client.stop()
                 musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id).skip()
-                await interaction.response.send_message(getLocale('ready', interaction.user.id),
+                await interaction.response.send_message(await getLocale('ready', interaction.user.id),
                                                         ephemeral=True, delete_after=15)
 
     @app_commands.command(name="previous", description="Return to previous song")
@@ -564,7 +564,7 @@ class MusicCog(commands.Cog):
         if guild.voice_client:
             musicService.getMusicPlayer(guild.id, interaction.channel.id).toPrevious()
             guild.voice_client.stop()
-            await interaction.response.send_message(getLocale('ready', interaction.user.id),
+            await interaction.response.send_message(await getLocale('ready', interaction.user.id),
                                                     ephemeral=True, delete_after=15)
 
     @app_commands.command(name="stop", description="Stop all songs in queue")
@@ -580,7 +580,7 @@ class MusicCog(commands.Cog):
                     t.delete()
                 musicService.getMusicPlayer(interaction.guild_id, interaction.channel_id).skip()
                 vc.stop()
-                await interaction.response.send_message(getLocale('ready', interaction.user.id),
+                await interaction.response.send_message(await getLocale('ready', interaction.user.id),
                                                         ephemeral=True, delete_after=15)
 
     @app_commands.command(name="repeat", description="Switch repeat mode")
@@ -593,13 +593,13 @@ class MusicCog(commands.Cog):
             mp.repeating = RepeatType(repeatN)
             if mp.repeating == RepeatType.NOT_REPEATING:
                 await interaction.response.send_message(
-                    getLocale('repeat-off', interaction.user.id), ephemeral=True, delete_after=15)
+                    await getLocale('repeat-off', interaction.user.id), ephemeral=True, delete_after=15)
             elif mp.repeating == RepeatType.REPEAT_ONE:
                 await interaction.response.send_message(
-                    getLocale('repeat-one', interaction.user.id), ephemeral=True, delete_after=15)
+                    await getLocale('repeat-one', interaction.user.id), ephemeral=True, delete_after=15)
             else:
                 await interaction.response.send_message(
-                    getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
+                    await getLocale('repeat-on', interaction.user.id), ephemeral=True, delete_after=15)
 
     @app_commands.command(name="volume", description="Set volume between 0 and 200")
     @app_commands.describe(volume="value between 0% and 200%")
@@ -614,7 +614,7 @@ class MusicCog(commands.Cog):
                 vc.source.volume = volume / 100
             if mp.musicPlayerChannelId is not None:
                 await musicViewService.updatePlayer(mediaPlayer=mp, bot=self.bot)
-            await interaction.followup.send(getLocale('ready', interaction.user.id), ephemeral=True)
+            await interaction.followup.send(await getLocale('ready', interaction.user.id), ephemeral=True)
 
     @app_commands.command(name="player", description="Recreate player with buttons")
     @app_commands.describe(theme="change color of buttons")

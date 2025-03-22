@@ -14,7 +14,7 @@ async def get_pending_command(command_id):
         port=config.port
     )
     rows = await conn.fetch("SELECT id, channel_id, interval, start_hour_utc, cmd_type, args FROM autocmds WHERE id=$1",
-                            command_id)
+                            int(command_id))
     await conn.close()
     if rows is not None and len(rows) > 0:
         row = rows[0]
@@ -60,6 +60,7 @@ async def get_all_pending_commands():
         cmds.append(pc)
     return cmds
 
+
 async def delete_pending_command(channel_id, cmd_id):
     conn = await asyncpg.connect(
         host=config.host,
@@ -68,9 +69,10 @@ async def delete_pending_command(channel_id, cmd_id):
         password=config.password,
         port=config.port
     )
-    await conn.execute('DELETE FROM autocmds WHERE channel_id = $1 and id = $2', channel_id, cmd_id)
+    await conn.execute('DELETE FROM autocmds WHERE channel_id = $1 and id = $2', channel_id, int(cmd_id))
     await conn.close()
     return True
+
 
 async def check_execute():
     conn = await asyncpg.connect(
@@ -86,9 +88,10 @@ async def check_execute():
         await conn.close()
         return False
     await conn.execute("UPDATE public.settings SET value = $1 WHERE name='executed-auto-cmds'",
-            str(datetime.utcnow().hour))
+                       str(datetime.utcnow().hour))
     await conn.close()
     return True
+
 
 class PendingCommand:
 

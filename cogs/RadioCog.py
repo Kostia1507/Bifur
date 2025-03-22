@@ -356,7 +356,7 @@ class RadioCog(commands.Cog):
         retStatus = await musicService.startRadio(radio_name, interaction.guild_id, interaction.user.name,
                                             interaction.channel_id, interaction.user.id, True)
         if retStatus:
-            await interaction.followup.send(getLocale('ready', interaction.user.id),
+            await interaction.followup.send(await getLocale('ready', interaction.user.id),
                                             ephemeral=True)
             await createPlayer(interaction, self.bot)
 
@@ -369,7 +369,7 @@ class RadioCog(commands.Cog):
         retStatus = await musicService.startRadio(radio_name, interaction.guild_id, interaction.user.name,
                                             interaction.channel_id, interaction.user.id, False)
         if retStatus:
-            await interaction.response.send_message(getLocale('ready', interaction.user.id),
+            await interaction.response.send_message(await getLocale('ready', interaction.user.id),
                                                     ephemeral=True, delete_after=15)
             await createPlayer(interaction, self.bot)
 
@@ -378,12 +378,12 @@ class RadioCog(commands.Cog):
     async def radiosSlash(self, interaction: discord.Interaction, user: discord.Member = None):
         if user is not None:
             radios = await radioService.getSharedPlayLists(user.id)
-            title = getLocale('user-playlists', interaction.user.id).replace("%p", user.name)
+            title = await getLocale('user-playlists', interaction.user.id).replace("%p", user.name)
         else:
             radios = await radioService.getPlayLists(interaction.user.id)
-            title = getLocale('playlists-list', interaction.user.id)
+            title = await getLocale('playlists-list', interaction.user.id)
         if len(radios) == 0:
-            await interaction.response.send_message(getLocale('no-playlists', interaction.user.id))
+            await interaction.response.send_message(await getLocale('no-playlists', interaction.user.id))
         else:
             res = ''
             radios.sort(key=lambda radioEntry: radioEntry.radio_id)
@@ -400,7 +400,7 @@ class RadioCog(commands.Cog):
         ret = ''
         for radio in radios:
             ret += f'ID: {radio[0]} -- {radio[1]}\n'
-        pagedMsg = pagedMessagesService.initPagedMessage(self.bot, getLocale("shared-list", interaction.user.id), ret)
+        pagedMsg = pagedMessagesService.initPagedMessage(self.bot, await getLocale("shared-list", interaction.user.id), ret)
         embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
         embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
         await interaction.response.send_message(embed=embed, view=pagedMsg.view)

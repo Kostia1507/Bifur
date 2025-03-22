@@ -17,9 +17,9 @@ class PremiumCog(commands.Cog):
     @commands.command(aliases=['patreon'])
     async def premium(self, ctx, *args):
         if await premiumService.is_premium(ctx.author.id):
-            await ctx.send(localeService.getLocale('you-are-premium', ctx.author.id))
+            await ctx.send(await localeService.getLocale('you-are-premium', ctx.author.id))
         else:
-            await ctx.send(localeService.getLocale('buy-premium', ctx.author.id))
+            await ctx.send(await localeService.getLocale('buy-premium', ctx.author.id))
 
     @commands.command()
     @commands.check(commandUtils.is_owner)

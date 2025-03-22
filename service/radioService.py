@@ -65,7 +65,7 @@ async def getSharedPlayLists(user_id):
     return radios
 
 
-async def createRadio(name, user_id):
+async def createRadio(name, user_id: int):
     conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
@@ -81,7 +81,7 @@ async def createRadio(name, user_id):
     return radio_id[0]
 
 
-async def shareRadio(name, user_id):
+async def shareRadio(name: str, user_id: int):
     if name.isdigit():
         radio = await getRadioById(name)
         name = radio.name
@@ -119,6 +119,7 @@ async def getAllSharedRadios():
 
 # pass radio_id as 0 if you need to create one new
 async def importYouTubePlayList(user_id, link, radio_id):
+    radio_id = int(radio_id)
     settings = {
         'match_filter': utils.match_filter_func("!is_live"),
         'nocheckcertificate': True,
@@ -159,7 +160,8 @@ async def importYouTubePlayList(user_id, link, radio_id):
         return radio_id
 
 
-async def createTrack(name, playlist_id, link, user_id, duration):
+async def createTrack(name, playlist_id: int, link, user_id: int, duration):
+    playlist_id = int(playlist_id)
     radio = await getRadioById(playlist_id)
     if user_id == radio.owner or user_id in await radio.getEditors():
         conn = await asyncpg.connect(
@@ -182,6 +184,7 @@ async def createTrack(name, playlist_id, link, user_id, duration):
 
 
 async def forceCreateTrack(name, playlist_id, link, user_id, duration):
+    playlist_id = int(playlist_id)
     radio = await getRadioById(playlist_id)
     if user_id == radio.owner or user_id in await radio.getEditors():
         conn = await asyncpg.connect(
@@ -201,6 +204,7 @@ async def forceCreateTrack(name, playlist_id, link, user_id, duration):
 
 
 async def deleteTrack(track_id, userId):
+    track_id = int(track_id)
     conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
@@ -221,6 +225,7 @@ async def deleteTrack(track_id, userId):
 
 
 async def getTrackById(track_id):
+    track_id = int(track_id)
     conn = await asyncpg.connect(
         host=config.host,
         database=config.database,
