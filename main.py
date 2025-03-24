@@ -1,6 +1,9 @@
 import asyncio
 import logging
+import traceback
 from datetime import datetime
+
+from discord.utils import escape_markdown
 
 import config
 from cogs import LogCog
@@ -74,6 +77,8 @@ async def on_command_error(ctx, error):
         await ctx.message.add_reaction("❗")
     if isinstance(error, MissingPermissions):
         return
+    full_traceback = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+    LogCog.logError(escape_markdown(full_traceback))
     raise error
 
 

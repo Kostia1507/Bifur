@@ -213,6 +213,11 @@ class AdminCog(commands.Cog):
         await ctx.send(f'Synced {count} commands')
 
     @commands.command()
+    async def error(self, ctx):
+        res = 1/0
+        await ctx.send(res)
+
+    @commands.command()
     @commands.check(commandUtils.is_owner)
     async def tempfiles(self, ctx):
         try:
