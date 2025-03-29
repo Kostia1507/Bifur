@@ -1,3 +1,5 @@
+import asyncio
+
 import asyncpg
 from yt_dlp import YoutubeDL, utils
 
@@ -135,29 +137,35 @@ async def importYouTubePlayList(user_id, link, radio_id):
         'simulate': True,
         'ignoreerrors': True
     }
-    with YoutubeDL(settings) as ydl:
-        try:
-            info = ydl.extract_info(link, download=False)
-        except Exception as e:
-            LogCog.logError(f'Exception during import of youtube playlist {e}')
-            return e
-        if radio_id == 0:
-            radio_id = await createRadio(info['title'], user_id)
-        entries = info['entries']
-        conn = await asyncpg.connect(
-            host=config.host,
-            database=config.database,
-            user=config.user,
-            password=config.password,
-            port=config.port
-        )
-        for entry in entries:
-            LogCog.logDebug(str(entry))
-            if entry is not None:
-                await conn.execute("INSERT INTO tracks(name, list, link, duration) VALUES (%s, %s, %s, %s);",
-                                  (entry["title"], radio_id, entry["webpage_url"], entry['duration']))
-        await conn.close()
-        return radio_id
+
+    def extract_info():
+        with YoutubeDL(settings) as ydl:
+            try:
+                return ydl.extract_info(link, download=False)
+            except Exception as e:
+                LogCog.logError(f'Exception during import of youtube playlist {e}')
+                return e
+
+    info = await asyncio.to_thread(extract_info)
+    if 'entries' not in info.keys():
+        return None
+    if radio_id == 0:
+        radio_id = await createRadio(info['title'], user_id)
+    entries = info['entries']
+    conn = await asyncpg.connect(
+        host=config.host,
+        database=config.database,
+        user=config.user,
+        password=config.password,
+        port=config.port
+    )
+    for entry in entries:
+        LogCog.logDebug(str(entry))
+        if entry is not None:
+            await conn.execute("INSERT INTO tracks(name, list, link, duration) VALUES ($1, $2, $3, $4);",
+                               entry["title"], radio_id, entry["webpage_url"], int(entry['duration']))
+    await conn.close()
+    return radio_id
 
 
 async def createTrack(name, playlist_id: int, link, user_id: int, duration):
@@ -178,7 +186,7 @@ async def createTrack(name, playlist_id: int, link, user_id: int, duration):
         if check is not None:
             return None
         await conn.execute("INSERT INTO tracks(name, list, link, duration) VALUES ($1, $2, $3, $4);",
-                    name, playlist_id, link, duration)
+                           name, playlist_id, link, duration)
         await conn.close()
         return True
 

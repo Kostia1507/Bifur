@@ -1,7 +1,7 @@
 discord==2.3.2
 Pillow==9.5.0
 PyNaCl==1.5.0
-yt_dlp==2025.02.19
+yt_dlp==2025.03.27
 asyncpg==0.30.0
 Google-Images-Search==1.4.7
 deep-translator==1.11.4
