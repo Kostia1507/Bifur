@@ -248,7 +248,7 @@ class RadioCog(commands.Cog):
             embed = discord.Embed(
                 title=f'ID:{radio.radio_id}:{radio.name}',
                 description=f'{getLocaleByLang("owner", userLang)} {owner.name}\n'
-                            f'{getLocaleByLang("count", userLang)} {len(radio.getTracks(ctx.author.id))}\n'
+                            f'{getLocaleByLang("count", userLang)} {len(await radio.getTracks(ctx.author.id))}\n'
                             f'{getLocaleByLang("shared", userLang)} {radio.is_shared}'
             )
             await ctx.send(embed=embed)
@@ -271,7 +271,7 @@ class RadioCog(commands.Cog):
             embed = discord.Embed(
                 title=f'ID:{radio.radio_id}:{radio.name}',
                 description=f'{getLocaleByLang("owner", userLang)} {owner.name}\n'
-                            f'{getLocaleByLang("count", userLang)} {len(radio.getTracks(ctx.author.id))}\n'
+                            f'{getLocaleByLang("count", userLang)} {len(await radio.getTracks(ctx.author.id))}\n'
                             f'{getLocaleByLang("shared", userLang)} {radio.is_shared}'
             )
             await ctx.send(embed=embed)
@@ -363,9 +363,10 @@ class RadioCog(commands.Cog):
         retStatus = await musicService.startRadio(radio_name, interaction.guild_id, interaction.user.name,
                                             interaction.channel_id, interaction.user.id, True)
         if retStatus:
+            await createPlayer(interaction, self.bot)
+        if not interaction.is_done():
             await interaction.followup.send(await getLocale('ready', interaction.user.id),
                                             ephemeral=True)
-            await createPlayer(interaction, self.bot)
 
     @app_commands.command(name="addradio", description="Add playlist to queue without clearing it")
     @app_commands.describe(radio_name="playlist name or ID")

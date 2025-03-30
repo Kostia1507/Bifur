@@ -501,13 +501,17 @@ class MusicCog(commands.Cog):
     @app_commands.command(name="play", description="Play songs")
     @app_commands.describe(query="video title on youtube")
     async def playSlash(self, interaction: discord.Interaction, query: str):
-        res = await connect_to_user_voiceInteraction(interaction)
-        if res == 0:
-            return 0
-        await musicService.addTrack(query.strip(), interaction.guild.id, interaction.user.name, interaction.channel.id)
-        await interaction.response.send_message(await getLocale('ready', interaction.user.id),
-                                                ephemeral=True, delete_after=15)
-        await musicViewService.createPlayer(interaction, self.bot)
+        if query is not None and len(query) > 0:
+            await interaction.response.defer(ephemeral=True, thinking=True)
+            res = await connect_to_user_voiceInteraction(interaction)
+            if res == 0:
+                return 0
+            await musicService.addTrack(query.strip(), interaction.guild.id, interaction.user.name, interaction.channel.id)
+            res = await musicViewService.createPlayer(interaction, self.bot)
+            if not res:
+                await interaction.followup.send(await getLocale('ready', interaction.user.id), ephemeral=True)
+        else:
+            await interaction.followup.send(await getLocale("nothing-found", interaction.user.id))
 
     @app_commands.command(name="search", description="Let you choose one from 5 songs")
     @app_commands.describe(query="video title on youtube")

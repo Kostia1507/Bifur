@@ -160,7 +160,6 @@ async def importYouTubePlayList(user_id, link, radio_id):
         port=config.port
     )
     for entry in entries:
-        LogCog.logDebug(str(entry))
         if entry is not None:
             await conn.execute("INSERT INTO tracks(name, list, link, duration) VALUES ($1, $2, $3, $4);",
                                entry["title"], radio_id, entry["webpage_url"], int(entry['duration']))

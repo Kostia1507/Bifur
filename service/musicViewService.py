@@ -35,12 +35,15 @@ async def createPlayer(ctx, bot):
                 title=f'{getLocaleByLang("playing", userLang)} {getLocaleByLang("nothing", userLang)}'
             )
         if isinstance(ctx, discord.Interaction):
-            await ctx.response.send_message(embed=embed, view=getViewByTheme(mp.theme)(bot=bot, guildId=ctx.guild.id))
+            await ctx.followup.send(embed=embed, view=getViewByTheme(mp.theme)(bot=bot, guildId=ctx.guild.id))
             msg = await ctx.original_response()
             mp.musicPlayerMessageId = msg.id
         else:
             msg = await ctx.send(embed=embed, view=getViewByTheme(mp.theme)(bot=bot, guildId=ctx.guild.id))
             mp.musicPlayerMessageId = msg.id
+        return True
+    else:
+        return False
 
 
 async def updatePlayer(mediaPlayer, bot):
