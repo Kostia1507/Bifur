@@ -356,7 +356,7 @@ class RadioCog(commands.Cog):
     @app_commands.command(name="radio", description="Start playing playlist")
     @app_commands.describe(radio_name="playlist name or ID")
     async def radioSlash(self, interaction: discord.Interaction, radio_name: str):
-        await interaction.response.defer(ephemeral=True, thinking=True)
+        await interaction.response.defer()
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
             return 0

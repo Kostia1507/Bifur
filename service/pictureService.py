@@ -370,8 +370,9 @@ async def resize(image_url, height, width, mode, message_id):
     img = Image.open(name_of_file).convert('RGBA')
     if mode == "%":
         width, height = int(img.size[0] * width) % 10001, int(img.size[1] * height) % 10001
-    img.resize((width, height), Image.BILINEAR).save(name_of_file)
+    img.resize((int(width), int(height)), Image.BILINEAR).save(name_of_file)
     return name_of_file
+
 
 async def poster(image_url, colors, message_id):
     name_of_file = f'temp/{message_id}.jpg'

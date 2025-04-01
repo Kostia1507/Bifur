@@ -502,7 +502,7 @@ class MusicCog(commands.Cog):
     @app_commands.describe(query="video title on youtube")
     async def playSlash(self, interaction: discord.Interaction, query: str):
         if query is not None and len(query) > 0:
-            await interaction.response.defer(ephemeral=True, thinking=True)
+            await interaction.response.defer()
             res = await connect_to_user_voiceInteraction(interaction)
             if res == 0:
                 return 0
@@ -511,12 +511,12 @@ class MusicCog(commands.Cog):
             if not res:
                 await interaction.followup.send(await getLocale('ready', interaction.user.id), ephemeral=True)
         else:
-            await interaction.followup.send(await getLocale("nothing-found", interaction.user.id))
+            await interaction.followup.send(await getLocale("nothing-found", interaction.user.id), ephemeral=True)
 
     @app_commands.command(name="search", description="Let you choose one from 5 songs")
     @app_commands.describe(query="video title on youtube")
     async def searchSlash(self, interaction: discord.Interaction, query: str):
-        await interaction.response.defer(ephemeral=True, thinking=True)
+        await interaction.response.defer()
         tList = await musicService.searchFive(query)
         if len(tList) > 0:
             searchQueue[interaction.user.id] = tList
@@ -533,7 +533,7 @@ class MusicCog(commands.Cog):
             )
             await interaction.followup.send(embed=embed, view=MusicSelectView(options, self.bot))
         else:
-            await interaction.followup.send(await getLocale("nothing-found", interaction.user.id))
+            await interaction.followup.send(await getLocale("nothing-found", interaction.user.id), ephermal=True)
 
     @app_commands.command(name="list", description="List of songs in queue")
     async def listSlash(self, interaction: discord.Interaction):
