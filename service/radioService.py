@@ -18,6 +18,8 @@ async def getRadioById(radio_id):
         port=config.port
     )
     radio = await conn.fetchrow("SELECT * FROM radios where id = '" + str(radio_id) + "'")
+    if radio is None:
+        return None
     await conn.close()
     return Radio(radio[0], radio[1], radio[2], radio[3])
 
@@ -31,6 +33,8 @@ async def getRadioByName(playlist, owner_id):
         port=config.port
     )
     radio = await conn.fetchrow("SELECT * FROM radios where name = $1 and owner = $2", playlist, owner_id)
+    if radio is None:
+        return None
     await conn.close()
     return Radio(radio[0], radio[1], radio[2], radio[3])
 

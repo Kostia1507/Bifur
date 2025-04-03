@@ -100,6 +100,9 @@ class RadioCog(commands.Cog):
             radio = await radioService.getRadioById(radio_name)
         else:
             radio = await radioService.getRadioByName(radio_name, ctx.author.id)
+        if radio is None:
+            await ctx.send(await getLocale("nothing-found", ctx.author.id))
+            return
         ret = await radio.getInfo(ctx.author.id)
         if isinstance(ret, tuple):
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
@@ -199,6 +202,8 @@ class RadioCog(commands.Cog):
             )
             embed.set_thumbnail(url=track.icon_link)
             await ctx.send(embed=embed)
+        else:
+            await ctx.send(await getLocale("nothing-found", ctx.author.id))
 
     @commands.command()
     async def rinfo(self, ctx, radio_name):
@@ -206,6 +211,9 @@ class RadioCog(commands.Cog):
             radio = await radioService.getRadioById(radio_name)
         else:
             radio = await radioService.getRadioByName(radio_name, ctx.author.id)
+        if radio is None:
+            await ctx.send(await getLocale("nothing-found", ctx.author.id))
+            return
         if radio.owner == ctx.author.id or radio.is_shared or ctx.author.id in await radio.getEditors():
             owner = await self.bot.fetch_user(radio.owner)
             editors = await radio.getEditors()
@@ -420,6 +428,9 @@ class RadioCog(commands.Cog):
             radio = await radioService.getRadioById(radio_name)
         else:
             radio = await radioService.getRadioByName(radio_name, interaction.user.id)
+        if radio is None:
+            await interaction.response.send_message(await getLocale("nothing-found", interaction.user.id))
+            return
         ret = await radio.getInfo(interaction.user.id)
         if isinstance(ret, tuple):
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])

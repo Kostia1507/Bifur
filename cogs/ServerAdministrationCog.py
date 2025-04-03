@@ -95,8 +95,15 @@ class ServerAdministrationCog(commands.Cog):
         try:
             chnl = await ctx.guild.fetch_channel(channel.id)
             if chnl is not None:
-                pc = PendingCommand(chnl.id, 1, datetime.now().hour, None, "")
-                await pc.insert()
+                cmd = PendingCommand(chnl.id, 1, datetime.now().hour, None, "")
+                await cmd.insert()
+                embed = discord.Embed(title="AutoCommand", description=f"Command: {cmd.cmdType}\n"
+                                                                       f"Arguments: {cmd.args}\n"
+                                                                       f"All autocommands is similar to usual cmds.\n"
+                                                                       f"So if you need args, use it like any usual command in Bifur or read the docs\n"
+                                                                       f"Start hour (UTC): {cmd.startHour}\n"
+                                                                       f"Interval: {cmd.interval} hours\n")
+                await ctx.channel.send(embed=embed, view=AutoCmdView(self.bot, cmd))
                 await ctx.message.add_reaction('✅')
             else:
                 await ctx.message.add_reaction('❌')
@@ -108,7 +115,7 @@ class ServerAdministrationCog(commands.Cog):
     async def getcmds(self, ctx, channel: discord.TextChannel):
         cmds = await get_pending_commands_by_channel(channel.id)
         res = ""
-        if len(cmds) < 0:
+        if cmds is None or len(cmds) == 0:
             res = "List is empty. There is no auto-commands."
         else:
             for cmd in cmds:
