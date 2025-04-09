@@ -85,23 +85,29 @@ class Song:
             LogCog.logError(f'Помилка при спробі отримати інформацію {self.original_url}: {e}')
             return e
 
-    def download(self, filename):
+    async def download(self, filename):
         if self.is_live:
             return "I will not play a live video"
-        optionsDwnl = {
-            'format': 'bestaudio/best',
-            'keepvideo': False,
-            'outtmpl': filename,
-            'noplaylist': True,
-            'source_address': '0.0.0.0',
-            'nocheckcertificate': True
-        }
-        with YoutubeDL(optionsDwnl) as ydl:
-            try:
-                ydl.download([self.original_url])
-            except Exception as e:
-                LogCog.logError(f'Помилка при загрузці {filename}: {e}')
-                return e
+
+        def download_file():
+            options_dwnl = {
+                'format': 'bestaudio/best',
+                'keepvideo': False,
+                'outtmpl': filename,
+                'noplaylist': True,
+                'source_address': '0.0.0.0',
+                'nocheckcertificate': True
+            }
+            with YoutubeDL(options_dwnl) as ydl:
+                try:
+                    ydl.download([self.original_url])
+                    return True
+                except Exception as e:
+                    LogCog.logError(f'Помилка при загрузці {filename}: {e}')
+                    return e
+
+        res = await asyncio.to_thread(download_file)
+        return res
 
     async def updateInDB(self):
         if self.trackId is not None:

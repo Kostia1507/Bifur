@@ -289,7 +289,7 @@ class MusicCog(commands.Cog):
         if len(args) == 1:
             musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).remove(args[0])
             await ctx.message.add_reaction('✅')
-        else:
+        elif len(args) >= 2:
             musicService.getMusicPlayer(ctx.guild.id, ctx.channel.id).removeLine(args[0], args[1])
             await ctx.message.add_reaction('✅')
 

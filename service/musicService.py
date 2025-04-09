@@ -176,5 +176,5 @@ async def downloadVideo(url):
     t = (await searchByLink(url))[0]
     await t.updateFromWeb()
     filename = f'temp/{t.name}.mp3'
-    t.download(filename)
+    await t.download(filename)
     return filename

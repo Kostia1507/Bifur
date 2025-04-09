@@ -130,7 +130,8 @@ class RadioCog(commands.Cog):
 
     @commands.command(aliases=['fat'])
     async def forceaddtrack(self, ctx, radio_id, url):
-        song = Song(url, True)
+        song = Song(url, False)
+        await song.updateFromWeb()
         name, duration = song.name, song.duration
         retStatus = await radioService.forceCreateTrack(name, radio_id, url, ctx.author.id, duration)
         if retStatus:
@@ -182,7 +183,7 @@ class RadioCog(commands.Cog):
     @commands.command()
     async def delradio(self, ctx, radio_id: int):
         radio = await radioService.getRadioById(radio_id)
-        retStatus = await radio.delete()
+        retStatus = await radio.delete(ctx.author.id)
         if retStatus:
             await ctx.message.add_reaction('✅')
         else:

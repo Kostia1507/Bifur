@@ -181,10 +181,12 @@ async def on_message(message):
             LogCog.logInfo(f'{str(message.author)}:{text}', message.author.name)
             await bot.process_commands(message)
 
+
 async def start_app():
     await asyncio.gather(
         start_aiohttp_server(bot),
         bot.start(config.token, reconnect=True)
     )
+
 
 asyncio.run(start_app())

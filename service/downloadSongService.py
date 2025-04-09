@@ -48,13 +48,18 @@ class DownloadedSong:
             'source_address': '0.0.0.0',
             'nocheckcertificate': True
         }
-        with YoutubeDL(optionsDwnl) as ydl:
-            try:
-                ydl.download([self.original_url])
-                return filename
-            except Exception as e:
-                LogCog.logError(f'Помилка при загрузці {filename}: {e}')
-                return None
+
+        def download_file():
+            with YoutubeDL(optionsDwnl) as ydl:
+                try:
+                    ydl.download([self.original_url])
+                    return filename
+                except Exception as e:
+                    LogCog.logError(f'Помилка при загрузці {filename}: {e}')
+                    return None
+
+        res = await asyncio.to_thread(download_file)
+        return res
 
 
 async def get_file_by_url(url):
