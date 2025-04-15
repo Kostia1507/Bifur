@@ -89,7 +89,7 @@ class ServerAdministrationCog(commands.Cog):
         await autoReactionService.remove(ctx.channel.id)
         await ctx.message.add_reaction('✅')
 
-    @commands.command()
+    @commands.command(aliases=["addcmd"])
     @has_permissions(manage_guild=True)
     async def setcmd(self, ctx, channel: discord.TextChannel):
         try:
@@ -110,7 +110,7 @@ class ServerAdministrationCog(commands.Cog):
         except discord.errors.NotFound or discord.errors.DiscordServerError:
             await ctx.message.add_reaction('❌')
 
-    @commands.command()
+    @commands.command(aliases=["getcmd"])
     @has_permissions(manage_guild=True)
     async def getcmds(self, ctx, channel: discord.TextChannel):
         cmds = await get_pending_commands_by_channel(channel.id)

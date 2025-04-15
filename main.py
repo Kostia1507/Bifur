@@ -178,7 +178,10 @@ async def on_message(message):
                 args = args[2:]
                 message.content = bot.command_prefix + " ".join(args)
             cooldownService.setCooldown(message.author.id)
-            LogCog.logInfo(f'{str(message.author)}:{text}', message.author.name)
+            if message.guild is not None:
+                LogCog.logInfo(f'{str(message.author)}:{text}', message.author.name, f"{message.guild.name} - {message.channel.name}")
+            else:
+                LogCog.logInfo(f'{str(message.author)}:{text}', message.author.name, "DM")
             await bot.process_commands(message)
 
 

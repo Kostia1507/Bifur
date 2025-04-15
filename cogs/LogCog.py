@@ -20,19 +20,23 @@ colors = {
 
 class MyLog:
 
-    def __init__(self, log_type, author, content):
+    def __init__(self, log_type, author, content, channel = None):
         self.content = content
         self.logType = log_type
         self.author = author
+        self.channel = channel
 
     def prepareToSend(self):
         embed = Embed(description=str(datetime.now()) + ":" + self.content, colour=Colour.from_str(colors[self.logType]))
-        embed.set_footer(text=self.author)
+        if self.channel is not None:
+            embed.set_footer(text=self.author + "\n" + self.channel)
+        else:
+            embed.set_footer(text=self.author)
         return embed
 
 
-def logInfo(text, author):
-    log = MyLog("info", author, text)
+def logInfo(text, author, channel = None):
+    log = MyLog("info", author, text, channel)
     delayedLogs.append(log)
 
 

@@ -40,7 +40,7 @@ class ChatCog(commands.Cog):
         response = random.choice(getLocaleByLang('8ball', userLang))
         await ctx.send(f'{getLocaleByLang("8ball-answer", userLang)} {response}')
 
-    @commands.command()
+    @commands.command(aliases=["rand"])
     async def roll(self, ctx, *args):
         start, end = 0, 100
         if len(args) > 2:
@@ -54,14 +54,14 @@ class ChatCog(commands.Cog):
                 result.append(str(choice))
             result = " ".join(result)
             await ctx.send(
-                await getLocale('random-number', ctx.author.id).replace('%1', str(start)).replace('%2', str(end))
+                (await getLocale('random-number', ctx.author.id)).replace('%1', str(start)).replace('%2', str(end))
                 .replace('%3', result))
         else:
             if len(args) > 1:
                 start, end = min(int(args[0]), int(args[1])), max(int(args[0]), int(args[1]))
             elif len(args) > 0:
                 end = int(args[0])
-            await ctx.send(await getLocale('random-number', ctx.author.id).replace('%1', str(start)).replace('%2', str(end))
+            await ctx.send((await getLocale('random-number', ctx.author.id)).replace('%1', str(start)).replace('%2', str(end))
                            .replace('%3', str(random.randint(start, end))))
 
     @commands.command()

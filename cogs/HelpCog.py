@@ -133,9 +133,9 @@ class HelpCog(commands.Cog):
             currentString = ""
             for cmd in uahelp.helpUA[part]:
                 if len(cmd['aliases']) > 0:
-                    addString = f"Command: {cmd['name']}\nAlliases: {' '.join(cmd['aliases'])}\n--\n{cmd['description']}"
+                    addString = f"Команда: {cmd['name']}\nСиноніми: {' '.join(cmd['aliases'])}\n--\n{cmd['description']}"
                 else:
-                    addString = f"Command: {cmd['name']}\n{cmd['description']}"
+                    addString = f"Команда: {cmd['name']}\n{cmd['description']}"
                 if len(addString) + len(currentString) > 3500:
                     pages.append(currentString)
                     currentString = addString
@@ -149,9 +149,9 @@ class HelpCog(commands.Cog):
             currentString = ""
             for cmd in ruhelp.helpRU[part]:
                 if len(cmd['aliases']) > 0:
-                    addString = f"Command: {cmd['name']}\nAlliases: {' '.join(cmd['aliases'])}\n-- {cmd['description']}"
+                    addString = f"Команда: {cmd['name']}\nСинонимы: {' '.join(cmd['aliases'])}\n-- {cmd['description']}"
                 else:
-                    addString = f"Command: {cmd['name']}\n{cmd['description']}"
+                    addString = f"Команда: {cmd['name']}\n{cmd['description']}"
                 if len(addString) + len(currentString) > 3500:
                     pages.append(currentString)
                     currentString = addString
