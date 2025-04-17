@@ -13,8 +13,10 @@ class GifCreator:
         self.image_url = image_url
         self.max_framesForPat = 10
         self.max_framesForVibe = 151
+        self.max_framesForSlap = 151
         self.resolutionPat = (200, 200)
         self.resolutionVibe = (280, 190)
+        self.resolutionSlap = (270, 211)
         self.resolutionVibeResult = (320, 190)
         self.frames: list[IMG] = []
 
@@ -34,7 +36,7 @@ class GifCreator:
             canvas.paste(base.resize((round(width * self.resolutionPat[0]), round(height * self.resolutionPat[1]))),
                          (round(offsetX * self.resolutionPat[0]), round(offsetY * self.resolutionPat[1])))
 
-            pat_hand = Image.open(f'./assets/pat/pet{i}.gif').convert('RGBA').resize(self.resolutionPat)
+            pat_hand = Image.open(f'./assets/gifs/pat/pet{i}.gif').convert('RGBA').resize(self.resolutionPat)
 
             canvas.paste(pat_hand, mask=pat_hand)
             self.frames.append(canvas)
@@ -97,13 +99,49 @@ class GifCreator:
             canvas = Image.new('RGBA', size=self.resolutionVibeResult, color=(0, 0, 0, 0))
             if side == 'l':
                 canvas.paste(base, (40, 0))
-                vibeCat = Image.open(f'./assets/vibe/vibe{i}.gif').convert('RGBA')
+                vibeCat = Image.open(f'./assets/gifs/vibe/vibe{i}.gif').convert('RGBA')
                 canvas.paste(vibeCat, mask=vibeCat)
             elif side == 'r':
                 canvas.paste(base)
-                vibeCat = Image.open(f'./assets/vibe/vibe{i}.gif').convert('RGBA')
+                vibeCat = Image.open(f'./assets/gifs/vibe/vibe{i}.gif').convert('RGBA')
                 vibeCat = ImageOps.mirror(vibeCat)
                 canvas.paste(vibeCat, mask=vibeCat, box=(40, 0))
+            self.frames.append(canvas)
+
+        gif_image, save_kwargs = await self.__animate_gif(self.frames, 40)
+        buffer = BytesIO()
+        gif_image.save(buffer, **save_kwargs)
+        buffer.seek(0)
+        return buffer
+
+    async def create_slap_gif(self):
+        img_bytes = await self.__get_image_bytes()
+
+        user_image = Image.open(img_bytes).convert('RGBA').resize((75, 75))
+
+        for i in range(self.max_framesForSlap):
+            canvas = Image.new('RGBA', size=self.resolutionSlap, color=(0, 0, 0, 0))
+            slapCat = Image.open(f'./assets/gifs/slap/{i}.gif').convert('RGBA')
+            canvas.paste(slapCat, mask=slapCat)
+            canvas.paste(user_image, (18, 130))
+            self.frames.append(canvas)
+
+        gif_image, save_kwargs = await self.__animate_gif(self.frames, 40)
+        buffer = BytesIO()
+        gif_image.save(buffer, **save_kwargs)
+        buffer.seek(0)
+        return buffer
+
+    async def create_work_gif(self):
+        img_bytes = await self.__get_image_bytes()
+
+        user_image = Image.open(img_bytes).convert('RGBA').resize((140, 140))
+
+        for i in range(13):
+            canvas = Image.new('RGBA', size=(640, 640), color=(0, 0, 0, 0))
+            workGif = Image.open(f'./assets/gifs/work/{i}.gif').convert('RGBA')
+            canvas.paste(workGif, mask=workGif)
+            canvas.paste(user_image, (190, 135))
             self.frames.append(canvas)
 
         gif_image, save_kwargs = await self.__animate_gif(self.frames, 40)
