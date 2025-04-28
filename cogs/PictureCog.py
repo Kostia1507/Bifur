@@ -519,3 +519,12 @@ class PictureCog(commands.Cog):
         file = await pictureService.card(url, ctx.message.id)
         await ctx.send(file=discord.File(file))
         os.remove(file)
+
+    @commands.command()
+    async def quote(self, ctx, user: discord.Member, *args):
+        text =" ".join(args)
+        if len(text) > 200:
+            text = text[0:200]
+        file = await pictureService.quote(user.avatar.url, text, ctx.message.id)
+        await ctx.send(file=discord.File(file))
+        os.remove(file)

@@ -513,3 +513,62 @@ def penguin(message_id, text):
         draw.text((930-font.getsize(textArr[i])[0]/2+10, startY+i*size), textArr[i], fill='black', font=font, align="center")
     img.save(name_of_file)
     return name_of_file
+
+async def quote(image_url, text, message_id):
+    name_of_file = f'temp/{message_id}.jpg'
+    await download_image(image_url, name_of_file)
+
+    MAX_PIXELS_IN_ROW = 400
+    FONT_SIZE = 30
+
+    font = ImageFont.truetype("assets/arial.ttf", FONT_SIZE)
+    # font = ImageFont.load_default()
+
+    dummy_image = Image.new('RGB', (1, 1))
+    draw_dummy = ImageDraw.Draw(dummy_image)
+
+    # prepare text and measure height and width
+    res = []
+    currentRow = ""
+    maxRowLength = 0
+    maxRowHeight = 0
+
+    for word in text.split(" "):
+        trial_row = currentRow + (" " if currentRow else "") + word
+        bbox = draw_dummy.textbbox((0, 0), trial_row.strip(), font=font)
+        trial_width = bbox[2] - bbox[0]
+
+        if trial_width <= MAX_PIXELS_IN_ROW:
+            currentRow = trial_row
+        else:
+            if currentRow:
+                res.append(currentRow.strip())
+                bbox = draw_dummy.textbbox((0, 0), currentRow.strip(), font=font)
+                row_width = bbox[2] - bbox[0]
+                row_height = bbox[3] - bbox[0]
+                maxRowLength = max(maxRowLength, row_width)
+                maxRowHeight = max(maxRowHeight, row_height)
+            currentRow = word
+
+    if currentRow:
+        res.append(currentRow.strip())
+        bbox = draw_dummy.textbbox((0, 0), currentRow.strip(), font=font)
+        row_width = bbox[2] - bbox[0]
+        row_height = bbox[3] - bbox[0]
+        maxRowLength = max(maxRowLength, row_width)
+        maxRowHeight = max(maxRowHeight, row_height)
+
+    height = len(res)*maxRowHeight+30
+    width = height + maxRowLength + 20
+    img = Image.open(name_of_file).convert('RGB').resize((height, height), Image.BILINEAR)
+    canvas = Image.new('RGB', size=(width, height), color=(0, 0, 0))
+    canvas.paste(img, (0, 0))
+
+    draw = ImageDraw.Draw(canvas)
+    for rowI in range(len(res)):
+        draw.text((height+10, 15+rowI*maxRowHeight), res[rowI], font=font, align="center")
+
+    draw.line(((height+10, 10),(width - 10, 10)), fill='white', width=3)
+    draw.line(((height + 10, height-10), (width - 10, height-10)), fill='white', width=3)
+    canvas.save(name_of_file)
+    return name_of_file
