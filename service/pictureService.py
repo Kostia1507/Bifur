@@ -514,12 +514,14 @@ def penguin(message_id, text):
     img.save(name_of_file)
     return name_of_file
 
-async def quote(image_url, text, message_id):
+async def quote(image_url, text, message_id, name, color="#ffffff"):
     name_of_file = f'temp/{message_id}.jpg'
     await download_image(image_url, name_of_file)
 
     MAX_PIXELS_IN_ROW = 400
     FONT_SIZE = 30
+
+    print(color)
 
     font = ImageFont.truetype("assets/arial.ttf", FONT_SIZE)
     # font = ImageFont.load_default()
@@ -528,9 +530,13 @@ async def quote(image_url, text, message_id):
     draw_dummy = ImageDraw.Draw(dummy_image)
 
     # prepare text and measure height and width
+    bbox = draw_dummy.textbbox((0, 0),name, font=font)
+    nameHeight = bbox[3] - bbox[1]
+    nameWidth = bbox[2] - bbox[0]
+
     res = []
     currentRow = ""
-    maxRowLength = 0
+    maxRowLength = nameWidth
     maxRowHeight = 0
 
     for word in text.split(" "):
@@ -558,7 +564,7 @@ async def quote(image_url, text, message_id):
         maxRowLength = max(maxRowLength, row_width)
         maxRowHeight = max(maxRowHeight, row_height)
 
-    height = len(res)*maxRowHeight+30
+    height = len(res)*maxRowHeight + 35 + nameHeight
     width = height + maxRowLength + 20
     img = Image.open(name_of_file).convert('RGB').resize((height, height), Image.BILINEAR)
     canvas = Image.new('RGB', size=(width, height), color=(0, 0, 0))
@@ -566,9 +572,11 @@ async def quote(image_url, text, message_id):
 
     draw = ImageDraw.Draw(canvas)
     for rowI in range(len(res)):
-        draw.text((height+10, 15+rowI*maxRowHeight), res[rowI], font=font, align="center")
+        draw.text((height+10, 15+rowI*maxRowHeight), res[rowI], fill=color, font=font, align="center")
 
-    draw.line(((height+10, 10),(width - 10, 10)), fill='white', width=3)
-    draw.line(((height + 10, height-10), (width - 10, height-10)), fill='white', width=3)
+    draw.line(((height+10, 10),(width - 10, 10)), fill=color, width=3)
+    draw.line(((height + 10, height-13-nameHeight), (width - 10, height-13-nameHeight)), fill=color, width=3)
+
+    draw.text((height+((width-height)-nameWidth)//2, height-nameHeight-10), name, fill=color, font=font, align="center")
     canvas.save(name_of_file)
     return name_of_file

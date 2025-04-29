@@ -1,5 +1,6 @@
 import io
 import os
+import re
 
 import discord
 from discord.ext import commands
@@ -522,9 +523,13 @@ class PictureCog(commands.Cog):
 
     @commands.command()
     async def quote(self, ctx, user: discord.Member, *args):
+        color = "#ffffff"
+        if re.match(r"^#[0-9a-fA-F]{6}$", args[0]):
+            color = args[0]
+            args = args[1:]
         text =" ".join(args)
         if len(text) > 200:
             text = text[0:200]
-        file = await pictureService.quote(user.avatar.url, text, ctx.message.id)
+        file = await pictureService.quote(user.avatar.url, text, ctx.message.id, user.name, color)
         await ctx.send(file=discord.File(file))
         os.remove(file)
