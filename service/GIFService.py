@@ -150,6 +150,24 @@ class GifCreator:
         buffer.seek(0)
         return buffer
 
+    async def create_hammer_gif(self):
+        img_bytes = await self.__get_image_bytes()
+        user_image = Image.open(img_bytes).convert('RGBA').resize((64, 64))
+
+        for i in range(5):
+            user_image = user_image.resize((64, 64-i*2))
+            canvas = Image.new('RGBA', size=(128, 128), color=(0, 0, 0, 0))
+            hammerBack = Image.open(f'./assets/gifs/hammer/hammer{i}.gif').convert('RGBA')
+            canvas.paste(user_image, (64, 64+i*2))
+            canvas.paste(hammerBack, mask=hammerBack)
+            self.frames.append(canvas)
+
+        gif_image, save_kwargs = await self.__animate_gif(self.frames, 40)
+        buffer = BytesIO()
+        gif_image.save(buffer, **save_kwargs)
+        buffer.seek(0)
+        return buffer
+
     async def __animate_gif(self, images: list[IMG], durations: Union[int, list[int]] = 20) -> tuple[
         IMG, dict[str, Any]]:
         save_kwargs: dict[str, Any] = {}
