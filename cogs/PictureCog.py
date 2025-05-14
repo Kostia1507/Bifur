@@ -210,22 +210,58 @@ class PictureCog(commands.Cog):
         os.remove(file)
 
     @commands.command()
-    async def blur(self, ctx, url, power):
-        file = await pictureService.blur(url, power, ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def blur(self, ctx, *args):
+        url = None
+        power = None
+        if len(ctx.message.attachments) > 0 and len(args) > 0:
+            url = ctx.message.attachments[0].url
+            power = int(args[0])
+        elif len(ctx.message.mentions) > 0 and len(args) > 0:
+            url = ctx.message.mentions[0].avatar.url
+            power = int(args[0])
+        elif len(args) >= 2:
+            url = args[0]
+            power = int(args[1])
+        if url is not None:
+            file = await pictureService.blur(power, url, ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
-    async def spread(self, ctx, url, power):
-        file = await pictureService.spread(url, power, ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def spread(self, ctx, *args):
+        url = None
+        power = None
+        if len(ctx.message.attachments) > 0 and len(args) > 0:
+            url = ctx.message.attachments[0].url
+            power = int(args[0])
+        elif len(ctx.message.mentions) > 0 and len(args) > 0:
+            url = ctx.message.mentions[0].avatar.url
+            power = int(args[0])
+        elif len(args) >= 2:
+            url = args[0]
+            power = int(args[1])
+        if url is not None:
+            file = await pictureService.spread(power, url, ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
-    async def contrast(self, ctx, url, power):
-        file = await pictureService.contrast(url, power, ctx.message.id)
-        await ctx.send(file=discord.File(file))
-        os.remove(file)
+    async def contrast(self, ctx, *args):
+        url = None
+        power = None
+        if len(ctx.message.attachments) > 0 and len(args) > 0:
+            url = ctx.message.attachments[0].url
+            power = int(args[0])
+        elif len(ctx.message.mentions) > 0 and len(args) > 0:
+            url = ctx.message.mentions[0].avatar.url
+            power = int(args[0])
+        elif len(args) >= 2:
+            url = args[0]
+            power = int(args[1])
+        if url is not None:
+            file = await pictureService.contrast(power, url, ctx.message.id)
+            await ctx.send(file=discord.File(file))
+            os.remove(file)
 
     @commands.command()
     async def invers(self, ctx, *args):
