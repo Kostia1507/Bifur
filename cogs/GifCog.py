@@ -97,7 +97,7 @@ class GifCog(commands.Cog):
             except FileNotFoundError:
                 await ctx.send(await getLocale("file-not-found", ctx.author.id))
 
-    @commands.command(aliases=['bonk'])
+    @commands.command()
     async def hammer(self, ctx, *args):
         url = None
         if len(ctx.message.attachments) > 0:
@@ -111,6 +111,23 @@ class GifCog(commands.Cog):
                 hammer_buffer = await GifCreator(image_url=url).create_hammer_gif()
                 hammer_gif = discord.File(hammer_buffer, filename=f'temp/{ctx.message.id}hammer.gif')
                 await ctx.send(file=hammer_gif)
+            except FileNotFoundError:
+                await ctx.send(await getLocale("file-not-found", ctx.author.id))
+
+    @commands.command()
+    async def bonk(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            try:
+                bonk_buffer = await GifCreator(image_url=url).create_bonk_gif()
+                bonk_gif = discord.File(bonk_buffer, filename=f'temp/{ctx.message.id}bonk.gif')
+                await ctx.send(file=bonk_gif)
             except FileNotFoundError:
                 await ctx.send(await getLocale("file-not-found", ctx.author.id))
 

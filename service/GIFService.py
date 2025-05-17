@@ -168,6 +168,25 @@ class GifCreator:
         buffer.seek(0)
         return buffer
 
+    async def create_bonk_gif(self):
+        img_bytes = await self.__get_image_bytes()
+        user_image = Image.open(img_bytes).convert('RGBA').resize((64, 64))
+
+        height_resize = [0, 2, 8, 16, 16, 12, 8, 4, 0]
+        for i in range(9):
+            user_image = user_image.resize((64, 64-height_resize[i]))
+            canvas = Image.new('RGBA', size=(168, 128), color=(0, 0, 0, 0))
+            bonkBack = Image.open(f'./assets/gifs/bonk/{i}.png').convert('RGBA').resize((168, 128))
+            canvas.paste(user_image, (104, 64+height_resize[i]))
+            canvas.paste(bonkBack, mask=bonkBack)
+            self.frames.append(canvas)
+
+        gif_image, save_kwargs = await self.__animate_gif(self.frames, 30)
+        buffer = BytesIO()
+        gif_image.save(buffer, **save_kwargs)
+        buffer.seek(0)
+        return buffer
+
     async def __animate_gif(self, images: list[IMG], durations: Union[int, list[int]] = 20) -> tuple[
         IMG, dict[str, Any]]:
         save_kwargs: dict[str, Any] = {}
