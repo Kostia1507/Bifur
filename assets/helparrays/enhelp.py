@@ -177,6 +177,16 @@ helpEN = {
                 "description": "create GIF file with your picture. You can attach file to message instead of a link. >viber will place a cat on a right side"
             },
             {
+                "name": ">slap [url]",
+                "aliases": [],
+                "description": "create GIF file with your picture. You can attach file to message instead of a link."
+            },
+            {
+                "name": ">work [url]",
+                "aliases": [],
+                "description": "create GIF file with your picture. You can attach file to message instead of a link."
+            },
+            {
                 "name": ">poster [url] [color]",
                 "aliases": [],
                 "description": "Turns your picture into a poster. The color indicator controls the number of colors in the palette.\n"
