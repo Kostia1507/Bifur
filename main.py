@@ -153,6 +153,14 @@ async def on_message(message):
     # custom prefixes
     if message.channel.guild is not None:
         customPrefix = customPrefixService.getPrefix(message.channel.guild.id)
+
+        if message.content == "bifurprefix":
+            if customPrefix is not None:
+                await message.reply(f"This guild prefix: {customPrefix}")
+            else:
+                await message.reply(f"Default prefix: {config.prefix}")
+            return
+
         if customPrefix is not None:
             if text.startswith(customPrefix):
                 text = f'{config.prefix}{text[len(customPrefix):len(text)]}'

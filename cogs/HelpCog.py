@@ -1,3 +1,5 @@
+import os
+
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -5,6 +7,8 @@ from discord.ext import commands
 from assets.helparrays import enhelp, uahelp, ruhelp
 from service import localeService, pagedMessagesService
 from cogs import LogCog
+from service.ignoreService import ignoredChannels
+from utils.commandUtils import is_owner
 
 UAhelpPages = {}
 ENhelpPages = {}
@@ -174,3 +178,73 @@ class HelpCog(commands.Cog):
     @commands.command()
     async def github(self, ctx):
         await ctx.send("https://github.com/Kostia1507/Bifur")
+
+    async def send_debug_info(self, ctx, *args):
+        embed = discord.Embed(title="Debug info")
+        files = []
+        if "voices" in args:
+            voices = []
+            for voice in ctx.guild.voice_channels:
+                voices.append(voice.name)
+            if len(voices) > 0:
+                field_text = "\n".join(voices)
+                if len(field_text) <= 1024:
+                    embed.add_field(name="Voice channels", value="\n".join(voices), inline=False)
+                else:
+                    files.append("Voice channels:\n"+field_text)
+            else:
+                embed.add_field(name="Voice channels", value="I don't see any voice channels", inline=False)
+        if "text" in args:
+            text = []
+            for chnl in ctx.guild.text_channels:
+                if chnl.id in ignoredChannels:
+                    text.append(chnl.name + " IGNORED")
+                else:
+                    text.append(chnl.name)
+            if len(text) > 0:
+                field_text = "\n".join(text)
+                if len(field_text) <= 1024:
+                    embed.add_field(name="Text channels", value="\n".join(text), inline=False)
+                else:
+                    files.append("Text channels:\n"+field_text)
+            else:
+                embed.add_field(name="Text channels",
+                                value="I don't see any text channels. But how did you manage to ask me?", inline=False)
+        if "boosted" in args:
+            boosters = []
+            for user in ctx.guild.premium_subscribers:
+                boosters.append(user.display_name)
+            if len(boosters) > 0:
+                field_text = "\n".join(boosters)
+                if len(field_text) <= 1024:
+                    embed.add_field(name="Boost", value="\n".join(boosters), inline=False)
+                else:
+                    files.append("Server boosters:\n" + field_text)
+            else:
+                embed.add_field(name="Boost", value="Noone boost this server", inline=False)
+        if len(files) >0:
+            with open(f'{ctx.message.id}.txt', "w") as file:
+                file.write("\n\n".join(files))
+            with open(f'{ctx.message.id}.txt', "rb") as file:
+                if len(embed.fields) == 0:
+                    await ctx.send(file=discord.File(file, f'{ctx.message.id}.txt'))
+                else:
+                    await ctx.send(embed=embed, file=discord.File(file, f'{ctx.message.id}.txt'))
+            os.remove(f'{ctx.message.id}.txt')
+        else:
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.has_permissions(manage_messages=True)
+    async def debug(self, ctx, *args):
+        if len(args) == 0:
+            args = ["voices", "text", "boosted"]
+        await self.send_debug_info(ctx, *args)
+
+
+    @commands.command()
+    @commands.check(is_owner)
+    async def debuga(self, ctx, *args):
+        if len(args) == 0:
+            args = ["voices", "text"]
+        await self.send_debug_info(ctx, *args)

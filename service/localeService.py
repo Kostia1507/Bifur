@@ -61,11 +61,11 @@ async def setLang(user_id, lang):
             password=config.password,
             port=config.port
         )
-        locale = await conn.fetchrow("SELECT * FROM language WHERE user_id=%s", (user_id,))
+        locale = await conn.fetchrow("SELECT * FROM language WHERE user_id=$1", user_id)
         if locale is None:
-            await conn.execute("INSERT INTO language(user_id, language) VALUES (%s, %s);", (user_id, lang))
+            await conn.execute("INSERT INTO language(user_id, language) VALUES ($1, $2);", user_id, lang)
         else:
-            await conn.execute("UPDATE language SET language=(%s) WHERE user_id=(%s)", (lang, user_id))
+            await conn.execute("UPDATE language SET language=$1 WHERE user_id=$2", lang, user_id)
         await conn.close()
         return locales['lang-changed'][lang]
     else:

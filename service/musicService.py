@@ -155,11 +155,19 @@ async def searchFive(name):
     try:
         info = await asyncio.to_thread(extract_info)
         ret = []
+        ok = True
         for e in info:
+            if ok:
+                print(e)
+                ok = False
             if e.get('is_live', True):
                 continue
             t = Song(e['webpage_url'], False)
-            await asyncio.create_task(t.updateFromWeb())
+            t.duration = e["duration"]
+            t.name = e["title"]
+            t.icon_link = e['thumbnail']
+            t.stream_url = e['url']
+            # await asyncio.create_task(t.updateFromWeb())
             ret.append(t)
         return ret
     except Exception as e:

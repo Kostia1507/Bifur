@@ -47,6 +47,7 @@ class DropdownMusic(discord.ui.Select):
         self.bot = bot
 
     async def callback(self, interaction):
+        await interaction.response.defer(thinking=True)
         n = int(self.values[0])
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
@@ -54,8 +55,8 @@ class DropdownMusic(discord.ui.Select):
         musicService.addSong(searchQueue[interaction.user.id][n], interaction.channel.guild.id,
                              interaction.user.name, interaction.channel.id)
         await musicViewService.createPlayer(interaction, self.bot)
-        if not interaction.response.is_done():
-            await interaction.response.send_message('✅', ephemeral=True)
+        await interaction.followup.send('✅')
+
 
 
 async def connect_to_user_voice(ctx):

@@ -32,7 +32,7 @@ async def add(channel_id, emoji):
         password=config.password,
         port=config.port
     )
-    await conn.execute("INSERT INTO reactions(channel_id, emoji) VALUES (%s, %s);", (channel_id, emoji))
+    await conn.execute("INSERT INTO reactions(channel_id, emoji) VALUES ($1, $2);", channel_id, emoji)
     await conn.commit()
     await conn.close()
 
