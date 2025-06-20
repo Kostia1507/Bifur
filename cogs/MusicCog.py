@@ -1,5 +1,4 @@
 import asyncio
-import copy
 import os
 import traceback
 from datetime import datetime, timedelta
@@ -120,7 +119,7 @@ class MusicCog(commands.Cog):
                                     else:
                                         embed.set_footer(text=song.original_url)
                                     channel = await self.bot.fetch_channel(mp.channelId)
-                                    await channel.send(embed=embed)
+                                    await channel.send(embed=embed, delete_after=180)
                                     mp.skip(saveIfRepeating=False)
                                 else:
                                     file = await downloadSongService.get_file_by_url(song.original_url)
