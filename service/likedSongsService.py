@@ -55,7 +55,7 @@ async def likeSong(user_id, url):
         password=config.password,
         port=config.port
     )
-    check = await conn.fetch("SELECT * from liked_songs where link = %s and user_id = %s", (song.original_url, user_id))
+    check = await conn.fetch("SELECT * from liked_songs where link = $1 and user_id = $2", song.original_url, user_id)
     if check is not None and len(check) > 0:
         return False
     await conn.execute("INSERT INTO liked_songs(user_id, name, link, duration) VALUES ($1, $2, $3, $4);",

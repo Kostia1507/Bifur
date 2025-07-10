@@ -1,5 +1,4 @@
 import asyncio
-import copy
 import os
 import traceback
 from datetime import datetime, timedelta
@@ -47,6 +46,7 @@ class DropdownMusic(discord.ui.Select):
         self.bot = bot
 
     async def callback(self, interaction):
+        await interaction.response.defer(thinking=True)
         n = int(self.values[0])
         res = await connect_to_user_voiceInteraction(interaction)
         if res == 0:
@@ -54,8 +54,8 @@ class DropdownMusic(discord.ui.Select):
         musicService.addSong(searchQueue[interaction.user.id][n], interaction.channel.guild.id,
                              interaction.user.name, interaction.channel.id)
         await musicViewService.createPlayer(interaction, self.bot)
-        if not interaction.response.is_done():
-            await interaction.response.send_message('✅', ephemeral=True)
+        await interaction.followup.send('✅')
+
 
 
 async def connect_to_user_voice(ctx):
@@ -119,7 +119,7 @@ class MusicCog(commands.Cog):
                                     else:
                                         embed.set_footer(text=song.original_url)
                                     channel = await self.bot.fetch_channel(mp.channelId)
-                                    await channel.send(embed=embed)
+                                    await channel.send(embed=embed, delete_after=180)
                                     mp.skip(saveIfRepeating=False)
                                 else:
                                     file = await downloadSongService.get_file_by_url(song.original_url)
