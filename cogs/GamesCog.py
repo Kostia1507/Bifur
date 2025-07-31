@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from enum import Enum
 
@@ -6,10 +7,12 @@ from discord import app_commands
 from discord.ext import commands, tasks
 
 from discordModels.views.LobbyView import LobbyView
+from discordModels.views.RPSView import RPSView
 from discordModels.views.ReversiView import ReversiView
 from discordModels.views.TicTacToeView import TicTacToeView
 from discordModels.views.WordleView import WordleView
 from discordModels.views.connect4HistoryView import Connect4HistoryView
+from models.RPSGame import RPSGame, SignValue
 from models.ReversiGame import ReversiGame
 from models.TicTacToeGame import TicTacToeGame
 from models.WordleGame import WordleGame
@@ -101,6 +104,17 @@ class GamesCog(commands.Cog):
         game.messageId = msg.id
         game.channelId = msg.channel.id
         LogCog.logSystem(f'start reversi at {datetime.now()} with messageId {game.messageId}')
+
+    @commands.command()
+    async def rps(self, ctx, user: discord.User, *args):
+        game = RPSGame(players=[user.id, ctx.author.id], players_nicknames=[user.name, ctx.author.name])
+        if user.id == self.bot.user.id:
+           # User want to play against Bifur. Make Bifur choice
+            game.playersMoves[0] = random.choice([SignValue.ROCK, SignValue.PAPER, SignValue.SCISSORS])
+        msg = await ctx.send(content="Make your move", view=RPSView(self.bot, game))
+        game.messageId = msg.id
+        game.channelId = msg.channel.id
+        LogCog.logSystem(f'start rps at {datetime.now()} with messageId {game.messageId}')
 
     @commands.command(aliases=[])
     async def wordle(self, ctx, *args):

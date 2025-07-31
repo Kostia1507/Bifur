@@ -422,6 +422,11 @@ helpEN = {
                                "Thanks to the height and width parameters, you can create a variety of boards"
             },
             {
+                "name": ">rps [mention]",
+                "aliases": [],
+                "description": "Start a game of Rock-Paper-Scissors against mentioned player"
+            },
+            {
                 "name": ">reversi [mention]",
                 "aliases": ['>othello'],
                 "description": "Reversies are played on a board of 8x8 cells. Players take turns placing their pieces (disks)"
