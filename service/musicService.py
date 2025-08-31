@@ -19,7 +19,7 @@ settings = {
     'source_address': '0.0.0.0',
     'prefferedcodec': 'mp3',
     'live_from_start': False,
-    'playlist_items': '1:5',
+    'playlist_items': '1:20',
     'ignoreerrors': True,
 }
 players = {}

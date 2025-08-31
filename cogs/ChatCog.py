@@ -61,8 +61,9 @@ class ChatCog(commands.Cog):
                 start, end = min(int(args[0]), int(args[1])), max(int(args[0]), int(args[1]))
             elif len(args) > 0:
                 end = int(args[0])
-            await ctx.send((await getLocale('random-number', ctx.author.id)).replace('%1', str(start)).replace('%2', str(end))
-                           .replace('%3', str(random.randint(start, end))))
+            await ctx.send(
+                (await getLocale('random-number', ctx.author.id)).replace('%1', str(start)).replace('%2', str(end))
+                .replace('%3', str(random.randint(start, end))))
 
     @commands.command()
     async def randp(self, ctx):
@@ -250,4 +251,26 @@ class ChatCog(commands.Cog):
 
     @commands.command()
     async def vote(self, ctx):
-        await ctx.send(f"Vote for bot and get social credits!\n[top.gg]({config.topgg})")
+        social_credits = await socialCreditsService.get_user_credits(ctx.author.id)
+
+        class Layout(discord.ui.LayoutView):
+
+            container = discord.ui.Container(
+                discord.ui.TextDisplay(
+                    f"Vote for bot and get social credits!\nPremium users gain more points!",
+                ),
+                discord.ui.Separator(visible=True),
+                discord.ui.TextDisplay(
+                    f"[top.gg]({config.topgg})\n[Patreon]({config.patreon})",
+                ),
+                accent_colour=discord.Colour.dark_grey()
+            )
+
+            container2 = discord.ui.Container(
+                discord.ui.TextDisplay(
+                    f"Your social credits: {social_credits}",
+                ),
+                accent_colour=discord.Colour.dark_grey()
+            )
+
+        await ctx.send(view=Layout())

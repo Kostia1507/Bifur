@@ -1,12 +1,13 @@
 from enum import Enum
 
+
 class SignValue(Enum):
     ROCK = 0
     PAPER = 1
     SCISSORS = 2
 
-sign_text = ["Rock 🪨", "Paper 📰", "Scissors ✂️"]
 
+sign_text = ["Rock 🪨", "Paper 📰", "Scissors ✂️"]
 
 
 class RPSGame:
@@ -39,10 +40,8 @@ class RPSGame:
             return res + "Draw!"
         else:
             if (self.playersMoves[0] == SignValue.SCISSORS and self.playersMoves[1] == SignValue.PAPER or
-                self.playersMoves[0] == SignValue.PAPER and self.playersMoves[1] == SignValue.ROCK or
-                self.playersMoves[0] == SignValue.ROCK and self.playersMoves[1] == SignValue.SCISSORS):
+                    self.playersMoves[0] == SignValue.PAPER and self.playersMoves[1] == SignValue.ROCK or
+                    self.playersMoves[0] == SignValue.ROCK and self.playersMoves[1] == SignValue.SCISSORS):
                 return res + self.playersNicknames[0] + " won this game!"
             else:
                 return res + self.playersNicknames[1] + " won this game!"
-
-
