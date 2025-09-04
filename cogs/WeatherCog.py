@@ -19,11 +19,11 @@ class WeatherCog(commands.Cog):
         nameOfCity = " ".join(args)
         lat, lon, nameOfCity = await getCoordinates(nameOfCity)
         weather = await getWeather(lat, lon, nameOfCity, 2, 24, ctx.author.id)
-        await ctx.send(weather)
+        await ctx.send(view=weather)
 
     @commands.command()
     async def weatherd(self, ctx, *args):
         nameOfCity = " ".join(args)
         lat, lon, nameOfCity = await getCoordinates(nameOfCity)
         weather = await getWeather(lat, lon, nameOfCity, 1, 40, ctx.author.id)
-        await ctx.send(weather)
+        await ctx.send(view=weather)

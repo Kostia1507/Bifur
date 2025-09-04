@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import aiohttp
+import discord
 
 import config
 from cogs import LogCog
@@ -24,39 +25,70 @@ async def getCoordinates(city):
 # pass userId for getting locales
 async def getWeather(lat: str, lon: str, nameOfCity: str, interval, maxDT, userId):
     userLang = await getUserLang(userId)
-    async with aiohttp.ClientSession() as session:
+    async with (aiohttp.ClientSession() as session):
         async with session.get(f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}'
                                f'&lang={getLocaleByLang("lang", userLang)}&appid={config.weatherKey}') as response:
             if response.status == 200:
                 js = await response.json()
                 weather = js['weather']
                 main = js['main']
-                res = f'{getLocaleByLang("weather-in", userLang)} **{nameOfCity}**\n{getLocaleByLang("now", userLang)}: **' + \
+                title = f'{getLocaleByLang("weather-in", userLang)} **{nameOfCity}**\n{getLocaleByLang("now", userLang)}: **' + \
                       str(round(main['temp'] - 273.15, 1)) + '° **|' + weather[0]['main'] + '|'
         async with session.get('https://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat) + '&lon=' + str(
                 lon) + f'&lang={getLocaleByLang("lang", userLang)}&appid=' + config.weatherKey) as response:
             js = await response.json()
             listW = js['list']
             lastDay = -1
+
+            class WeatherLayout(discord.ui.LayoutView):
+
+                container = discord.ui.Container(
+                    discord.ui.TextDisplay(replaceLang(title, userLang)),
+                    discord.ui.Separator(visible=True),
+                    accent_colour=discord.Colour.dark_grey()
+                )
+
+
+            weather_layout = WeatherLayout()
+
+            res = ""
             for i in range(0, min(maxDT, len(listW)), interval):
                 if datetime.fromtimestamp(listW[i]['dt']).day != lastDay:
-                    res += '**\n' + str(datetime.fromtimestamp(listW[i]['dt']).strftime('%A')) + ' ' + \
-                           str(datetime.fromtimestamp(listW[i]['dt']).day) + '.' + str(
-                        datetime.fromtimestamp(listW[i]['dt']).month) + '**'
+
+                    # add current res
+                    if len(res) > 0:
+                        res = replaceLang("**"+res, userLang)
+                        weather_layout.container.add_item(discord.ui.TextDisplay(res))
+                        weather_layout.container.add_item(discord.ui.Separator(visible=True))
+                    # create new res with title
+                    res = str(datetime.fromtimestamp(listW[i]['dt']).strftime('%A')) + ' ' + \
+                              addLeadingZero(datetime.fromtimestamp(listW[i]['dt']).day) + '.' + \
+                              addLeadingZero(datetime.fromtimestamp(listW[i]['dt']).month) + '**'
                     lastDay = datetime.fromtimestamp(listW[i]['dt']).day
+                # just push new info to res
                 res += '\n' + str(datetime.fromtimestamp(listW[i]['dt']).hour) + \
                        ':00** ' + str(round(listW[i]['main']['temp'] - 273.15, 1)) + \
                        '°** |' + listW[i]['weather'][0]['main'] + '|(' + listW[i]['weather'][0]['description'] + ')'
 
-            res = res.replace('|Clouds|', f'{getLocaleByLang("clouds", userLang)}:cloud:')
-            res = res.replace('|Clear|', f'{getLocaleByLang("clear", userLang)}:sunny:')
-            res = res.replace('|Snow|', f'{getLocaleByLang("snow", userLang)}:snowflake:')
-            res = res.replace('|Rain|', f'{getLocaleByLang("rain", userLang)}:cloud_rain:')
-            res = res.replace('Monday', getLocaleByLang('monday', userLang))
-            res = res.replace('Tuesday', getLocaleByLang('tuesday', userLang))
-            res = res.replace('Wednesday', getLocaleByLang('wednesday', userLang))
-            res = res.replace('Thursday', getLocaleByLang('thursday', userLang))
-            res = res.replace('Friday', getLocaleByLang('friday', userLang))
-            res = res.replace('Saturday', getLocaleByLang('saturday', userLang))
-            res = res.replace('Sunday', getLocaleByLang('sunday', userLang))
-            return res
+            if len(res) > 0:
+                res = replaceLang("**"+res, userLang)
+                weather_layout.container.add_item(discord.ui.TextDisplay(res))
+            return weather_layout
+
+
+def replaceLang(res, userLang):
+    res = res.replace('|Clouds|', f'{getLocaleByLang("clouds", userLang)}:cloud:')
+    res = res.replace('|Clear|', f'{getLocaleByLang("clear", userLang)}:sunny:')
+    res = res.replace('|Snow|', f'{getLocaleByLang("snow", userLang)}:snowflake:')
+    res = res.replace('|Rain|', f'{getLocaleByLang("rain", userLang)}:cloud_rain:')
+    res = res.replace('Monday', getLocaleByLang('monday', userLang))
+    res = res.replace('Tuesday', getLocaleByLang('tuesday', userLang))
+    res = res.replace('Wednesday', getLocaleByLang('wednesday', userLang))
+    res = res.replace('Thursday', getLocaleByLang('thursday', userLang))
+    res = res.replace('Friday', getLocaleByLang('friday', userLang))
+    res = res.replace('Saturday', getLocaleByLang('saturday', userLang))
+    res = res.replace('Sunday', getLocaleByLang('sunday', userLang))
+    return res
+
+def addLeadingZero(number):
+    return f"0{number}" if number < 10 else number

@@ -206,12 +206,12 @@ class ServerAdministrationCog(commands.Cog):
                         nameOfCity = " ".join(cmd.args.split(" "))
                         lat, lon, nameOfCity = await getCoordinates(nameOfCity)
                         weather = await getWeather(lat, lon, nameOfCity, 2, 24, 0)
-                        await channel.send(weather)
+                        await channel.send(view=weather)
                     elif cmd.cmdType == 'weatherd':
                         nameOfCity = " ".join(cmd.args.split(" "))
                         lat, lon, nameOfCity = await getCoordinates(nameOfCity)
                         weather = await getWeather(lat, lon, nameOfCity, 1, 40, 0)
-                        await channel.send(weather)
+                        await channel.send(view=weather)
                     elif cmd.cmdType == 'say':
                         text = " ".join(cmd.args.split(" "))
                         if len(text) > 0:
