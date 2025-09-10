@@ -14,7 +14,8 @@ async def getCoordinates(city):
                 f'https://api.openweathermap.org/geo/1.0/direct?q={city}&limit=1&appid={config.weatherKey}') as response:
             if response.status == 200:
                 js = await response.json()
-                return js[0]['lat'], js[0]['lon'], js[0]['country'] + ':' + js[0]['name']
+                return js[0]['lat'], js[0]['lon'], \
+                    f"[{js[0]['name']}](https://www.google.com/maps?q={js[0]['lat']},{js[0]['lon']})"
             else:
                 LogCog.logError(f'HTTP STATUS: {response.status} on getCoordinates() for {city}')
 
@@ -33,7 +34,7 @@ async def getWeather(lat: str, lon: str, nameOfCity: str, interval, maxDT, userI
                 weather = js['weather']
                 main = js['main']
                 title = f'{getLocaleByLang("weather-in", userLang)} **{nameOfCity}**\n{getLocaleByLang("now", userLang)}: **' + \
-                      str(round(main['temp'] - 273.15, 1)) + '° **|' + weather[0]['main'] + '|'
+                        str(round(main['temp'] - 273.15, 1)) + '° **|' + weather[0]['main'] + '|'
         async with session.get('https://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat) + '&lon=' + str(
                 lon) + f'&lang={getLocaleByLang("lang", userLang)}&appid=' + config.weatherKey) as response:
             js = await response.json()
@@ -48,7 +49,6 @@ async def getWeather(lat: str, lon: str, nameOfCity: str, interval, maxDT, userI
                     accent_colour=discord.Colour.dark_grey()
                 )
 
-
             weather_layout = WeatherLayout()
 
             res = ""
@@ -57,13 +57,13 @@ async def getWeather(lat: str, lon: str, nameOfCity: str, interval, maxDT, userI
 
                     # add current res
                     if len(res) > 0:
-                        res = replaceLang("**"+res, userLang)
+                        res = replaceLang("**" + res, userLang)
                         weather_layout.container.add_item(discord.ui.TextDisplay(res))
                         weather_layout.container.add_item(discord.ui.Separator(visible=True))
                     # create new res with title
                     res = str(datetime.fromtimestamp(listW[i]['dt']).strftime('%A')) + ' ' + \
-                              addLeadingZero(datetime.fromtimestamp(listW[i]['dt']).day) + '.' + \
-                              addLeadingZero(datetime.fromtimestamp(listW[i]['dt']).month) + '**'
+                        addLeadingZero(datetime.fromtimestamp(listW[i]['dt']).day) + '.' + \
+                        addLeadingZero(datetime.fromtimestamp(listW[i]['dt']).month) + '**'
                     lastDay = datetime.fromtimestamp(listW[i]['dt']).day
                 # just push new info to res
                 res += '\n' + str(datetime.fromtimestamp(listW[i]['dt']).hour) + \
@@ -71,7 +71,7 @@ async def getWeather(lat: str, lon: str, nameOfCity: str, interval, maxDT, userI
                        '°** |' + listW[i]['weather'][0]['main'] + '|(' + listW[i]['weather'][0]['description'] + ')'
 
             if len(res) > 0:
-                res = replaceLang("**"+res, userLang)
+                res = replaceLang("**" + res, userLang)
                 weather_layout.container.add_item(discord.ui.TextDisplay(res))
             return weather_layout
 
@@ -90,5 +90,6 @@ def replaceLang(res, userLang):
     res = res.replace('Sunday', getLocaleByLang('sunday', userLang))
     return res
 
+
 def addLeadingZero(number):
-    return f"0{number}" if number < 10 else number
+    return f"0{number}" if number < 10 else str(number)

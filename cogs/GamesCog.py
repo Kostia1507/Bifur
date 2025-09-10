@@ -109,7 +109,7 @@ class GamesCog(commands.Cog):
     async def rps(self, ctx, user: discord.User, *args):
         game = RPSGame(players=[user.id, ctx.author.id], players_nicknames=[user.name, ctx.author.name])
         if user.id == self.bot.user.id:
-           # User want to play against Bifur. Make Bifur choice
+            # User want to play against Bifur. Make Bifur choice
             game.playersMoves[0] = random.choice([SignValue.ROCK, SignValue.PAPER, SignValue.SCISSORS])
         msg = await ctx.send(content="Make your move", view=RPSView(self.bot, game))
         game.messageId = msg.id
