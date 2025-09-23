@@ -450,20 +450,22 @@ helpEN = {
             {
                 "name": ">calc [expression]",
                 "aliases": [],
-                "description": "Solves a mathematical expression" +
-                               "Example: >calc 5 + 5 * 2 or >calc 8gcd12" +
+                "description": "Solves a mathematical expression\n" +
+                               "Example: >calc 5 + 5 * 2 or >calc 8gcd12\n" +
                                "If you write an expression without extra text, the bot will solve it without a command" +
-                               "Use the following notations:" +
-                               "+ adding" +
-                               "- subtraction" +
-                               "* multiplication" +
-                               "\\ division" +
-                               "% remainder from division" +
-                               "^ degree" +
-                               "n! - the factorial of the number n" +
-                               "A few features are also available" +
-                               "a gcd b is the greatest common divisor of numbers" +
-                               "a lcd b is the least common multiple"
+                               "Use the following notations:\n" +
+                               "+ adding\n" +
+                               "- subtraction\n" +
+                               "* multiplication\n" +
+                               "\\ division\n" +
+                               "% remainder from division\n" +
+                               "^ degree\n" +
+                               "n! - the factorial of the number n\n" +
+                               "A few features are also available\n" +
+                               "a gcd b is the greatest common divisor of numbers\n" +
+                               "a lcd b is the least common multiple\n"
+                               "a log b - the logarithm of the number b with base a\n"
+                               "ln a - is the natural logarithm of the number a"
             },
             {
                 "name": ">avg [expression],[expression]",

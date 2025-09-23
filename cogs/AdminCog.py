@@ -111,7 +111,7 @@ class AdminCog(commands.Cog):
             embed.set_image(url=guild.icon.url)
         await ctx.send(embed=embed, view=pagedMsg.view)
 
-    @commands.command(alliases=['listofallcommands', 'listallcommands'])
+    @commands.command(aliases=['listofallcommands', 'listallcommands'])
     @commands.check(commandUtils.is_owner)
     async def listallcmds(self, ctx):
         text = ""
@@ -211,11 +211,6 @@ class AdminCog(commands.Cog):
     async def sync(self, ctx):
         count = len(await self.bot.tree.sync())
         await ctx.send(f'Synced {count} commands')
-
-    @commands.command()
-    async def error(self, ctx):
-        res = 1/0
-        await ctx.send(res)
 
     @commands.command()
     @commands.check(commandUtils.is_owner)

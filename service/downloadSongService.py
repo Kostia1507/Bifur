@@ -9,7 +9,7 @@ from cogs import LogCog
 filesArr = {}
 
 
-def extract_video_id(url: str) -> str:
+def extract_video_id(url: str) -> str | None:
     parsed_url = urlparse(url)
 
     # Якщо стандартний формат URL (з параметром 'v')

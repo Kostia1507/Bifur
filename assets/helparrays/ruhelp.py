@@ -453,7 +453,6 @@ helpRU = {
                 "aliases": [],
                 "description": "Solves a mathematical expression\n" +
                                "Example: >calc 5 + 5 * 2 or >calc 8gcd12\n" +
-                               "If you write an expression without extra text, the bot will solve it without a command\n" +
                                "Используйте следующие обозначения:\n" +
                                "+ сложение\n" +
                                "- вычитание\n" +
@@ -464,7 +463,9 @@ helpRU = {
                                "n! - факториал числа n\n" +
                                "Також доступно несколько функций\n" +
                                "a gcd b это наибольший общий делитель чисел\n" +
-                               "a lcd b является наименьшим общим кратным"
+                               "a lcd b является наименьшим общим кратным\n"
+                               "a log b - логарифм числа b с основой a\n"
+                               "ln a - натуральный логарифм числа a"
             },
             {
                 "name": ">avg [example],[example]",

@@ -1,6 +1,6 @@
-# Список всіх операцій, та їх пріоритет
 import math
 
+# Список всіх операцій, та їх пріоритет
 config = {
     '(': 0,
     ')': 0,
@@ -13,6 +13,8 @@ config = {
     's': 2,  # SIN
     'c': 2,  # COS
     't': 2,  # TAN
+    'L': 2,  # LOG
+    'N': 2,  # LN
     'p': 2,  # Eiler
     '*': 3,
     '/': 3,
@@ -52,6 +54,8 @@ def validate(expression):
     expression = expression.replace('tg', 't')
     expression = expression.replace('tan', 't')
     expression = expression.replace('phi', 'p')
+    expression = expression.replace('log', 'L')
+    expression = expression.replace('ln', 'N')
     for constant in constants.keys():
         expression = expression.replace(constant, str(constants[constant]))
     bracketLoop = 0
@@ -115,6 +119,8 @@ def calculateRPN(expression):
         'l': lambda x, y: lcd(x, y),
         'a': lambda x, y: max(x, y),
         'i': lambda x, y: min(x, y),
+        'L': lambda x, y: math.log(y, x),
+        'N': lambda x: math.log(x),
         's': lambda x: math.sin(x),
         'c': lambda x: math.cos(x),
         't': lambda x: math.tan(x),
@@ -124,7 +130,7 @@ def calculateRPN(expression):
     }
     stack = []
 
-    unary = ['~', '!', 's', 'c', 't', 'p']
+    unary = ['~', '!', 's', 'c', 't', 'p', 'N']
 
     for token in expression.split():
         if token.replace('.', '').isdigit():
@@ -182,9 +188,8 @@ def FactTree(n):
 
 
 def euler_phi(n):
-    result = n  # Початкове значення - n
+    result = n
 
-    # Знаходимо прості множники числа n
     i = 2
     while i * i <= n:
         if n % i == 0:
@@ -193,7 +198,6 @@ def euler_phi(n):
             result *= (1.0 - (1.0 / i))
         i += 1
 
-    # Якщо n є простим числом більшим за 1
     if n > 1:
         result *= (1.0 - (1.0 / n))
 

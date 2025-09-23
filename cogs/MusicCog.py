@@ -168,12 +168,14 @@ class MusicCog(commands.Cog):
         loopArr = list(downloadSongService.filesArr.keys())
         for url in loopArr:
             if downloadSongService.filesArr[url].download_time + timedelta(hours=config.delete_songs_after_hours) < datetime.now():
-                try:
-                    os.remove(downloadSongService.filesArr[url].filename)
+                if os.path.exists(downloadSongService.filesArr[url].filename):
+                    try:
+                        os.remove(downloadSongService.filesArr[url].filename)
+                        del downloadSongService.filesArr[url]
+                    except PermissionError as e:
+                        LogCog.logError(f'{downloadSongService.filesArr[url].filename} cant delete cause {str(e)}')
+                else:
                     del downloadSongService.filesArr[url]
-                except (FileNotFoundError, PermissionError) as e:
-                    LogCog.logError(f'{downloadSongService.filesArr[url].filename} cant delete cause {str(e)}')
-
 
     # need to be tested
     # this function must return bot to voice channel if he was disconnected not by user
