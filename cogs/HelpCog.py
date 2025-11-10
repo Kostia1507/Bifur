@@ -58,9 +58,7 @@ class DropdownEN(discord.ui.Select):
     async def callback(self, interaction):
         user_selected = self.values[0]
         pagedMsg = pagedMessagesService.setPagedMessage(self.bot, user_selected, ENhelpPages[user_selected])
-        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        await interaction.response.send_message(embed=embed, view=pagedMsg.view, ephemeral=True)
+        await interaction.response.send_message(view=pagedMsg.view, ephemeral=True)
 
 
 class DropdownUA(discord.ui.Select):
@@ -75,9 +73,7 @@ class DropdownUA(discord.ui.Select):
     async def callback(self, interaction):
         user_selected = self.values[0]
         pagedMsg = pagedMessagesService.setPagedMessage(self.bot, user_selected, UAhelpPages[user_selected])
-        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        await interaction.response.send_message(embed=embed, view=pagedMsg.view, ephemeral=True)
+        await interaction.response.send_message(view=pagedMsg.view, ephemeral=True)
 
 
 class DropdownRU(discord.ui.Select):
@@ -92,9 +88,7 @@ class DropdownRU(discord.ui.Select):
     async def callback(self, interaction):
         user_selected = self.values[0]
         pagedMsg = pagedMessagesService.setPagedMessage(self.bot, user_selected, RUhelpPages[user_selected])
-        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        await interaction.response.send_message(embed=embed, view=pagedMsg.view, ephemeral=True)
+        await interaction.response.send_message(view=pagedMsg.view, ephemeral=True)
 
 
 class HelpView(discord.ui.View):

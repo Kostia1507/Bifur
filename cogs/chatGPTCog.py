@@ -54,18 +54,10 @@ class ChatGPTCog(commands.Cog):
             locale = await localeService.getUserLang(ctx.author.id)
             if locale == "en":
                 pagedMsg = pagedMessagesService.setPagedMessage(self.bot, "Communication", ENhelpPages["Communication"])
-                embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-                embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
             elif locale == "ua":
                 pagedMsg = pagedMessagesService.setPagedMessage(self.bot, "Спілкування", UAhelpPages["Спілкування"])
-                embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-                embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
             elif locale == "ru":
                 pagedMsg = pagedMessagesService.setPagedMessage(self.bot, "Общение", RUhelpPages["Общение"])
-                embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-                embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
             else:
                 pagedMsg = pagedMessagesService.setPagedMessage(self.bot, "Communication", ENhelpPages["Communication"])
-                embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-                embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-            await ctx.send(embed=embed, view=pagedMsg.view)
+            await ctx.send(view=pagedMsg.view)

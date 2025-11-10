@@ -87,9 +87,7 @@ class AdminCog(commands.Cog):
         for guild in self.bot.guilds:
             res += f'{guild.name} : {guild.id}\n'
         pagedMsg = pagedMessagesService.initPagedMessage(self.bot, "All guilds", res)
-        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        await ctx.send(embed=embed, view=pagedMsg.view)
+        await ctx.send(view=pagedMsg.view)
 
     @commands.command()
     @commands.check(commandUtils.is_owner)
@@ -102,14 +100,10 @@ class AdminCog(commands.Cog):
                   f'Emojis {len(guild.emojis)}/{guild.emoji_limit}\n' \
                   f'Stickers {len(guild.stickers)}/{guild.sticker_limit}\n' \
                   f'Owner: {guild.owner.name}\n'
-
         pagedMsg = pagedMessagesService.initPagedMessage(self.bot, guild.name, message)
-        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
         if guild.icon is not None:
-            pagedMsg.imageUrl = guild.icon.url
-            embed.set_image(url=guild.icon.url)
-        await ctx.send(embed=embed, view=pagedMsg.view)
+            pagedMsg.add_image(guild.icon.url)
+        await ctx.send(view=pagedMsg.view)
 
     @commands.command(aliases=['listofallcommands', 'listallcommands'])
     @commands.check(commandUtils.is_owner)
@@ -119,9 +113,7 @@ class AdminCog(commands.Cog):
             text += f"{command}\n"
 
         pagedMsg = pagedMessagesService.initPagedMessage(self.bot, "All commands", text)
-        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        await ctx.send(embed=embed, view=pagedMsg.view)
+        await ctx.send(view=pagedMsg.view)
 
     @commands.command()
     @commands.check(commandUtils.is_owner)
@@ -145,9 +137,7 @@ class AdminCog(commands.Cog):
             output += str(row) + "\n"
 
         pagedMsg = pagedMessagesService.initPagedMessage(self.bot, "SQL Request", output)
-        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        await ctx.send(embed=embed, view=pagedMsg.view)
+        await ctx.send(view=pagedMsg.view)
 
     @commands.command()
     @commands.check(commandUtils.is_owner)
@@ -224,9 +214,7 @@ class AdminCog(commands.Cog):
             if len(res) == 0:
                 res = "There is no files"
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, "Temp files", res)
-            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-            await ctx.send(embed=embed, view=pagedMsg.view)
+            await ctx.send(view=pagedMsg.view)
         except FileNotFoundError:
             LogCog.logError(f"Папка temp не знайдена.")
         except PermissionError:

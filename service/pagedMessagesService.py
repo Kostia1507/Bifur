@@ -1,14 +1,12 @@
 from datetime import datetime
 
-from discordModels.views.PagedMessageView import PagedMessageView
+from discordModels.views.PagedMessageLayout import PagedMessageLayout
 
 '''
 Example of creating PagedMessage
 
 pagedMsg = pagedMessagesService.initPagedMessage(self.bot, title, description)
-            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-            await ctx.send(embed=embed, view=pagedMsg.view)
+            await ctx.send(view=pagedMsg.view)
             
 Description will be split to pages by \n
 '''
@@ -18,6 +16,7 @@ def initPagedMessage(bot, title, description):
     pagedMessage = PagedMessage(bot)
     pagedMessage.title = title
     pagedMessage.initPages(description)
+    pagedMessage.view.prepareView()
     return pagedMessage
 
 
@@ -25,6 +24,7 @@ def setPagedMessage(bot, title, pages):
     pagedMessage = PagedMessage(bot)
     pagedMessage.title = title
     pagedMessage.pages = pages
+    pagedMessage.view.prepareView()
     return pagedMessage
 
 
@@ -39,7 +39,7 @@ class PagedMessage:
         self.bot = bot
         self.currentPage = 0
         self.lastIterated = datetime.utcnow().hour
-        self.view = PagedMessageView(self)
+        self.view = PagedMessageLayout(self)
 
     def getPage(self, n):
         self.lastIterated = datetime.utcnow().hour
@@ -72,3 +72,7 @@ class PagedMessage:
 
             if current_paragraph:
                 self.pages.append(current_paragraph)
+
+    def add_image(self, image_url):
+        self.imageUrl = image_url
+        self.view.prepareView()

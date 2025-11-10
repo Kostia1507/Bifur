@@ -239,9 +239,7 @@ class MusicCog(commands.Cog):
         if mp is not None:
             ret = await mp.formatList(ctx.author.id)
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
-            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-            await ctx.send(embed=embed, view=pagedMsg.view)
+            await ctx.send(view=pagedMsg.view)
 
     @commands.command()
     async def history(self, ctx):
@@ -249,9 +247,7 @@ class MusicCog(commands.Cog):
         if mp is not None:
             ret = await mp.formatHistory(ctx.author.id)
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, "History", ret)
-            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-            await ctx.send(embed=embed, view=pagedMsg.view)
+            await ctx.send(view=pagedMsg.view)
 
     @commands.command()
     @commands.check(commandUtils.is_in_vc)
@@ -471,9 +467,7 @@ class MusicCog(commands.Cog):
         for song in songs:
             ret += f'{song.trackId} - {song.name}\n'
         pagedMsg = pagedMessagesService.initPagedMessage(self.bot, await getLocale('favourite', ctx.author.id), ret)
-        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        await ctx.send(embed=embed, view=pagedMsg.view)
+        await ctx.send(view=pagedMsg.view)
 
     @commands.command()
     async def linfo(self, ctx, track_id: int):
@@ -543,9 +537,7 @@ class MusicCog(commands.Cog):
         if mp is not None:
             ret = await mp.formatList(interaction.user.id)
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
-            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-            await interaction.response.send_message(embed=embed, view=pagedMsg.view)
+            await interaction.response.send_message(view=pagedMsg.view)
 
     @app_commands.command(name="shuffle", description="Shuffle songs in queue")
     async def shuffleSlash(self, interaction: discord.Interaction):

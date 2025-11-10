@@ -90,9 +90,7 @@ class RadioCog(commands.Cog):
             for radio in radios:
                 res += f'\nID: {radio.radio_id} -- {radio.name}'
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, title, res)
-            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-            await ctx.send(embed=embed, view=pagedMsg.view)
+            await ctx.send(view=pagedMsg.view)
 
     @commands.command(aliases=["rlist", "rl"])
     async def radiolist(self, ctx, radio_name):
@@ -106,9 +104,7 @@ class RadioCog(commands.Cog):
         ret = await radio.getInfo(ctx.author.id)
         if isinstance(ret, tuple):
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
-            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-            await ctx.send(embed=embed, view=pagedMsg.view)
+            await ctx.send(view=pagedMsg.view)
         else:
             await ctx.send(ret)
 
@@ -176,9 +172,7 @@ class RadioCog(commands.Cog):
         for radio in radios:
             ret += f'ID: {radio.radio_id} -- {radio.name}\n'
         pagedMsg = pagedMessagesService.initPagedMessage(self.bot, await getLocale("shared-list", ctx.author.id), ret)
-        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        await ctx.send(embed=embed, view=pagedMsg.view)
+        await ctx.send(view=pagedMsg.view)
 
     @commands.command()
     async def delradio(self, ctx, radio_id: int):
@@ -407,9 +401,7 @@ class RadioCog(commands.Cog):
             for radio in radios:
                 res += f'\nID: {radio.radio_id} -- {radio.name}'
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, title, res)
-            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-            await interaction.response.send_message(embed=embed, view=pagedMsg.view)
+            await interaction.response.send_message(view=pagedMsg.view)
 
     @app_commands.command(name="allradios", description="Show all shared playlists")
     async def allradiosSlash(self, interaction: discord.Interaction):
@@ -418,9 +410,7 @@ class RadioCog(commands.Cog):
         for radio in radios:
             ret += f'ID: {radio[0]} -- {radio[1]}\n'
         pagedMsg = pagedMessagesService.initPagedMessage(self.bot, await getLocale("shared-list", interaction.user.id), ret)
-        embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-        embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-        await interaction.response.send_message(embed=embed, view=pagedMsg.view)
+        await interaction.response.send_message(view=pagedMsg.view)
 
     @app_commands.command(name="radiolist", description="Show tracks in playlist")
     @app_commands.describe(radio_name="playlist name or ID")
@@ -435,8 +425,6 @@ class RadioCog(commands.Cog):
         ret = await radio.getInfo(interaction.user.id)
         if isinstance(ret, tuple):
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, ret[0], ret[1])
-            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-            await interaction.response.send_message(embed=embed, view=pagedMsg.view)
+            await interaction.response.send_message(view=pagedMsg.view)
         else:
             await interaction.response.send_message(ret)

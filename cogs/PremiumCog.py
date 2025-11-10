@@ -55,6 +55,4 @@ class PremiumCog(commands.Cog):
                 except discord.errors.NotFound:
                     res += "Discord NotFound\n"
             pagedMsg = pagedMessagesService.initPagedMessage(self.bot, "Premium users", res)
-            embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-            embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-            await ctx.send(embed=embed, view=pagedMsg.view)
+            await ctx.send(view=pagedMsg.view)

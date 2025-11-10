@@ -51,8 +51,7 @@ class MusicPlayer:
             if self.repeating != RepeatType.NOT_REPEATING:
                 if self.playing is not None:
                     return self.playing
-            else:
-                return None
+            return None
         # manage repeating modes
         if self.repeating == RepeatType.REPEAT_ONE and self.playing is not None:
             t = self.playing
