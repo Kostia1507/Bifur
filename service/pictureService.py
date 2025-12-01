@@ -466,7 +466,12 @@ async def searchPhoto(query):
             if response.status == 200:
                 res = await response.json()
                 if len(res['photos']) > 0:
-                    return random.choice(res['photos'])
+                    ret = []
+                    for i in range(0, min(5, len(res['photos']))):
+                        add = random.choice(res['photos'])
+                        ret.append(add)
+                        res['photos'].remove(add)
+                    return ret
                 else:
                     return None
 

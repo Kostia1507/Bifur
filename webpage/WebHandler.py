@@ -54,7 +54,8 @@ async def handle_vote(request):
         body = await request.json()
         user = body["user"]
         LogCog.logSystem(f"User voted for Bifur {user}")
-        value = config.social_credits_for_vote*2 if premiumService.is_premium(int(user)) else config.social_credits_for_vote
+        value = config.social_credits_for_vote * 2 if premiumService.is_premium(
+            int(user)) else config.social_credits_for_vote
         await socialCreditsService.updateCounter(user, value)
         return web.Response(status=200, text="Success! Thanks for voting!")
     except json.decoder.JSONDecodeError as error:

@@ -35,7 +35,7 @@ class MyLog:
         return embed
 
 
-def logInfo(text, author, channel = None):
+def logInfo(text, author, channel=None):
     log = MyLog("info", author, text, channel)
     delayedLogs.append(log)
 

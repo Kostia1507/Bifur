@@ -35,12 +35,21 @@ class PictureCog(commands.Cog):
     async def imgsearch(self, ctx, *args):
         ret = await pictureService.searchPhoto(" ".join(args))
         if ret is not None:
-            embed = discord.Embed(
-                title=" ".join(args)
-            )
-            embed.set_image(url=ret['src']['large'])
-            embed.set_author(url=ret['photographer_url'], name=ret['photographer'])
-            await ctx.send(embed=embed)
+            media = []
+            for item in ret:
+                media.append(discord.MediaGalleryItem(media=item['src']['large'],
+                                                      description=f"[{item['photographer']}]({item['photographer_url']})"))
+
+            class PexelsLayout(discord.ui.LayoutView):
+
+                container = discord.ui.Container(
+                    discord.ui.TextDisplay(f"## {" ".join(args)}"),
+                    discord.ui.Separator(visible=True),
+                    discord.ui.MediaGallery(*media),
+                    discord.ui.TextDisplay(f"-# Photos provided by [Pexels](https://www.pexels.com/)"),
+                )
+
+            await ctx.send(view=PexelsLayout())
         else:
             await ctx.send(await getLocale('nothing-found', ctx.author.id))
 
@@ -523,7 +532,6 @@ class PictureCog(commands.Cog):
         else:
             await ctx.send(await getLocale("file-not-found", ctx.author.id))
 
-
     @commands.command()
     async def signtop(self, ctx, *args):
         text = " ".join(args)
@@ -540,8 +548,6 @@ class PictureCog(commands.Cog):
             file = await pictureService.sign(text, url, "top", ctx.message.id)
             await ctx.send(file=discord.File(file))
             os.remove(file)
-
-
 
     @commands.command()
     async def card(self, ctx, *args):
@@ -563,7 +569,7 @@ class PictureCog(commands.Cog):
         if re.match(r"^#[0-9a-fA-F]{6}$", args[0]):
             color = args[0]
             args = args[1:]
-        text =" ".join(args)
+        text = " ".join(args)
         if len(text) > 200:
             text = text[0:200]
         file = await pictureService.quote(user.avatar.url, text, ctx.message.id, user.name, color)
