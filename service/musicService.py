@@ -112,6 +112,8 @@ async def searchByLink(name):
 
     try:
         info = await asyncio.to_thread(extract_info)
+        if info is None:
+            return None
         if "entries" in info:
             entries = info['entries']
             ret = []

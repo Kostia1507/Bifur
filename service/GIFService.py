@@ -187,6 +187,44 @@ class GifCreator:
         buffer.seek(0)
         return buffer
 
+    async def create_stick_gif(self, text):
+        img_bytes = await self.__get_image_bytes()
+        user_image = Image.open(img_bytes).convert('RGBA').resize((240, 240))
+
+        # prepare text and measure height and width
+        dummy_image = Image.new('RGB', (1, 1))
+        draw_dummy = ImageDraw.Draw(dummy_image)
+        font_size = 50
+        font = ImageFont.truetype("assets/arial.ttf", font_size)
+        # font = ImageFont.load_default()
+
+        bbox = draw_dummy.textbbox((0, 0), text, font=font)
+        textHeight = bbox[3] - bbox[1]
+        textWidth = bbox[2] - bbox[0]
+        while textHeight > 240 or textWidth > 250:
+            font_size -= 2
+            if font_size < 8:
+                break
+            font = ImageFont.truetype("assets/arial.ttf", font_size)
+            bbox = draw_dummy.textbbox((0, 0), text, font=font)
+            textHeight = bbox[3] - bbox[1]
+            textWidth = bbox[2] - bbox[0]
+
+        for i in range(7):
+            canvas = Image.new('RGBA', size=(400, 400), color=(255, 255, 255, 255))
+            frame = Image.open(f'./assets/gifs/stick/frame_{i}.png').convert('RGBA').resize((400, 400))
+            canvas.paste(user_image, (160, 160))
+            canvas.paste(frame, mask=frame)
+            draw = ImageDraw.Draw(canvas)
+            draw.text((370-textWidth, 30), text, fill="#000000", font=font, align="center")
+            self.frames.append(canvas)
+
+        gif_image, save_kwargs = await self.__animate_gif(self.frames, 50)
+        buffer = BytesIO()
+        gif_image.save(buffer, **save_kwargs)
+        buffer.seek(0)
+        return buffer
+
     async def __animate_gif(self, images: list[IMG], durations: Union[int, list[int]] = 20) -> tuple[
         IMG, dict[str, Any]]:
         save_kwargs: dict[str, Any] = {}

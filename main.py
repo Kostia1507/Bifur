@@ -145,9 +145,7 @@ async def on_message(message):
                     title = ""
                 answer = await chatGPTService.ask(text[len(f'<@{bot.user.id}>'):len(text)], message.author.id)
                 pagedMsg = pagedMessagesService.initPagedMessage(bot, title, answer)
-                embed = discord.Embed(title=pagedMsg.title, description=pagedMsg.pages[0])
-                embed.set_footer(text=f'Page 1 of {len(pagedMsg.pages)}')
-                await message.channel.send(embed=embed, view=pagedMsg.view)
+                await message.channel.send(view=pagedMsg.view)
                 cooldownService.removeCooldown(message.author.id)
 
     # custom prefixes

@@ -535,7 +535,7 @@ async def quote(image_url, text, message_id, name, color="#ffffff"):
     draw_dummy = ImageDraw.Draw(dummy_image)
 
     # prepare text and measure height and width
-    bbox = draw_dummy.textbbox((0, 0),name, font=font)
+    bbox = draw_dummy.textbbox((0, 0), name, font=font)
     nameHeight = bbox[3] - bbox[1]
     nameWidth = bbox[2] - bbox[0]
 

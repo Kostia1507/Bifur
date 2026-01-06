@@ -131,6 +131,29 @@ class GifCog(commands.Cog):
             except FileNotFoundError:
                 await ctx.send(await getLocale("file-not-found", ctx.author.id))
 
+    @commands.command()
+    async def stick(self, ctx, *args):
+        url = None
+        text = ""
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+            text = " ".join(args)
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+            if len(args) > 1:
+                text = " ".join(args[1:])
+        elif len(args) > 0:
+            url = args[0]
+            if len(args) > 1:
+                text = " ".join(args[1:])
+        if url is not None:
+            try:
+                stick_buffer = await GifCreator(image_url=url).create_stick_gif(text)
+                stick_gif = discord.File(stick_buffer, filename=f'temp/{ctx.message.id}stick.gif')
+                await ctx.send(file=stick_gif)
+            except FileNotFoundError:
+                await ctx.send(await getLocale("file-not-found", ctx.author.id))
+
     # This code needs a lot of RAM for some gifs, REST IN PEACE
     """"@commands.command()
     async def gifsign(self, ctx, *args):
