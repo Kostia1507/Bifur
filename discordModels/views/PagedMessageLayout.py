@@ -26,7 +26,7 @@ class PagedMessageLayout(discord.ui.LayoutView):
     def prepareView(self):
         for child in self.children:
             if isinstance(child, discord.ui.Container):
-                child.children = []
+                child.clear_items()
                 child.add_item(discord.ui.TextDisplay(f"### {self.pagedMessage.title}"))
                 child.add_item(discord.ui.Separator(visible=True))
                 child.add_item(discord.ui.TextDisplay(self.pagedMessage.getPage(0)))
