@@ -67,6 +67,25 @@ class Game2048:
         empty_cells = [(r, c) for r in range(4) for c in range(4) if self.board[r][c] == 0]
         return empty_cells
 
+    def is_game_over(self):
+        for row in self.board:
+            if 0 in row:
+                return False
+
+        # check rows
+        for row in range(4):
+            for cell in range(3):
+                if self.board[row][cell] == self.board[row][cell + 1]:
+                    return False
+
+        # check columns
+        for row in range(3):
+            for cell in range(4):
+                if self.board[row][cell] == self.board[row + 1][cell]:
+                    return False
+
+        return True
+
     def add_new_value(self):
         empty_cells = self.get_empty_cells()
         if len(empty_cells) > 0:
@@ -104,7 +123,7 @@ class Game2048:
             # return is there empty cells
             return self.add_new_value()
         else:
-            return True
+            return False
 
     def generate_picture(self):
         valueToColorMap = {

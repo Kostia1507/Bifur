@@ -141,10 +141,10 @@ class GamesCog(commands.Cog):
         game = Game2048(ctx.author.id)
 
         img = discord.File(game.generate_picture(), "board2048.png")
-        embed = discord.Embed(title="2048", description="the description will be here")
+        embed = discord.Embed(title="2048", description="Moves: 0")
         embed.set_image(url=f'attachment://board2048.png')
 
-        await ctx.send(content="the description ide nahui", view=Game2048View(self.bot, game), embed=embed, file=img)
+        await ctx.send(content="", view=Game2048View(self.bot, game), embed=embed, file=img)
         LogCog.logSystem(f'start Game2048 at {datetime.now()} with messageId {ctx.message.id} for {ctx.author.id}')
 
     @commands.command(aliases=["bj"])

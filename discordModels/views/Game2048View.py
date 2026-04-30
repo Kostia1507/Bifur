@@ -21,15 +21,15 @@ class Game2048View(discord.ui.View):
     async def leftTopButtonCallback(self, interaction, button):
         await interaction.response.send_message(content="just decorative button!", ephemeral=True)
 
-    @discord.ui.button(emoji="▪️", style=ButtonStyle.primary, label="", row=0)
+    @discord.ui.button(emoji="⬆", style=ButtonStyle.primary, label="", row=0)
     async def moveTopCallback(self, interaction, button):
         if interaction.user.id == self.game.user_id:
             retStatus = self.game.move(MoveDirection.TOP)
             img = discord.File(self.game.generate_picture(), "board2048.png")
-            embed = discord.Embed(title="2048", description="the description will be here")
+            embed = discord.Embed(title="2048", description=f"Moves: {self.game.moves}")
             embed.set_image(url=f'attachment://board2048.png')
-            if not retStatus:
-                await interaction.response.edit_message(content=None, embed=embed, view=None, attachments=[img])
+            if retStatus and self.game.is_game_over():
+                await interaction.response.edit_message(content=f"Game over", embed=embed, view=None, attachments=[img])
             else:
                 await interaction.response.edit_message(content=None, embed=embed, view=Game2048View(self.bot, self.game),
                                                attachments=[img])
@@ -42,18 +42,20 @@ class Game2048View(discord.ui.View):
 
     # ROW 2
 
-    @discord.ui.button(emoji="▪️", style=ButtonStyle.primary, label="", row=1)
+    @discord.ui.button(emoji="⬅", style=ButtonStyle.primary, label="", row=1)
     async def moveLeftCallback(self, interaction, button):
         if interaction.user.id == self.game.user_id:
             retStatus = self.game.move(MoveDirection.LEFT)
             img = discord.File(self.game.generate_picture(), "board2048.png")
-            embed = discord.Embed(title="2048", description="the description will be here")
+            embed = discord.Embed(title="2048", description=f"Moves: {self.game.moves}")
             embed.set_image(url=f'attachment://board2048.png')
-            if not retStatus:
-                await interaction.response.edit_message(content=None, embed=embed, view=None, attachments=[img])
+            if retStatus and self.game.is_game_over():
+                await interaction.response.edit_message(content=f"Game over", embed=embed,
+                                                        view=None, attachments=[img])
             else:
-                await interaction.response.edit_message(content=None, embed=embed, view=Game2048View(self.bot, self.game),
-                                               attachments=[img])
+                await interaction.response.edit_message(content=None, embed=embed,
+                                                        view=Game2048View(self.bot, self.game),
+                                                        attachments=[img])
         else:
             await interaction.response.send_message(content="It's not your game!", ephemeral=True)
 
@@ -61,18 +63,20 @@ class Game2048View(discord.ui.View):
     async def centerButtonCallback(self, interaction, button):
         await interaction.response.send_message(content="just decorative button!", ephemeral=True)
 
-    @discord.ui.button(emoji="▪️", style=ButtonStyle.primary, label="", row=1)
+    @discord.ui.button(emoji="➡", style=ButtonStyle.primary, label="", row=1)
     async def rightMoveCallback(self, interaction, button):
         if interaction.user.id == self.game.user_id:
             retStatus = self.game.move(MoveDirection.RIGHT)
             img = discord.File(self.game.generate_picture(), "board2048.png")
-            embed = discord.Embed(title="2048", description="the description will be here")
+            embed = discord.Embed(title="2048", description=f"Moves: {self.game.moves}")
             embed.set_image(url=f'attachment://board2048.png')
-            if not retStatus:
-                await interaction.response.edit_message(content=None, embed=embed, view=None, attachments=[img])
+            if retStatus and self.game.is_game_over():
+                await interaction.response.edit_message(content=f"Game over", embed=embed,
+                                                        view=None, attachments=[img])
             else:
-                await interaction.response.edit_message(content=None, embed=embed, view=Game2048View(self.bot, self.game),
-                                               attachments=[img])
+                await interaction.response.edit_message(content=None, embed=embed,
+                                                        view=Game2048View(self.bot, self.game),
+                                                        attachments=[img])
         else:
             await interaction.response.send_message(content="It's not your game!", ephemeral=True)
 
@@ -82,18 +86,20 @@ class Game2048View(discord.ui.View):
     async def leftBottomButtonCallback(self, interaction, button):
         await interaction.response.send_message(content="just decorative button!", ephemeral=True)
 
-    @discord.ui.button(emoji="▪️", style=ButtonStyle.primary, label="", row=2)
+    @discord.ui.button(emoji="⬇", style=ButtonStyle.primary, label="", row=2)
     async def moveBottomCallback(self, interaction, button):
         if interaction.user.id == self.game.user_id:
             retStatus = self.game.move(MoveDirection.BOTTOM)
             img = discord.File(self.game.generate_picture(), "board2048.png")
-            embed = discord.Embed(title="2048", description="the description will be here")
+            embed = discord.Embed(title="2048", description=f"Moves: {self.game.moves}")
             embed.set_image(url=f'attachment://board2048.png')
-            if not retStatus:
-                await interaction.response.edit_message(content=None, embed=embed, view=None, attachments=[img])
+            if retStatus and self.game.is_game_over():
+                await interaction.response.edit_message(content=f"Game over", embed=embed,
+                                                        view=None, attachments=[img])
             else:
-                await interaction.response.edit_message(content=None, embed=embed, view=Game2048View(self.bot, self.game),
-                                               attachments=[img])
+                await interaction.response.edit_message(content=None, embed=embed,
+                                                        view=Game2048View(self.bot, self.game),
+                                                        attachments=[img])
         else:
             await interaction.response.send_message(content="It's not your game!", ephemeral=True)
 
