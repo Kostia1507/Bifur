@@ -6,12 +6,14 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 
+from discordModels.views.Game2048View import Game2048View
 from discordModels.views.LobbyView import LobbyView
 from discordModels.views.RPSView import RPSView
 from discordModels.views.ReversiView import ReversiView
 from discordModels.views.TicTacToeView import TicTacToeView
 from discordModels.views.WordleView import WordleView
 from discordModels.views.connect4HistoryView import Connect4HistoryView
+from models.Game2048 import Game2048
 from models.RPSGame import RPSGame, SignValue
 from models.ReversiGame import ReversiGame
 from models.TicTacToeGame import TicTacToeGame
@@ -133,6 +135,17 @@ class GamesCog(commands.Cog):
         else:
             await ctx.send(content="Write your first guess", view=WordleView(self.bot, game))
         LogCog.logSystem(f'start Wordle at {datetime.now()} with messageId {ctx.message.id} for {ctx.author.id}')
+
+    @commands.command(aliases=["2048"])
+    async def game2048(self, ctx, *args):
+        game = Game2048(ctx.author.id)
+
+        img = discord.File(game.generate_picture(), "board2048.png")
+        embed = discord.Embed(title="2048", description="the description will be here")
+        embed.set_image(url=f'attachment://board2048.png')
+
+        await ctx.send(content="the description ide nahui", view=Game2048View(self.bot, game), embed=embed, file=img)
+        LogCog.logSystem(f'start Game2048 at {datetime.now()} with messageId {ctx.message.id} for {ctx.author.id}')
 
     @commands.command(aliases=["bj"])
     async def blackjack(self, ctx, *args):

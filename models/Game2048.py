@@ -107,10 +107,46 @@ class Game2048:
             return True
 
     def generate_picture(self):
-        FIELD_SIZE = 20
+        valueToColorMap = {
+            0: (247, 239, 237),
+            2: (240, 224, 219),
+            4: (232, 208, 202),
+            8: (223, 193, 184),
+            16: (215, 178, 167),
+            32: (206, 163, 151),
+            64: (198, 149, 134),
+            128: (188, 134, 118),
+            256: (179, 120, 102),
+            512: (170, 105, 87),
+            1024: (165, 98, 79),
+            2048: (160, 91, 72),
+            4096: (155, 86, 68),
+        }
+        MARGIN_SIZE = 5
         SQUARE_SIZE = 100
         SQUARE_RADIUS = 20
 
-        # Size calculated like 100x100px per square and 50px - fields
-        img = Image.new("RGBA", (SQUARE_SIZE * 4 + FIELD_SIZE * 5, SQUARE_SIZE * 4 + FIELD_SIZE * 5), (0, 0, 0, 0))
+        # Size calculated like 100x100px per square and 20px - margins
+        img = Image.new("RGBA", (SQUARE_SIZE * 4 + MARGIN_SIZE * 5, SQUARE_SIZE * 4 + MARGIN_SIZE * 5), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
+        # font = ImageFont.truetype("assets/arial.ttf", 40)
+        font = ImageFont.load_default()
+
+        for x in range(len(self.board)):
+            for y in range(len(self.board)):
+                rect_x1 = x * SQUARE_SIZE + MARGIN_SIZE*(x+1)
+                rect_y1 = y * SQUARE_SIZE + MARGIN_SIZE*(y+1)
+                rect_x2 = rect_x1 + SQUARE_SIZE
+                rect_y2 = rect_y1 + SQUARE_SIZE
+                draw_rounded_rectangle(draw, (rect_x1, rect_y1, rect_x2, rect_y2), SQUARE_RADIUS,
+                                       fill=valueToColorMap[self.board[y][x]])
+
+                if self.board[y][x] != 0:
+                    text_x, text_y = get_centered_text_position(draw, str(self.board[y][x]), font, rect_x1, rect_y1, rect_x2,
+                                                                rect_y2)
+                    draw.text((text_x, text_y), str(self.board[y][x]), font=font, fill="white")
+
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+        return buffer
