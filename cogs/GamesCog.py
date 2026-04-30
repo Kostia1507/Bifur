@@ -20,7 +20,7 @@ from models.TicTacToeGame import TicTacToeGame
 from models.WordleGame import WordleGame
 
 
-class Connect4Difficult(Enum):
+class Connect4Difficulty(Enum):
     EASY = 2
     NORMAL = 4
     HARD = 6
@@ -155,17 +155,17 @@ class GamesCog(commands.Cog):
 
     @app_commands.command(name="connect4", description="Challenge your friends in Connect 4")
     @app_commands.describe(opponent="Friend to play with. Choose Bifur to play against him")
-    @app_commands.describe(difficult="Choose difficult if you playing against Bifur")
+    @app_commands.describe(difficulty="Choose difficulty level if you playing against Bifur")
     async def connectSlash(self, interaction: discord.Interaction, opponent: discord.User,
-                           difficult: Connect4Difficult = Connect4Difficult.NORMAL):
+                           difficulty: Connect4Difficulty = Connect4Difficulty.NORMAL):
         await interaction.response.defer(thinking=True)
         if opponent.id != self.bot.user.id:
             game = FourInRowGame(7, 6, players=[interaction.user.id, opponent.id])
             game.startText = f'Blue: {opponent.name}\nRed: {interaction.user.name}\n'
         else:
             game = FourInRowGame(7, 6, players=[opponent.id, interaction.user.id])
-            game.startText = f'Blue: {interaction.user.name}\nRed: {opponent.name}: {difficult.name}\n'
-            game.difficult = difficult.value
+            game.startText = f'Blue: {interaction.user.name}\nRed: {opponent.name}: {difficulty.name}\n'
+            game.difficult = difficulty.value
         msg = await interaction.followup.send(content=game.printBoard())
         for i in range(0, game.width):
             await msg.add_reaction(numbers[i])
