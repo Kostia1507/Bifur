@@ -5,6 +5,7 @@ from io import BytesIO
 
 from PIL import ImageDraw, Image, ImageFont
 
+
 def draw_rounded_rectangle(draw, xy, radius, fill, outline=None, width=1):
     x1, y1, x2, y2 = xy
     draw.rectangle([x1 + radius, y1, x2 - radius, y2], fill=fill)  # Top/bottom sides
@@ -32,6 +33,7 @@ class MoveDirection(Enum):
     RIGHT = 1
     BOTTOM = 2
     LEFT = 3
+
 
 def slide_and_merge(line: list):
     new_line = [i for i in line if i != 0]
@@ -148,20 +150,21 @@ class Game2048:
         # Size calculated like 100x100px per square and 20px - margins
         img = Image.new("RGBA", (SQUARE_SIZE * 4 + MARGIN_SIZE * 5, SQUARE_SIZE * 4 + MARGIN_SIZE * 5), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
-        # font = ImageFont.truetype("assets/arial.ttf", 40)
-        font = ImageFont.load_default()
+        font = ImageFont.truetype("assets/arial.ttf", 40)
+        # font = ImageFont.load_default()
 
         for x in range(len(self.board)):
             for y in range(len(self.board)):
-                rect_x1 = x * SQUARE_SIZE + MARGIN_SIZE*(x+1)
-                rect_y1 = y * SQUARE_SIZE + MARGIN_SIZE*(y+1)
+                rect_x1 = x * SQUARE_SIZE + MARGIN_SIZE * (x + 1)
+                rect_y1 = y * SQUARE_SIZE + MARGIN_SIZE * (y + 1)
                 rect_x2 = rect_x1 + SQUARE_SIZE
                 rect_y2 = rect_y1 + SQUARE_SIZE
                 draw_rounded_rectangle(draw, (rect_x1, rect_y1, rect_x2, rect_y2), SQUARE_RADIUS,
                                        fill=valueToColorMap[self.board[y][x]])
 
                 if self.board[y][x] != 0:
-                    text_x, text_y = get_centered_text_position(draw, str(self.board[y][x]), font, rect_x1, rect_y1, rect_x2,
+                    text_x, text_y = get_centered_text_position(draw, str(self.board[y][x]), font, rect_x1, rect_y1,
+                                                                rect_x2,
                                                                 rect_y2)
                     draw.text((text_x, text_y), str(self.board[y][x]), font=font, fill="white")
 

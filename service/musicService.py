@@ -182,9 +182,9 @@ def delete(guild_id):
         del players[guild_id]
 
 
-async def downloadVideo(url):
+async def downloadVideo(url, quality):
     t = (await searchByLink(url))[0]
     await t.updateFromWeb()
     filename = f'temp/{t.name}.mp3'
-    await t.download(filename)
+    await t.download(filename, quality)
     return filename

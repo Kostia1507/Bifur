@@ -85,7 +85,7 @@ class Song:
             LogCog.logError(f'Помилка при спробі отримати інформацію {self.original_url}: {e}')
             return e
 
-    async def download(self, filename):
+    async def download(self, filename, quality):
         if self.is_live:
             return "I will not play a live video"
 
@@ -93,10 +93,15 @@ class Song:
             options_dwnl = {
                 'format': 'bestaudio/best',
                 'keepvideo': False,
-                'outtmpl': filename,
+                'outtmpl': filename[:-4],
                 'noplaylist': True,
                 'source_address': '0.0.0.0',
-                'nocheckcertificate': True
+                'nocheckcertificate': True,
+                'postprocessors': [{
+                    'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3',
+                    'preferredquality': quality,
+                }],
             }
             with YoutubeDL(options_dwnl) as ydl:
                 try:
