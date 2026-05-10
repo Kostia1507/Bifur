@@ -413,7 +413,13 @@ class MusicCog(commands.Cog):
 
     @commands.command(aliases=["dwlmp3"])
     async def downloadmp3(self, ctx, url):
-        filename = await musicService.downloadVideo(url)
+        filename = await musicService.downloadVideo(url, 192)
+        await ctx.send(file=discord.File(filename))
+        os.remove(filename)
+
+    @commands.command(aliases=["cmpmp3"])
+    async def compressmp3(self, ctx, url):
+        filename = await musicService.downloadVideo(url, 64)
         await ctx.send(file=discord.File(filename))
         os.remove(filename)
 

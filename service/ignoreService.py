@@ -31,7 +31,6 @@ async def manageIgnoredChannels(ctx, channel_id):
             port=config.port
         )
         await conn.execute('DELETE FROM ignored_channels WHERE channel_id = $1', ctx.channel.id)
-        conn.commit()
         await conn.close()
         await ctx.send(await getLocale("ignore-off", ctx.author.id))
     else:
