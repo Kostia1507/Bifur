@@ -138,7 +138,14 @@ class GamesCog(commands.Cog):
 
     @commands.command(aliases=["2048"])
     async def game2048(self, ctx, *args):
-        game = Game2048(ctx.author.id)
+        if len(args) > 0:
+            size = int(args[0])
+            if size < 2 or size > 5:
+                await ctx.send("Size must be between 2 and 5")
+                return
+            game = Game2048(ctx.author.id, size=size)
+        else:
+            game = Game2048(ctx.author.id)
 
         img = discord.File(game.generate_picture(), "board2048.png")
         embed = discord.Embed(title="2048", description="Moves: 0")

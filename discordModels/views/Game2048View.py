@@ -29,7 +29,8 @@ class Game2048View(discord.ui.View):
             embed = discord.Embed(title="2048", description=f"Moves: {self.game.moves}")
             embed.set_image(url=f'attachment://board2048.png')
             if retStatus and self.game.is_game_over():
-                await interaction.response.edit_message(content=f"Game over", embed=embed, view=None, attachments=[img])
+                await interaction.response.edit_message(content=f"Game over\nPoints: {self.game.count_all()}",
+                                                        embed=embed, view=None, attachments=[img])
             else:
                 await interaction.response.edit_message(content=None, embed=embed, view=Game2048View(self.bot, self.game),
                                                attachments=[img])
@@ -50,8 +51,8 @@ class Game2048View(discord.ui.View):
             embed = discord.Embed(title="2048", description=f"Moves: {self.game.moves}")
             embed.set_image(url=f'attachment://board2048.png')
             if retStatus and self.game.is_game_over():
-                await interaction.response.edit_message(content=f"Game over", embed=embed,
-                                                        view=None, attachments=[img])
+                await interaction.response.edit_message(content=f"Game over\nPoints: {self.game.count_all()}",
+                                                        embed=embed, view=None, attachments=[img])
             else:
                 await interaction.response.edit_message(content=None, embed=embed,
                                                         view=Game2048View(self.bot, self.game),
@@ -71,8 +72,8 @@ class Game2048View(discord.ui.View):
             embed = discord.Embed(title="2048", description=f"Moves: {self.game.moves}")
             embed.set_image(url=f'attachment://board2048.png')
             if retStatus and self.game.is_game_over():
-                await interaction.response.edit_message(content=f"Game over", embed=embed,
-                                                        view=None, attachments=[img])
+                await interaction.response.edit_message(content=f"Game over\nPoints: {self.game.count_all()}",
+                                                        embed=embed, view=None, attachments=[img])
             else:
                 await interaction.response.edit_message(content=None, embed=embed,
                                                         view=Game2048View(self.bot, self.game),
@@ -94,8 +95,8 @@ class Game2048View(discord.ui.View):
             embed = discord.Embed(title="2048", description=f"Moves: {self.game.moves}")
             embed.set_image(url=f'attachment://board2048.png')
             if retStatus and self.game.is_game_over():
-                await interaction.response.edit_message(content=f"Game over", embed=embed,
-                                                        view=None, attachments=[img])
+                await interaction.response.edit_message(content=f"Game over\nPoints: {self.game.count_all()}",
+                                                        embed=embed, view=None, attachments=[img])
             else:
                 await interaction.response.edit_message(content=None, embed=embed,
                                                         view=Game2048View(self.bot, self.game),

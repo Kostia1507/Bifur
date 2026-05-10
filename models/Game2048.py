@@ -59,14 +59,15 @@ def slide_and_merge(line: list):
 
 class Game2048:
 
-    def __init__(self, user_id):
+    def __init__(self, user_id, size=3):
         self.user_id = user_id
         self.moves = 0
-        self.board = [[0 for x in range(4)] for y in range(4)]
+        self.size = size
+        self.board = [[0 for x in range(self.size)] for y in range(self.size)]
         self.add_new_value()
 
     def get_empty_cells(self):
-        empty_cells = [(r, c) for r in range(4) for c in range(4) if self.board[r][c] == 0]
+        empty_cells = [(r, c) for r in range(self.size) for c in range(self.size) if self.board[r][c] == 0]
         return empty_cells
 
     def is_game_over(self):
@@ -75,14 +76,14 @@ class Game2048:
                 return False
 
         # check rows
-        for row in range(4):
-            for cell in range(3):
+        for row in range(self.size):
+            for cell in range(self.size-1):
                 if self.board[row][cell] == self.board[row][cell + 1]:
                     return False
 
         # check columns
-        for row in range(3):
-            for cell in range(4):
+        for row in range(self.size-1):
+            for cell in range(self.size):
                 if self.board[row][cell] == self.board[row + 1][cell]:
                     return False
 
@@ -95,6 +96,13 @@ class Game2048:
             self.board[r][c] = 4 if random.random() < 0.1 else 2
             return True
         return False
+
+    def count_all(self):
+        points = 0
+        for row in self.board:
+            for cell in row:
+                points += cell
+        return points
 
     def move(self, direction):
         current_board = deepcopy(self.board)
@@ -129,9 +137,9 @@ class Game2048:
 
     def generate_picture(self):
         valueToColorMap = {
-            0: (247, 239, 237),
-            2: (240, 224, 219),
-            4: (232, 208, 202),
+            0: (249, 241, 239),
+            2: (239, 223, 218),
+            4: (231, 207, 201),
             8: (223, 193, 184),
             16: (215, 178, 167),
             32: (206, 163, 151),
@@ -148,7 +156,8 @@ class Game2048:
         SQUARE_RADIUS = 20
 
         # Size calculated like 100x100px per square and 20px - margins
-        img = Image.new("RGBA", (SQUARE_SIZE * 4 + MARGIN_SIZE * 5, SQUARE_SIZE * 4 + MARGIN_SIZE * 5), (0, 0, 0, 0))
+        img = Image.new("RGBA", (SQUARE_SIZE * self.size + MARGIN_SIZE * (self.size+1),
+                                 SQUARE_SIZE * self.size + MARGIN_SIZE * (self.size+1)), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype("assets/arial.ttf", 40)
         # font = ImageFont.load_default()
