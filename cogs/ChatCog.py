@@ -4,6 +4,7 @@ from datetime import datetime
 
 import aiohttp
 import discord
+from discord import ActivityType
 from discord.ext import commands
 from discord.ext.commands import has_permissions
 
@@ -64,6 +65,36 @@ class ChatCog(commands.Cog):
             await ctx.send(
                 (await getLocale('random-number', ctx.author.id)).replace('%1', str(start)).replace('%2', str(end))
                 .replace('%3', str(random.randint(start, end))))
+
+    @commands.command()
+    async def roman(self, ctx):
+        ROMAN_ID = 790002509321863170
+        # roman = await ctx.guild.fetch_member(790002509321863170)
+        roman = ctx.guild.get_member(ROMAN_ID)
+
+        if roman is None:
+            # chunk=True або query змушує Discord віддати дані разом із пресенсами через Gateway
+            members = await ctx.guild.query_members(user_ids=[ROMAN_ID], presences=True)
+            if members:
+                roman = members[0]
+
+        if roman is None:
+            await ctx.send("К сожалению, роман не найден на этом сервере")
+            return
+
+        wuthering = False
+        wuva_id = 0
+        for activity in roman.activities:
+            if activity.type == ActivityType.playing and "wuthering waves" in activity.name.lower():
+                wuthering = True
+                wuva_id = activity.application_id
+                break
+        if wuthering:
+            await ctx.send(f"Роман в вуве {wuva_id}")
+        else:
+            await ctx.send("Роман человек")
+
+
 
     @commands.command()
     async def randp(self, ctx):

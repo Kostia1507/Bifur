@@ -444,6 +444,11 @@ helpEN = {
                                "green indicates that the letter is correct and in the correct position\n"
                                "yellow means it is in the answer but not in the right position\n"
             },
+            {
+                "name": ">2048 [size]",
+                "aliases": ["game2048"],
+                "description": "Starts a game of 2048. Field size can be between 2 and 5.\n"
+            },
         ],
     "Calculator":
         [
