@@ -1,15 +1,14 @@
-# fly.toml app configuration file generated for bifur on 2026-05-28T19:38:28+03:00
+# fly.toml app configuration file generated for bifur on 2026-08-22T17:07:11+03:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = 'bifur'
-primary_region = 'fra'
+primary_region = 'ams'
 kill_signal = 'SIGINT'
 kill_timeout = '5s'
 
 [build]
-
 [env]
   LOG_LEVEL = 'debug'
 

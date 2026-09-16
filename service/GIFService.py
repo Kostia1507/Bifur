@@ -20,6 +20,20 @@ class GifCreator:
         self.resolutionVibeResult = (320, 190)
         self.frames: list[IMG] = []
 
+    async def create_gif(self):
+        img_bytes = await self.__get_image_bytes()
+        base = Image.open(img_bytes).convert('RGBA')
+
+        canvas = Image.new('RGBA', size=base.size, color=(0, 0, 0, 0))
+        canvas.paste(base, mask=base)
+        gif_image, save_kwargs = await self.__animate_gif([canvas])
+
+        buffer = BytesIO()
+        gif_image.save(buffer, **save_kwargs)
+        buffer.seek(0)
+
+        return buffer
+
     async def create_pat_gif(self):
         img_bytes = await self.__get_image_bytes()
 
@@ -162,7 +176,7 @@ class GifCreator:
             canvas.paste(hammerBack, mask=hammerBack)
             self.frames.append(canvas)
 
-        gif_image, save_kwargs = await self.__animate_gif(self.frames, 40)
+        gif_image, save_kwargs = await self.__animate_gif(self.frames, 0)
         buffer = BytesIO()
         gif_image.save(buffer, **save_kwargs)
         buffer.seek(0)

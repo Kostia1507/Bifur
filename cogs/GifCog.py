@@ -12,6 +12,23 @@ class GifCog(commands.Cog):
         LogCog.logSystem('Gif cog loaded')
         self.bot = bot
 
+    @commands.command(aliases=['togif'])
+    async def pictogif(self, ctx, *args):
+        url = None
+        if len(ctx.message.attachments) > 0:
+            url = ctx.message.attachments[0].url
+        elif len(ctx.message.mentions) > 0:
+            url = ctx.message.mentions[0].avatar.url
+        elif len(args) > 0:
+            url = args[0]
+        if url is not None:
+            try:
+                gif_buffer = await GifCreator(image_url=url).create_gif()
+                gif = discord.File(gif_buffer, filename=f'temp/{ctx.message.id}.gif')
+                await ctx.send(file=gif)
+            except FileNotFoundError:
+                await ctx.send(await getLocale("file-not-found", ctx.author.id))
+
     @commands.command()
     async def pat(self, ctx, *args):
         url = None

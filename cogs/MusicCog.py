@@ -145,23 +145,26 @@ class MusicCog(commands.Cog):
 
     @tasks.loop(minutes=5)
     async def checkForEmptyVoices(self):
-        for vc in self.bot.voice_clients:
-            if len(vc.channel.members) < 2:
-                if vc.channel.id in self.emptyVoices:
+        try:
+            for vc in self.bot.voice_clients:
+                if len(vc.channel.members) < 2:
+                    if vc.channel.id in self.emptyVoices:
+                        self.emptyVoices.remove(vc.channel.id)
+                        LogCog.logSystem(f'leave from voice {vc.channel.id} cause members < 2')
+                        await vc.disconnect()
+                        mp = musicService.findMusicPlayerByGuildId(vc.channel.guild.id)
+                        if mp is not None and mp.musicPlayerMessageId is not None:
+                            message = await self.bot.get_channel(mp.musicPlayerChannelId) \
+                                .fetch_message(mp.musicPlayerMessageId)
+                            await message.delete()
+                        musicService.delete(vc.channel.guild.id)
+                    else:
+                        # Add to query for leaving
+                        self.emptyVoices.append(vc.channel.id)
+                elif vc.channel.id in self.emptyVoices:
                     self.emptyVoices.remove(vc.channel.id)
-                    LogCog.logSystem(f'leave from voice {vc.channel.id} cause members < 2')
-                    await vc.disconnect()
-                    mp = musicService.findMusicPlayerByGuildId(vc.channel.guild.id)
-                    if mp is not None and mp.musicPlayerMessageId is not None:
-                        message = await self.bot.get_channel(mp.musicPlayerChannelId) \
-                            .fetch_message(mp.musicPlayerMessageId)
-                        await message.delete()
-                    musicService.delete(vc.channel.guild.id)
-                else:
-                    # Add to query for leaving
-                    self.emptyVoices.append(vc.channel.id)
-            elif vc.channel.id in self.emptyVoices:
-                self.emptyVoices.remove(vc.channel.id)
+        except Exception as e:
+            LogCog.logError(f"Exception {e} in checkForEmptyVoices")
 
     @tasks.loop(minutes=config.delete_songs_after_hours*15)
     async def deleteOldFiles(self):
